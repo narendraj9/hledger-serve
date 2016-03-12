@@ -30,9 +30,14 @@ instance ToJSON JEntry
 instance FromJSON JEntry
 
 type JStore = TVar [JEntry]
-type JournalAPI = GetEntries :<|> PostEntry
+type JournalAPI = ClearEntries :<|> GetEntries :<|> PostEntry
+type ClearEntries = "entries" :> Delete '[] ()
 type GetEntries = "entries" :> Get '[JSON] [JEntry]
 type PostEntry = "entry" :> ReqBody '[JSON] JEntry :> Post '[] ()
+
+-- | DELETE /entries
+handleClearEntries :: JStore -> Server ClearEntries
+handleClearEntries store = liftIO $ atomically $ modifyTVar store (const [])
 
 -- | GET /entries
 handleGetEntries :: JStore -> Server GetEntries
@@ -46,7 +51,9 @@ journalAPI :: Proxy JournalAPI
 journalAPI = Proxy
 
 handleJournalAPI :: JStore -> Server JournalAPI
-handleJournalAPI store = handleGetEntries store :<|> handlePostEntry store
+handleJournalAPI store = handleClearEntries store
+  :<|> handleGetEntries store
+  :<|> handlePostEntry store 
 
 app :: JStore -> Application
 app store = serve journalAPI $ handleJournalAPI store
@@ -59,7 +66,15 @@ main = do store <- newTVarIO entries
 -- Sample entries for initial testing
 entries :: [JEntry]
 entries =
-  [ JEntry "Had breakfast at Well Cafe" "It was awesome. \n Just amazin!"
-    [Posting "expenses:eating:breakfast" "230", Posting "assets:wallet:cash" "-230"]
+  [ JEntry { description = "We rented bicylces."
+           , comment =  "It wasn't as easy as it sounds."
+           , postings = [ Posting { account = "expenses:travel:commute"
+                                 , amount = "600"
+                                 }
+                       , Posting { account =  "assets:wallet:cash"
+                                 , amount = "-600"
+                                 }
+                       ]
+           }
   ]
 
