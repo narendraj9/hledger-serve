@@ -10865,51 +10865,43 @@ Elm.Hledger.make = function (_elm) {
    var statusBoxStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"white-space","pre")]));
    var encodeEntry = function (entry) {
       var _p0 = function (_) {    return _.postings;}(entry);
-      if (_p0.ctor === "[]") {
-            return "\n";
-         } else {
-            if (_p0._1.ctor === "::" && _p0._1._1.ctor === "[]") {
-                  var _p2 = _p0._1._0;
-                  var _p1 = _p0._0;
-                  return A2($Basics._op["++"],
-                  function (_) {
-                     return _.description;
-                  }(entry),
-                  A2($Basics._op["++"],
-                  "\n",
-                  A2($Basics._op["++"],
-                  "\t; ",
-                  A2($Basics._op["++"],
-                  function (_) {
-                     return _.comment;
-                  }(entry),
-                  A2($Basics._op["++"],
-                  "\n",
-                  A2($Basics._op["++"],
-                  "  ",
-                  A2($Basics._op["++"],
-                  function (_) {
-                     return _.account;
-                  }(_p1),
-                  A2($Basics._op["++"],
-                  "   ",
-                  A2($Basics._op["++"],
-                  function (_) {
-                     return _.amount;
-                  }(_p1),
-                  A2($Basics._op["++"],
-                  "\n",
-                  A2($Basics._op["++"],
-                  "  ",
-                  A2($Basics._op["++"],
-                  function (_) {
-                     return _.account;
-                  }(_p2),
-                  A2($Basics._op["++"],"   ",A2($Basics._op["++"],function (_) {    return _.amount;}(_p2),"\n"))))))))))))));
-               } else {
-                  return "\n";
-               }
-         }
+      var _p2 = _p0._1;
+      var _p1 = _p0._0;
+      return A2($Basics._op["++"],
+      function (_) {
+         return _.description;
+      }(entry),
+      A2($Basics._op["++"],
+      "\n",
+      A2($Basics._op["++"],
+      "\t; ",
+      A2($Basics._op["++"],
+      function (_) {
+         return _.comment;
+      }(entry),
+      A2($Basics._op["++"],
+      "\n",
+      A2($Basics._op["++"],
+      "  ",
+      A2($Basics._op["++"],
+      function (_) {
+         return _.account;
+      }(_p1),
+      A2($Basics._op["++"],
+      "   ",
+      A2($Basics._op["++"],
+      function (_) {
+         return _.amount;
+      }(_p1),
+      A2($Basics._op["++"],
+      "\n",
+      A2($Basics._op["++"],
+      "  ",
+      A2($Basics._op["++"],
+      function (_) {
+         return _.account;
+      }(_p2),
+      A2($Basics._op["++"],"   ",A2($Basics._op["++"],function (_) {    return _.amount;}(_p2),"\n"))))))))))))));
    };
    var encodeModel = function (model) {
       var _p3 = function (_) {    return _.restEntries;}(model);
@@ -10919,6 +10911,12 @@ Elm.Hledger.make = function (_elm) {
             return A2($Basics._op["++"],encodeEntry(_p3._0),A2($Basics._op["++"],"\n\n",encodeModel(_U.update(model,{restEntries: _p3._1}))));
          }
    };
+   var SetAmnt2 = function (a) {    return {ctor: "SetAmnt2",_0: a};};
+   var SetAmnt1 = function (a) {    return {ctor: "SetAmnt1",_0: a};};
+   var SetAcc2 = function (a) {    return {ctor: "SetAcc2",_0: a};};
+   var SetAcc1 = function (a) {    return {ctor: "SetAcc1",_0: a};};
+   var SetComment = function (a) {    return {ctor: "SetComment",_0: a};};
+   var SetDesc = function (a) {    return {ctor: "SetDesc",_0: a};};
    var ClearAll = {ctor: "ClearAll"};
    var FetchAll = {ctor: "FetchAll"};
    var DeleteLast = {ctor: "DeleteLast"};
@@ -10928,44 +10926,119 @@ Elm.Hledger.make = function (_elm) {
       _U.list([appStyle]),
       _U.list([A2($Html.div,
               _U.list([]),
-              _U.list([A2($Html.div,_U.list([]),_U.list([A2($Html.input,_U.list([$Html$Attributes.placeholder("Description"),inputStyle]),_U.list([]))]))
-                      ,A2($Html.div,_U.list([]),_U.list([A2($Html.input,_U.list([$Html$Attributes.placeholder("Comment"),inputStyle]),_U.list([]))]))
+              _U.list([A2($Html.div,
+                      _U.list([]),
+                      _U.list([A2($Html.input,
+                      _U.list([$Html$Attributes.placeholder("Description")
+                              ,inputStyle
+                              ,A3($Html$Events.on,"input",$Html$Events.targetValue,function (_p4) {    return A2($Signal.message,address,SetDesc(_p4));})]),
+                      _U.list([]))]))
                       ,A2($Html.div,
                       _U.list([]),
-                      _U.list([A2($Html.input,_U.list([$Html$Attributes.placeholder("Account Name"),miniInputStyle]),_U.list([]))
-                              ,A2($Html.input,_U.list([$Html$Attributes.placeholder("Amount (₹)"),miniInputStyle]),_U.list([]))]))
+                      _U.list([A2($Html.input,
+                      _U.list([$Html$Attributes.placeholder("Comment")
+                              ,A3($Html$Events.on,"input",$Html$Events.targetValue,function (_p5) {    return A2($Signal.message,address,SetComment(_p5));})
+                              ,inputStyle]),
+                      _U.list([]))]))
                       ,A2($Html.div,
                       _U.list([]),
-                      _U.list([A2($Html.input,_U.list([$Html$Attributes.placeholder("Account Name"),miniInputStyle]),_U.list([]))
-                              ,A2($Html.input,_U.list([$Html$Attributes.placeholder("Amount (₹)"),miniInputStyle]),_U.list([]))]))]))
+                      _U.list([A2($Html.input,
+                              _U.list([$Html$Attributes.placeholder("Account Name")
+                                      ,miniInputStyle
+                                      ,A3($Html$Events.on,
+                                      "input",
+                                      $Html$Events.targetValue,
+                                      function (_p6) {
+                                         return A2($Signal.message,address,SetAcc1(_p6));
+                                      })]),
+                              _U.list([]))
+                              ,A2($Html.input,
+                              _U.list([$Html$Attributes.placeholder("Amount (₹)")
+                                      ,miniInputStyle
+                                      ,A3($Html$Events.on,
+                                      "input",
+                                      $Html$Events.targetValue,
+                                      function (_p7) {
+                                         return A2($Signal.message,address,SetAmnt1(_p7));
+                                      })]),
+                              _U.list([]))]))
+                      ,A2($Html.div,
+                      _U.list([]),
+                      _U.list([A2($Html.input,
+                              _U.list([$Html$Attributes.placeholder("Account Name")
+                                      ,miniInputStyle
+                                      ,A3($Html$Events.on,
+                                      "input",
+                                      $Html$Events.targetValue,
+                                      function (_p8) {
+                                         return A2($Signal.message,address,SetAcc2(_p8));
+                                      })]),
+                              _U.list([]))
+                              ,A2($Html.input,
+                              _U.list([$Html$Attributes.placeholder("Amount (₹)")
+                                      ,miniInputStyle
+                                      ,A3($Html$Events.on,
+                                      "input",
+                                      $Html$Events.targetValue,
+                                      function (_p9) {
+                                         return A2($Signal.message,address,SetAmnt2(_p9));
+                                      })]),
+                              _U.list([]))]))]))
               ,A2($Html.div,
               _U.list([appStyle]),
               _U.list([A2($Html.button,_U.list([buttonStyle,A2($Html$Events.onClick,address,AddNew)]),_U.list([$Html.text("Add")]))
                       ,A2($Html.button,_U.list([buttonStyle,A2($Html$Events.onClick,address,DeleteLast)]),_U.list([$Html.text("Delete")]))
                       ,A2($Html.button,_U.list([buttonStyle,A2($Html$Events.onClick,address,FetchAll)]),_U.list([$Html.text("Fetch")]))
                       ,A2($Html.button,_U.list([buttonStyle,A2($Html$Events.onClick,address,ClearAll)]),_U.list([$Html.text("Clear")]))]))
-              ,A2($Html.div,_U.list([statusBoxStyle]),_U.list([$Html.text(encodeModel(model))]))]));
+              ,A2($Html.div,
+              _U.list([statusBoxStyle]),
+              _U.list([$Html.text(A2($Basics._op["++"],encodeEntry(model.currentFields),A2($Basics._op["++"],"\n",encodeModel(model))))]))]));
    });
-   var emptyJEntry = {description: "We rented two bicycles"
-                     ,comment: " No comments. "
-                     ,postings: _U.list([{account: "food",amount: "232"},{account: "wallet",amount: "-232"}])};
+   var emptyJEntry = {description: "",comment: "",postings: {ctor: "_Tuple2",_0: {account: "",amount: ""},_1: {account: "",amount: ""}}};
    var emptyModel = {currentFields: emptyJEntry,restEntries: _U.list([])};
    var update = F2(function (action,model) {
-      var _p4 = action;
-      switch (_p4.ctor)
-      {case "AddNew": var one = A2($Debug.log,"Add one new",1);
-           return _U.update(model,{restEntries: A2($Basics._op["++"],_U.list([emptyJEntry]),model.restEntries)});
+      var fields = model.currentFields;
+      var _p10 = action;
+      switch (_p10.ctor)
+      {case "AddNew": var newEntry = model.currentFields;
+           return _U.update(model,{restEntries: A2($Basics._op["++"],_U.list([newEntry]),model.restEntries),currentFields: emptyJEntry});
          case "DeleteLast": var two = A2($Debug.log,"Delete last",2);
            return model;
-         case "ClearAll": var three = A2($Debug.log,"Clear",3);
-           return emptyModel;
-         default: var four = A2($Debug.log,"",4);
-           return model;}
+         case "ClearAll": return emptyModel;
+         case "FetchAll": return model;
+         case "SetDesc": var newFields = _U.update(fields,{description: _p10._0});
+           return _U.update(model,{currentFields: newFields});
+         case "SetComment": var newFields = _U.update(fields,{comment: _p10._0});
+           return _U.update(model,{currentFields: newFields});
+         case "SetAcc1": var _p11 = fields.postings;
+           var p1 = _p11._0;
+           var p2 = _p11._1;
+           var newPostings = {ctor: "_Tuple2",_0: _U.update(p1,{account: _p10._0}),_1: p2};
+           var newFields = _U.update(fields,{postings: newPostings});
+           return _U.update(model,{currentFields: newFields});
+         case "SetAcc2": var _p12 = fields.postings;
+           var p1 = _p12._0;
+           var p2 = _p12._1;
+           var newPostings = {ctor: "_Tuple2",_0: p1,_1: _U.update(p2,{account: _p10._0})};
+           var newFields = _U.update(fields,{postings: newPostings});
+           return _U.update(model,{currentFields: newFields});
+         case "SetAmnt1": var _p13 = fields.postings;
+           var p1 = _p13._0;
+           var p2 = _p13._1;
+           var newPostings = {ctor: "_Tuple2",_0: _U.update(p1,{amount: _p10._0}),_1: p2};
+           var newFields = _U.update(fields,{postings: newPostings});
+           return _U.update(model,{currentFields: newFields});
+         default: var _p14 = fields.postings;
+           var p1 = _p14._0;
+           var p2 = _p14._1;
+           var newPostings = {ctor: "_Tuple2",_0: p1,_1: _U.update(p2,{amount: _p10._0})};
+           var newFields = _U.update(fields,{postings: newPostings});
+           return _U.update(model,{currentFields: newFields});}
    });
    var Model = F2(function (a,b) {    return {currentFields: a,restEntries: b};});
    var JEntry = F3(function (a,b,c) {    return {description: a,comment: b,postings: c};});
    var Posting = F2(function (a,b) {    return {account: a,amount: b};});
-   var serviceUrl = "http://localhost:80/";
+   var serviceUrl = "http://services.vicarie.in";
    var fetchEntries = $Http.getString(A2($Basics._op["++"],serviceUrl,"/entries"));
    return _elm.Hledger.values = {_op: _op
                                 ,serviceUrl: serviceUrl
@@ -10979,6 +11052,12 @@ Elm.Hledger.make = function (_elm) {
                                 ,DeleteLast: DeleteLast
                                 ,FetchAll: FetchAll
                                 ,ClearAll: ClearAll
+                                ,SetDesc: SetDesc
+                                ,SetComment: SetComment
+                                ,SetAcc1: SetAcc1
+                                ,SetAcc2: SetAcc2
+                                ,SetAmnt1: SetAmnt1
+                                ,SetAmnt2: SetAmnt2
                                 ,update: update
                                 ,encodeModel: encodeModel
                                 ,encodeEntry: encodeEntry
@@ -11008,11 +11087,12 @@ Elm.Main.make = function (_elm) {
    $TaskTutorial = Elm.TaskTutorial.make(_elm);
    var _op = {};
    var main = $StartApp$Simple.start({model: $Hledger.emptyModel,update: $Hledger.update,view: $Hledger.view});
-   var runner = Elm.Native.Task.make(_elm).perform(A2($Task.andThen,
+   var fetchTask = A2($Task.andThen,
    A2($Task.andThen,$Hledger.fetchEntries,$TaskTutorial.print),
    function (_p0) {
       var _p1 = _p0;
       return A2($Task.andThen,$TaskTutorial.getCurrentTime,$TaskTutorial.print);
-   }));
-   return _elm.Main.values = {_op: _op,main: main};
+   });
+   var runner = Elm.Native.Task.make(_elm).perform(fetchTask);
+   return _elm.Main.values = {_op: _op,fetchTask: fetchTask,main: main};
 };

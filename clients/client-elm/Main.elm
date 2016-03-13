@@ -5,11 +5,13 @@ import TaskTutorial exposing (print, getCurrentTime)
 import Hledger exposing (update, view, emptyModel, fetchEntries)
 import StartApp.Simple exposing (start)
 
-port runner : Task Http.Error ()
-port runner = fetchEntries 
+fetchTask : Task Http.Error ()
+fetchTask = fetchEntries 
               `andThen` print 
               `andThen` \() -> getCurrentTime
               `andThen` print
+port runner : Task Http.Error ()
+port runner = fetchTask
 
 main =
   start
