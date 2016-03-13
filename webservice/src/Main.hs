@@ -31,10 +31,16 @@ instance FromJSON JEntry
 
 type JStore = TVar [JEntry]
 type JournalAPI = ClearEntries :<|> GetEntries :<|> PostEntry :<|> DeleteEntry
+                  :<|> ServeClient
+
 type ClearEntries = "entries" :> Delete '[] ()
 type GetEntries = "entries" :> Get '[JSON] [JEntry]
 type PostEntry = "entry" :> ReqBody '[JSON] JEntry :> Post '[JSON] [JEntry]
 type DeleteEntry = "delete" :> Post '[JSON] [JEntry]
+type ServeClient = "penguin" :> Raw
+
+handleServeClient :: Server ServeClient
+handleServeClient = serveDirectory "penguin"
 
 -- | DELETE /entries
 handleClearEntries :: JStore -> Server ClearEntries
@@ -63,6 +69,7 @@ handleJournalAPI store = handleClearEntries store
   :<|> handleGetEntries store
   :<|> handlePostEntry store
   :<|> handleDeleteEntry store
+  :<|> handleServeClient
 
 app :: JStore -> Application
 app store = serve journalAPI $ handleJournalAPI store
