@@ -13,8 +13,7 @@ import TaskTutorial exposing (..)
 -- Auxiliary functions and variables
 serviceUrl = "http://services.vicarie.in"
 
-fetchEntries : Task Http.Error String
-fetchEntries = Http.getString (serviceUrl ++ "/entries")
+fetchEntries = Http.send (serviceUrl ++ "/entries")
 
 -- MODEL
 
@@ -78,11 +77,13 @@ update action model =
                            newFields = { fields | postings = newPostings }
                        in { model | currentFields = newFields }
       (SetAmnt1 a1) -> let (p1, p2) = fields.postings
-                           newPostings = ({ p1 | amount = a1 }, p2)
+                           a1_ = "₹ " ++ a1
+                           newPostings = ({ p1 | amount = a1_ }, p2)
                            newFields = { fields | postings = newPostings }
                        in { model | currentFields = newFields }
       (SetAmnt2 a2) -> let (p1, p2) = fields.postings
-                           newPostings = (p1, { p2 | amount = a2 })
+                           a2_ = "₹ " ++ a2
+                           newPostings = (p1, { p2 | amount = a2_ })
                            newFields = { fields | postings = newPostings }
                        in { model | currentFields = newFields }
       
@@ -92,12 +93,15 @@ encodeModel : Model -> String
 encodeModel model = 
   case .restEntries model of
     [] -> ""
-    (entry::entries) -> encodeEntry entry
-                        ++ "\n\n" ++ encodeModel {model | restEntries = entries}
-encodeEntry : JEntry -> String
-encodeEntry entry = case (.postings entry) of
+    (entry::entries) -> encodeJEntry entry
+                        ++ "\n\n" 
+                        ++ encodeModel {model | restEntries = entries}
+encodeJEntry : JEntry -> String
+encodeJEntry entry = case (.postings entry) of
                       (p1, p2) -> .description entry ++ "\n" ++
-                                  "\t; " ++ .comment entry ++ "\n" ++
+                                  (if .comment entry == ""
+                                   then "\n"
+                                   else "\t; " ++ (.comment entry) ++ "\n") ++
                                   "  " ++ .account p1 ++ "   " ++ .amount p1 ++ "\n" ++
                                   "  " ++ .account p2 ++ "   " ++ .amount p2 ++ "\n"
 
@@ -146,7 +150,7 @@ view address model =
       , button [ buttonStyle, onClick address FetchAll ] [ text "Fetch" ]
       , button [ buttonStyle, onClick address ClearAll ] [ text "Clear" ]
       ]
-  , div [statusBoxStyle] [ text (encodeEntry model.currentFields ++ "\n" ++ encodeModel model) ]
+  , div [statusBoxStyle] [ text (encodeJEntry model.currentFields ++ "\n" ++ encodeModel model) ]
   ]
 
 -- Styling

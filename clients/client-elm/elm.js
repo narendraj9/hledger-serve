@@ -10863,7 +10863,7 @@ Elm.Hledger.make = function (_elm) {
                                                        ,A2(_op["=>"],"padding","5px")]));
    var buttonStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"width","25%"),A2(_op["=>"],"height","40px"),A2(_op["=>"],"font-size","20px")]));
    var statusBoxStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"white-space","pre")]));
-   var encodeEntry = function (entry) {
+   var encodeJEntry = function (entry) {
       var _p0 = function (_) {    return _.postings;}(entry);
       var _p2 = _p0._1;
       var _p1 = _p0._0;
@@ -10874,13 +10874,9 @@ Elm.Hledger.make = function (_elm) {
       A2($Basics._op["++"],
       "\n",
       A2($Basics._op["++"],
+      _U.eq(function (_) {    return _.comment;}(entry),"") ? "\n" : A2($Basics._op["++"],
       "\t; ",
-      A2($Basics._op["++"],
-      function (_) {
-         return _.comment;
-      }(entry),
-      A2($Basics._op["++"],
-      "\n",
+      A2($Basics._op["++"],function (_) {    return _.comment;}(entry),"\n")),
       A2($Basics._op["++"],
       "  ",
       A2($Basics._op["++"],
@@ -10901,14 +10897,14 @@ Elm.Hledger.make = function (_elm) {
       function (_) {
          return _.account;
       }(_p2),
-      A2($Basics._op["++"],"   ",A2($Basics._op["++"],function (_) {    return _.amount;}(_p2),"\n"))))))))))))));
+      A2($Basics._op["++"],"   ",A2($Basics._op["++"],function (_) {    return _.amount;}(_p2),"\n"))))))))))));
    };
    var encodeModel = function (model) {
       var _p3 = function (_) {    return _.restEntries;}(model);
       if (_p3.ctor === "[]") {
             return "";
          } else {
-            return A2($Basics._op["++"],encodeEntry(_p3._0),A2($Basics._op["++"],"\n\n",encodeModel(_U.update(model,{restEntries: _p3._1}))));
+            return A2($Basics._op["++"],encodeJEntry(_p3._0),A2($Basics._op["++"],"\n\n",encodeModel(_U.update(model,{restEntries: _p3._1}))));
          }
    };
    var SetAmnt2 = function (a) {    return {ctor: "SetAmnt2",_0: a};};
@@ -10992,7 +10988,7 @@ Elm.Hledger.make = function (_elm) {
                       ,A2($Html.button,_U.list([buttonStyle,A2($Html$Events.onClick,address,ClearAll)]),_U.list([$Html.text("Clear")]))]))
               ,A2($Html.div,
               _U.list([statusBoxStyle]),
-              _U.list([$Html.text(A2($Basics._op["++"],encodeEntry(model.currentFields),A2($Basics._op["++"],"\n",encodeModel(model))))]))]));
+              _U.list([$Html.text(A2($Basics._op["++"],encodeJEntry(model.currentFields),A2($Basics._op["++"],"\n",encodeModel(model))))]))]));
    });
    var emptyJEntry = {description: "",comment: "",postings: {ctor: "_Tuple2",_0: {account: "",amount: ""},_1: {account: "",amount: ""}}};
    var emptyModel = {currentFields: emptyJEntry,restEntries: _U.list([])};
@@ -11022,16 +11018,18 @@ Elm.Hledger.make = function (_elm) {
            var newPostings = {ctor: "_Tuple2",_0: p1,_1: _U.update(p2,{account: _p10._0})};
            var newFields = _U.update(fields,{postings: newPostings});
            return _U.update(model,{currentFields: newFields});
-         case "SetAmnt1": var _p13 = fields.postings;
+         case "SetAmnt1": var a1_ = A2($Basics._op["++"],"₹ ",_p10._0);
+           var _p13 = fields.postings;
            var p1 = _p13._0;
            var p2 = _p13._1;
-           var newPostings = {ctor: "_Tuple2",_0: _U.update(p1,{amount: _p10._0}),_1: p2};
+           var newPostings = {ctor: "_Tuple2",_0: _U.update(p1,{amount: a1_}),_1: p2};
            var newFields = _U.update(fields,{postings: newPostings});
            return _U.update(model,{currentFields: newFields});
-         default: var _p14 = fields.postings;
+         default: var a2_ = A2($Basics._op["++"],"₹ ",_p10._0);
+           var _p14 = fields.postings;
            var p1 = _p14._0;
            var p2 = _p14._1;
-           var newPostings = {ctor: "_Tuple2",_0: p1,_1: _U.update(p2,{amount: _p10._0})};
+           var newPostings = {ctor: "_Tuple2",_0: p1,_1: _U.update(p2,{amount: a2_})};
            var newFields = _U.update(fields,{postings: newPostings});
            return _U.update(model,{currentFields: newFields});}
    });
@@ -11060,7 +11058,7 @@ Elm.Hledger.make = function (_elm) {
                                 ,SetAmnt2: SetAmnt2
                                 ,update: update
                                 ,encodeModel: encodeModel
-                                ,encodeEntry: encodeEntry
+                                ,encodeJEntry: encodeJEntry
                                 ,view: view
                                 ,appStyle: appStyle
                                 ,inputStyle: inputStyle
