@@ -4,7 +4,17 @@ import Html exposing (..)
 import Html.Attributes exposing (style, placeholder)
 import Html.Events exposing (onClick)
 
+import Http 
+import Task exposing (Task, andThen)
+
 import Debug
+import TaskTutorial exposing (..)
+
+-- Auxiliary functions and variables
+serviceUrl = "http://localhost:80/"
+
+fetchEntries : Task Http.Error String
+fetchEntries = Http.getString (serviceUrl ++ "/entries")
 
 -- MODEL
 
@@ -15,14 +25,21 @@ type alias JEntry = { description : String
                     , comment : String
                     , postings : List Posting
                     }
-type alias Model = List JEntry
 
-emptyJEntry = { description = ""
-              , comment = ""
-              , postings = []
+type alias Model = { currentFields : JEntry
+                   , restEntries: List JEntry
+                   }
+
+emptyJEntry = { description = "We rented two bicycles"
+              , comment = " No comments. "
+              , postings = [ { account =  "food", amount = "232"}
+                           , { account = "wallet", amount = "-232"}]
               }
-emptyModel : List JEntry
-emptyModel = []
+
+emptyModel : Model
+emptyModel = { currentFields = emptyJEntry
+             , restEntries = []
+             }
 
 -- UPDATE
 
@@ -32,92 +49,100 @@ update : Action -> Model -> Model
 update action model =
   case action of
     AddNew -> let one = Debug.log "Add one new" 1
-              in  emptyJEntry::model
+              in  {model | restEntries = [emptyJEntry] ++ model.restEntries }
     DeleteLast -> let two = Debug.log "Delete last" 2
                   in model
     ClearAll -> let three = Debug.log "Clear" 3
-                in model
-    FetchAll -> let four = Debug.log "Fetch" 4
+                in emptyModel
+    FetchAll -> let four = Debug.log "" 4
                 in model
 
 -- VIEW
+encodeModel : Model -> String
+encodeModel model = 
+  case .restEntries model of
+    [] -> ""
+    (entry::entries) -> encodeEntry entry
+                        ++ "\n\n" ++ encodeModel {model | restEntries = entries}
+encodeEntry : JEntry -> String
+encodeEntry entry = case (.postings entry) of
+                      [p1, p2] -> .description entry ++ "\n" ++
+                                  "\t; " ++ .comment entry ++ "\n" ++
+                                  "  " ++ .account p1 ++ "   " ++ .amount p1 ++ "\n" ++
+                                  "  " ++ .account p2 ++ "   " ++ .amount p2 ++ "\n"
+                      [] -> "\n"
+                      (h::t) -> "\n"
 
 view : Signal.Address Action -> Model -> Html
 view address model =
   div [appStyle]
-  [ div [inputBoxStyle]
+  [ div []
       [ div []
           [ input [ placeholder "Description"
-                  , inputBoxStyle
+                  , inputStyle
                   ]
               []
           ]
       , div []
           [ input [ placeholder "Comment"
-                  , inputBoxStyle
+                  , inputStyle
                   ]
               []
           ]
-      , div [postingBoxStyle]
-          [ input [ placeholder "Account Name", postingInputStyle ] []
-          , input [ placeholder "Amount (₹)", postingInputStyle ] []
+      , div []
+          [ input [ placeholder "Account Name", miniInputStyle ] []
+          , input [ placeholder "Amount (₹)", miniInputStyle ] []
           ]
-      , div [postingBoxStyle]
-          [ input [ placeholder "Account Name", postingInputStyle ] []
-          , input [ placeholder "Amount (₹)" , postingInputStyle] []
+      , div []
+          [ input [ placeholder "Account Name", miniInputStyle ] []
+          , input [ placeholder "Amount (₹)", miniInputStyle ] []
           ]              
       ]
-  , div [buttonListStyle]
+  , div [appStyle]
       [ button [ buttonStyle, onClick address AddNew ] [ text "Add" ]
       , button [ buttonStyle, onClick address DeleteLast ] [ text "Delete" ]
       , button [ buttonStyle, onClick address FetchAll ] [ text "Fetch" ]
       , button [ buttonStyle, onClick address ClearAll ] [ text "Clear" ]
       ]
-  , div [] [ text (toString model) ]
+  , div [statusBoxStyle] [ text (encodeModel model) ]
   ]
 
 -- Styling
 (=>) = (,)
 
 appStyle : Attribute
-appStyle =
-  style
+appStyle = 
+  style 
     [ "font-size" => "20px"
     , "font-family" => "arial"
     ]
-    
-inputBoxStyle : Attribute
-inputBoxStyle =
+inputStyle : Attribute
+inputStyle = 
   style
     [ "width" => "100%"
+    , "height" => "40px"
+    , "font-size" => "20px"
+    , "padding" => "5px"
     ]
-
-postingBoxStyle : Attribute
-postingBoxStyle =
+miniInputStyle : Attribute
+miniInputStyle = 
   style
-    [ "width" => "100%"
+    [ "width" => "45%"
+    , "height" => "40px"
+    , "font-size" => "20px"
+    , "padding" => "5px"
     ]
-
-postingInputStyle : Attribute
-postingInputStyle =
-  style
-    [ "width" => "40%"
-    ]
-
+     
 buttonStyle : Attribute
-buttonStyle =
-  style
-    [ "font-size" => "15px"
-    , "font-family" => "arial"
-    , "width" => "25%"
-    , "height" => "30px"
+buttonStyle = 
+  style 
+    [ "width" => "25%"
+    , "height" => "40px"
+    , "font-size" => "20px"
     ]
-
-buttonListStyle : Attribute
-buttonListStyle =
-  style
-    [ "width" => "100%"
+statusBoxStyle : Attribute
+statusBoxStyle =
+  style 
+    [ "white-space" => "pre"
     ]
-    
-
 
