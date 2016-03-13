@@ -76,7 +76,7 @@ app store = serve journalAPI $ handleJournalAPI store
 
 main :: IO ()
 main = do store <- newTVarIO entries
-          run 8000 (app store)
+          run 80 (app store)
 
 
 -- Sample entries for initial testing
