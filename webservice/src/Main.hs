@@ -30,10 +30,11 @@ instance ToJSON JEntry
 instance FromJSON JEntry
 
 type JStore = TVar [JEntry]
-type JournalAPI = ClearEntries :<|> GetEntries :<|> PostEntry
+type JournalAPI = ClearEntries :<|> GetEntries :<|> PostEntry :<|> DeleteEntry
 type ClearEntries = "entries" :> Delete '[] ()
 type GetEntries = "entries" :> Get '[JSON] [JEntry]
-type PostEntry = "entry" :> ReqBody '[JSON] JEntry :> Post '[] ()
+type PostEntry = "entry" :> ReqBody '[JSON] JEntry :> Post '[JSON] [JEntry]
+type DeleteEntry = "delete" :> Post '[JSON] [JEntry]
 
 -- | DELETE /entries
 handleClearEntries :: JStore -> Server ClearEntries
@@ -45,15 +46,23 @@ handleGetEntries store = liftIO $ readTVarIO store
 
 -- | POST /entry                            
 handlePostEntry :: JStore -> Server PostEntry
-handlePostEntry store jentry = liftIO $ atomically $ modifyTVar store (jentry:)
+handlePostEntry store jentry = liftIO $ atomically $ do modifyTVar store (jentry:)
+                                                        readTVar store
 
+-- | POST /delete
+handleDeleteEntry :: JStore -> Server DeleteEntry
+handleDeleteEntry store = let safeTail [] = []
+                              safeTail (x:xs) = xs
+                          in liftIO $ atomically $ do modifyTVar store safeTail
+                                                      readTVar store
 journalAPI :: Proxy JournalAPI
 journalAPI = Proxy
 
 handleJournalAPI :: JStore -> Server JournalAPI
 handleJournalAPI store = handleClearEntries store
   :<|> handleGetEntries store
-  :<|> handlePostEntry store 
+  :<|> handlePostEntry store
+  :<|> handleDeleteEntry store
 
 app :: JStore -> Application
 app store = serve journalAPI $ handleJournalAPI store
