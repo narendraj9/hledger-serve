@@ -11074,7 +11074,7 @@ Elm.Hledger.make = function (_elm) {
                                                     ,A2(_op["=>"],"font-size","20px")]));
    var statusBoxStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"white-space","pre")]));
    var bannerStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"font-size","22px")]));
-   var imgStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"width","auto"),A2(_op["=>"],"height","100px")]));
+   var imgStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"width","auto"),A2(_op["=>"],"height","64px")]));
    var ClearedAll = function (a) {    return {ctor: "ClearedAll",_0: a};};
    var FetchedAll = function (a) {    return {ctor: "FetchedAll",_0: a};};
    var DeletedLast = function (a) {    return {ctor: "DeletedLast",_0: a};};
@@ -11140,11 +11140,16 @@ Elm.Hledger.make = function (_elm) {
       var rest = _p2._2;
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("container")]),
-      _U.list([A2($Html.div,
-              _U.list([bannerStyle]),
-              _U.list([A2($Html.span,
+      _U.list([A2($Html.nav,
               _U.list([]),
-              _U.list([A2($Html.img,_U.list([imgStyle,$Html$Attributes.src(model.imgUrl)]),_U.list([])),$Html.text("Penguin\'s \n Hledger Client")]))]))
+              _U.list([A2($Html.div,
+              _U.list([$Html$Attributes.$class("nav-wrapper")]),
+              _U.list([A2($Html.a,
+                      _U.list([$Html$Attributes.href("#")]),
+                      _U.list([A2($Html.img,
+                      _U.list([$Html$Attributes.$class("brand-logo responsive-img"),imgStyle,$Html$Attributes.src(model.imgUrl)]),
+                      _U.list([]))]))
+                      ,$Html.text("Penguin\'s \n Hledger Client")]))]))
               ,A2($Html.div,
               _U.list([]),
               _U.list([A2($Html.div,

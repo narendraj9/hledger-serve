@@ -256,10 +256,17 @@ view address model =
   let (p1, p2, rest) = getPostings2 model.currentFields
   in
   div [class "container"]
-  [ div [bannerStyle]
-      [ span [] [ img [imgStyle, src model.imgUrl] [] 
-                , text "Penguin's \n Hledger Client"
-                ]
+  [ nav []
+      [ div [ class "nav-wrapper" ]
+          [ a [ href "#" ] 
+              [ img [ class "brand-logo responsive-img"
+                    , imgStyle, src model.imgUrl
+                    ] 
+                  [] 
+              ]
+          , text "Penguin's \n Hledger Client"
+          ]
+
       ]
   , div []
       [ div []
@@ -368,5 +375,5 @@ imgStyle : Attribute
 imgStyle =
   style
     [ "width" => "auto"
-    , "height" => "100px"
+    , "height" => "64px"
     ]
