@@ -63,16 +63,22 @@ fetchAll = Http.get decodeJEntryList (serviceUri ++ "/entries")
          |> Task.map FetchedAll
          |> Effects.task
 
--- addNew : Effects Action
--- addNew = Http.send decodeJEntryList (serviceUri ++ "/entry")
---        |> Task.toMaybe
---        |> Task.map AddedNew
---        |> Effects.task
+addNew : JEntry -> Effects Action
+addNew jentry = Http.send Http.defaultSettings
+                { verb = "POST"
+                , url = serviceUri ++ "/entry"
+                , headers = [ ("content-type", "application/json") ]         
+                , body = Http.string (JsonEn.encode 0 <| encodeJEntry jentry)
+                }
+              |> Http.fromJson decodeJEntryList
+              |> Task.toMaybe
+              |> Task.map AddedNew
+              |> Effects.task
             
 clearAll : Effects Action
 clearAll = Http.send Http.defaultSettings
            { verb = "DELETE"
-           , url = (serviceUri ++ "/delete")
+           , url = (serviceUri ++ "/entries")
            , headers = []
            , body = Http.empty
            }
@@ -81,11 +87,11 @@ clearAll = Http.send Http.defaultSettings
          |> Task.map ClearedAll
          |> Effects.task 
            
--- deleteEntry : Effects Action
--- deleteEntry = Http.post decodeJEntryList (serviceUri ++ "/delete") Http.empty
---             |> Task.toMaybe
---             |> Task.map DeletedLast
---             |> Effects.task
+deleteLast : Effects Action
+deleteLast = Http.post decodeJEntryList (serviceUri ++ "/delete") Http.empty
+            |> Task.toMaybe
+            |> Task.map DeletedLast
+            |> Effects.task
             
 getAPenguin : Effects Action
 getAPenguin = getRandomGif "cute penguin"
@@ -168,20 +174,18 @@ update action model =
     case action of
       -- Application --> Server
       AddNew -> let newEntry = model.currentFields
-                in  ({ model 
-                       | restEntries = [newEntry] ++ model.restEntries
-                       , currentFields = initialJEntry
-                     }
-                    , getAPenguin
+                in  ( model
+                    , Effects.batch [ addNew newEntry
+                                    , getAPenguin
+                                    ]
                     )
-      DeleteLast -> let two = Debug.log "Delete last" 2
-                    in noEf model
-      ClearAll -> (model, clearAll)
-      FetchAll -> (model, fetchAll)
+      DeleteLast -> ( model, deleteLast )
+      ClearAll -> ( model, clearAll )
+      FetchAll -> ( model, fetchAll )
+
       -- Server --> Application
-      AddedNew serverEntries -> ( setEntries serverEntries
-                                , getAPenguin
-                                )
+      AddedNew serverEntries -> let newModel = setEntries serverEntries 
+                                in noEf { newModel | currentFields = initialJEntry }
       DeletedLast serverEntries -> noEf <| setEntries serverEntries
       FetchedAll serverEntries -> noEf <| setEntries serverEntries
       ClearedAll serverEntries -> noEf <| setEntries serverEntries

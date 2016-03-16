@@ -11257,11 +11257,26 @@ Elm.Hledger.make = function (_elm) {
    var init = {ctor: "_Tuple2",_0: initialModel,_1: getAPenguin};
    var serviceUri = "http://services.vicarie.in/";
    var fetchAll = $Effects.task(A2($Task.map,FetchedAll,$Task.toMaybe(A2($Http.get,decodeJEntryList,A2($Basics._op["++"],serviceUri,"/entries")))));
+   var addNew = function (jentry) {
+      return $Effects.task(A2($Task.map,
+      AddedNew,
+      $Task.toMaybe(A2($Http.fromJson,
+      decodeJEntryList,
+      A2($Http.send,
+      $Http.defaultSettings,
+      {verb: "POST"
+      ,url: A2($Basics._op["++"],serviceUri,"/entry")
+      ,headers: _U.list([{ctor: "_Tuple2",_0: "content-type",_1: "application/json"}])
+      ,body: $Http.string(A2($Json$Encode.encode,0,encodeJEntry(jentry)))})))));
+   };
    var clearAll = $Effects.task(A2($Task.map,
    ClearedAll,
    $Task.toMaybe(A2($Http.fromJson,
    decodeJEntryList,
-   A2($Http.send,$Http.defaultSettings,{verb: "DELETE",url: A2($Basics._op["++"],serviceUri,"/delete"),headers: _U.list([]),body: $Http.empty})))));
+   A2($Http.send,$Http.defaultSettings,{verb: "DELETE",url: A2($Basics._op["++"],serviceUri,"/entries"),headers: _U.list([]),body: $Http.empty})))));
+   var deleteLast = $Effects.task(A2($Task.map,
+   DeletedLast,
+   $Task.toMaybe(A3($Http.post,decodeJEntryList,A2($Basics._op["++"],serviceUri,"/delete"),$Http.empty))));
    var update = F2(function (action,model) {
       var setEntries = function (serverEntries) {    return _U.update(model,{restEntries: A2($Maybe.withDefault,model.restEntries,serverEntries)});};
       var noEf = function (model) {    return {ctor: "_Tuple2",_0: model,_1: $Effects.none};};
@@ -11273,14 +11288,12 @@ Elm.Hledger.make = function (_elm) {
       var _p9 = action;
       switch (_p9.ctor)
       {case "AddNew": var newEntry = model.currentFields;
-           return {ctor: "_Tuple2"
-                  ,_0: _U.update(model,{restEntries: A2($Basics._op["++"],_U.list([newEntry]),model.restEntries),currentFields: initialJEntry})
-                  ,_1: getAPenguin};
-         case "DeleteLast": var two = A2($Debug.log,"Delete last",2);
-           return noEf(model);
+           return {ctor: "_Tuple2",_0: model,_1: $Effects.batch(_U.list([addNew(newEntry),getAPenguin]))};
+         case "DeleteLast": return {ctor: "_Tuple2",_0: model,_1: deleteLast};
          case "ClearAll": return {ctor: "_Tuple2",_0: model,_1: clearAll};
          case "FetchAll": return {ctor: "_Tuple2",_0: model,_1: fetchAll};
-         case "AddedNew": return {ctor: "_Tuple2",_0: setEntries(_p9._0),_1: getAPenguin};
+         case "AddedNew": var newModel = setEntries(_p9._0);
+           return noEf(_U.update(newModel,{currentFields: initialJEntry}));
          case "DeletedLast": return noEf(setEntries(_p9._0));
          case "FetchedAll": return noEf(setEntries(_p9._0));
          case "ClearedAll": return noEf(setEntries(_p9._0));
@@ -11317,7 +11330,9 @@ Elm.Hledger.make = function (_elm) {
                                 ,encodePosting: encodePosting
                                 ,encodeJEntry: encodeJEntry
                                 ,fetchAll: fetchAll
+                                ,addNew: addNew
                                 ,clearAll: clearAll
+                                ,deleteLast: deleteLast
                                 ,getAPenguin: getAPenguin
                                 ,Posting: Posting
                                 ,JEntry: JEntry
