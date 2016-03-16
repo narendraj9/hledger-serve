@@ -1,123 +1,272 @@
 module Hledger where
 
+import String
 import Html exposing (..)
-import Html.Attributes exposing (style, placeholder)
+import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, on, targetValue)
 
 import Http 
+import Effects exposing (Effects, Never)
+import Json.Decode as Json exposing ((:=))
+import Json.Encode as JsonEn exposing (string, list, Value)
 import Task exposing (Task, andThen)
-
-import Debug
 import TaskTutorial exposing (..)
 
--- Auxiliary functions and variables
-serviceUrl = "http://services.vicarie.in"
+-- Service info
+serviceUri : String
+serviceUri = "http://services.vicarie.in/"
 
-fetchEntries = Http.send (serviceUrl ++ "/entries")
+-- Auxiliary functions [For fetching gifs]
+getRandomGif : String -> Effects Action
+getRandomGif topic = Http.get decodeUrl (randomUrl topic)
+                   |> Task.toMaybe
+                   |> Task.map NewGif
+                   |> Effects.task
 
--- MODEL
+decodeUrl : Json.Decoder String
+decodeUrl = Json.at ["data", "image_url"] Json.string
 
+randomUrl : String -> String
+randomUrl topic = Http.url "http://api.giphy.com/v1/gifs/random"
+                  [ "api_key" => "dc6zaTOxFJmzC"
+                  , "tag" => topic
+                  ]
+
+-- Auxiliary functions for talking to the webservice
+decodePosting : Json.Decoder Posting
+decodePosting = Json.object2 Posting ("account" := Json.string)
+                                     ("amount" := Json.string)
+
+decodeJEntry : Json.Decoder JEntry
+decodeJEntry =  Json.object3 JEntry ("description" := Json.string)
+                                    ("comment" := Json.string)
+                                    ("postings" := Json.list decodePosting)
+
+decodeJEntryList : Json.Decoder (List JEntry)
+decodeJEntryList = Json.list decodeJEntry
+                  
+encodePosting : Posting -> Value
+encodePosting posting = JsonEn.object [ ("account", string posting.account)
+                                      , ("amount" , string posting.amount)
+                                      ]
+
+encodeJEntry : JEntry -> Value
+encodeJEntry jentry = JsonEn.object [ ("description", string jentry.description)
+                                    , ("comment", string jentry.comment)
+                                    , ("postings", JsonEn.list
+                                         (List.map encodePosting jentry.postings))
+                                    ]
+
+fetchAll : Effects Action
+fetchAll = Http.get decodeJEntryList (serviceUri ++ "/entries")
+         |> Task.toMaybe
+         |> Task.map FetchedAll
+         |> Effects.task
+
+-- addNew : Effects Action
+-- addNew = Http.send decodeJEntryList (serviceUri ++ "/entry")
+--        |> Task.toMaybe
+--        |> Task.map AddedNew
+--        |> Effects.task
+            
+clearAll : Effects Action
+clearAll = Http.send Http.defaultSettings
+           { verb = "DELETE"
+           , url = (serviceUri ++ "/delete")
+           , headers = []
+           , body = Http.empty
+           }
+         |> Http.fromJson decodeJEntryList
+         |> Task.toMaybe
+         |> Task.map ClearedAll
+         |> Effects.task 
+           
+-- deleteEntry : Effects Action
+-- deleteEntry = Http.post decodeJEntryList (serviceUri ++ "/delete") Http.empty
+--             |> Task.toMaybe
+--             |> Task.map DeletedLast
+--             |> Effects.task
+            
+getAPenguin : Effects Action
+getAPenguin = getRandomGif "cute penguin"
+
+-- Model
 type alias Posting = { account : String
                      , amount : String
                      }
 type alias JEntry = { description : String
                     , comment : String
-                    , postings : (Posting, Posting)
+                    , postings : List Posting
                     }
-
 type alias Model = { currentFields : JEntry
                    , restEntries: List JEntry
+                   , imgUrl : String
                    }
+                 
+initialPostings : List Posting
+initialPostings = [ { account =  "", amount = ""}
+                  , { account = "", amount = ""}
+                  ]
+initialJEntry : JEntry
+initialJEntry = { description = ""
+                , comment = ""
+                , postings = initialPostings
+                }
+initialModel : Model
+initialModel = { currentFields = initialJEntry
+               , restEntries = []
+               , imgUrl = "penguin.png"
+               }
+-- Auxiliary functions that query the model
+getPostings2 : JEntry -> (Posting, Posting, List Posting)
+getPostings2 jentry = let postings = jentry.postings
+                          defaultPosting = { account = ""
+                                           , amount = ""
+                                           }
+                          p1 = Maybe.withDefault defaultPosting (List.head postings)
+                          ptail = Maybe.withDefault [] (List.tail postings)
+                          p2 = Maybe.withDefault defaultPosting (List.head ptail)
+                          rest = Maybe.withDefault [] (List.tail ptail)
+                      in (p1, p2, rest)
 
-emptyJEntry = { description = ""
-              , comment = ""
-              , postings = ( { account =  "", amount = ""}
-                           , { account = "", amount = ""})
-              }
-
-emptyModel : Model
-emptyModel = { currentFields = emptyJEntry
-             , restEntries = []
-             }
+-- Init
+init : (Model, Effects Action)
+init = ( initialModel
+       , getAPenguin
+       )
 
 -- UPDATE
 
-type Action = AddNew | DeleteLast | FetchAll | ClearAll 
+type Action = AddNew
+            | DeleteLast
+            | FetchAll
+            | ClearAll
             | SetDesc String
             | SetComment String
-            | SetAcc1 String
-            | SetAcc2 String
-            | SetAmnt1 String
-            | SetAmnt2 String
+            | SetAccountA String
+            | SetAccountB String
+            | SetAmountA String
+            | SetAmountB String
+            | NewGif (Maybe String)
+            | AddedNew (Maybe (List JEntry))
+            | DeletedLast (Maybe (List JEntry))
+            | FetchedAll (Maybe (List JEntry))
+            | ClearedAll (Maybe (List JEntry))
 
-update : Action -> Model -> Model
+update : Action -> Model -> (Model, Effects Action)
 update action model =
   let fields = model.currentFields
+      (p1, p2, rest) = getPostings2 fields
+    
+      -- funtions to avoid typing in the Action case branches         
+      noEf model = (model, Effects.none)
+      setEntries serverEntries =
+        { model
+          | restEntries = Maybe.withDefault model.restEntries serverEntries
+        }
   in
     case action of
+      -- Application --> Server
       AddNew -> let newEntry = model.currentFields
-                in  { model 
-                      | restEntries = [newEntry] ++ model.restEntries
-                      , currentFields = emptyJEntry
-                    }
+                in  ({ model 
+                       | restEntries = [newEntry] ++ model.restEntries
+                       , currentFields = initialJEntry
+                     }
+                    , getAPenguin
+                    )
       DeleteLast -> let two = Debug.log "Delete last" 2
-                    in model
-      ClearAll -> emptyModel
-      FetchAll -> model
+                    in noEf model
+      ClearAll -> (model, clearAll)
+      FetchAll -> (model, fetchAll)
+      -- Server --> Application
+      AddedNew serverEntries -> ( setEntries serverEntries
+                                , getAPenguin
+                                )
+      DeletedLast serverEntries -> noEf <| setEntries serverEntries
+      FetchedAll serverEntries -> noEf <| setEntries serverEntries
+      ClearedAll serverEntries -> noEf <| setEntries serverEntries
+
+      -- Form fields --> Model
       (SetDesc desc) -> let newFields = { fields | description = desc }
-                        in { model | currentFields = newFields }
+                        in noEf { model | currentFields = newFields }
+                              
       (SetComment com)  -> let newFields = { fields | comment = com }
-                           in { model | currentFields = newFields }
-      (SetAcc1 acc) -> let (p1, p2) = fields.postings
-                           newPostings = ({ p1 | account = acc }, p2)
-                           newFields = { fields | postings = newPostings }
-                       in { model | currentFields = newFields }
-      (SetAcc2 acc) -> let (p1, p2) = fields.postings
-                           newPostings = (p1, { p2 | account = acc })
-                           newFields = { fields | postings = newPostings }
-                       in { model | currentFields = newFields }
-      (SetAmnt1 a1) -> let (p1, p2) = fields.postings
-                           a1_ = "₹ " ++ a1
-                           newPostings = ({ p1 | amount = a1_ }, p2)
-                           newFields = { fields | postings = newPostings }
-                       in { model | currentFields = newFields }
-      (SetAmnt2 a2) -> let (p1, p2) = fields.postings
-                           a2_ = "₹ " ++ a2
-                           newPostings = (p1, { p2 | amount = a2_ })
-                           newFields = { fields | postings = newPostings }
-                       in { model | currentFields = newFields }
-      
+                           in noEf { model | currentFields = newFields }
+                              
+      (SetAccountA acc) -> let newPostings = { p1 | account = acc } :: p2 :: rest
+                               newFields = { fields | postings = newPostings }
+                           in noEf { model | currentFields = newFields }
+                              
+      (SetAccountB acc) -> let newPostings = p1 :: { p2 | account = acc } :: rest
+                               newFields = { fields | postings = newPostings }
+                           in noEf { model | currentFields = newFields }
+                              
+      (SetAmountA a1) -> let a1_ = if a1 /= "" then "₹ " ++ a1 else a1
+                             newPostings = { p1 | amount = a1_ } :: p2 :: rest
+                             newFields = { fields | postings = newPostings }
+                       in noEf { model | currentFields = newFields }
+                              
+      (SetAmountB a2) -> let a2_ = if a2 /= "" then "₹ " ++ a2 else a2
+                             newPostings = p1 :: { p2 | amount = a2_ } :: rest
+                             newFields = { fields | postings = newPostings }
+                         in noEf { model | currentFields = newFields }
+    -- A new penguin gif just arrived
+      (NewGif maybeUrl) -> noEf { model
+                                  | imgUrl = Maybe.withDefault model.imgUrl maybeUrl }
                        
 -- VIEW
-encodeModel : Model -> String
-encodeModel model = 
+viewModel : Model -> Html
+viewModel model = 
   case .restEntries model of
-    [] -> ""
-    (entry::entries) -> encodeJEntry entry
-                        ++ "\n\n" 
-                        ++ encodeModel {model | restEntries = entries}
-encodeJEntry : JEntry -> String
-encodeJEntry entry = case (.postings entry) of
-                      (p1, p2) -> .description entry ++ "\n" ++
-                                  (if .comment entry == ""
-                                   then "\n"
-                                   else "\t; " ++ (.comment entry) ++ "\n") ++
-                                  "  " ++ .account p1 ++ "   " ++ .amount p1 ++ "\n" ++
-                                  "  " ++ .account p2 ++ "   " ++ .amount p2 ++ "\n"
-
+    [] -> div [] []
+    (entry::entries) -> div []
+                            [ i [class "materical-icons"] []
+                            , viewJEntry entry
+                            , viewModel {model | restEntries = entries}
+                            ]
+                        
+viewJEntry : JEntry -> Html
+viewJEntry entry = let (p1, p2, rest) = getPostings2 entry
+                       description = entry.description
+                       comment = entry.comment
+                     in
+                       div []
+                           [ div []
+                               [ text description ]
+                           , div []
+                               [ text (String.concat [ "          ;"
+                                                     , comment
+                                                     ]) ]
+                           , div []
+                               [ text (String.concat [ "   "
+                                                     , .account p1
+                                                     , "   "
+                                                     , .amount p1
+                                                     ])
+                               ]
+                                      
+                           ]
+  
 view : Signal.Address Action -> Model -> Html
 view address model =
-  div [appStyle]
-  [ div []
+  div [class "container"]
+  [ div [bannerStyle]
+      [ span [] [ img [imgStyle, src model.imgUrl] [] 
+                , text "Penguin's \n Hledger Client"
+                ]
+      ]
+  , div []
       [ div []
           [ input [ placeholder "Description"
                   , inputStyle
+                  , value model.currentFields.description
                   , on "input" targetValue (Signal.message address << SetDesc)
                   ]
               []
           ]
       , div []
           [ input [ placeholder "Comment"
+                  , value model.currentFields.comment
                   , on "input" targetValue (Signal.message address << SetComment)
                   , inputStyle
                   ]
@@ -126,31 +275,35 @@ view address model =
       , div []
           [ input [ placeholder "Account Name"
                   , miniInputStyle
-                  , on "input" targetValue (Signal.message address << SetAcc1) ]
+                  , on "input" targetValue (Signal.message address << SetAccountA) ]
               []
           , input [ placeholder "Amount (₹)"
                   , miniInputStyle
-                  , on "input" targetValue (Signal.message address << SetAmnt1)]
+                  , on "input" targetValue (Signal.message address << SetAmountA)]
               []
           ]
       , div []
           [ input [ placeholder "Account Name"
                   , miniInputStyle
-                  , on "input" targetValue (Signal.message address << SetAcc2) ]
+                  , on "input" targetValue (Signal.message address << SetAccountB) ]
               []
           , input [ placeholder "Amount (₹)"
                   , miniInputStyle
-                  , on "input" targetValue (Signal.message address << SetAmnt2) ] 
+                  , on "input" targetValue (Signal.message address << SetAmountB) ] 
               []
           ]              
       ]
   , div [appStyle]
-      [ button [ buttonStyle, onClick address AddNew ] [ text "Add" ]
-      , button [ buttonStyle, onClick address DeleteLast ] [ text "Delete" ]
-      , button [ buttonStyle, onClick address FetchAll ] [ text "Fetch" ]
-      , button [ buttonStyle, onClick address ClearAll ] [ text "Clear" ]
+      [ button [ class "btn btn-primary", buttonStyle, onClick address AddNew ] [ text "Add" ]
+      , button [ class "btn btn-primary", buttonStyle, onClick address DeleteLast ] [ text "Delete" ]
+      , button [ class "btn btn-primary", buttonStyle, onClick address FetchAll ] [ text "Fetch" ]
+      , button [ class "btn btn-primary", buttonStyle, onClick address ClearAll ] [ text "Clear" ]
       ]
-  , div [statusBoxStyle] [ text (encodeJEntry model.currentFields ++ "\n" ++ encodeModel model) ]
+  , div [statusBoxStyle] [ div []
+                             [ div [] [ viewJEntry model.currentFields ]
+                             , div [] [ viewModel model ]
+                             ]
+                         ]
   ]
 
 -- Styling
@@ -158,8 +311,9 @@ view address model =
 
 appStyle : Attribute
 appStyle = 
-  style 
-    [ "font-size" => "20px"
+  style
+    [ "class" => "container"
+    , "font-size" => "20px"
     , "font-family" => "arial"
     ]
 inputStyle : Attribute
@@ -183,6 +337,7 @@ buttonStyle : Attribute
 buttonStyle = 
   style 
     [ "width" => "25%"
+    , "border" => "4px"
     , "height" => "40px"
     , "font-size" => "20px"
     ]
@@ -192,3 +347,16 @@ statusBoxStyle =
     [ "white-space" => "pre"
     ]
 
+
+bannerStyle : Attribute
+bannerStyle =
+  style
+    [ "font-size" => "22px"
+    ]
+
+imgStyle : Attribute
+imgStyle =
+  style
+    [ "width" => "auto"
+    , "height" => "100px"
+    ]

@@ -33,7 +33,7 @@ type JStore = TVar [JEntry]
 type JournalAPI = ClearEntries :<|> GetEntries :<|> PostEntry :<|> DeleteEntry
                   :<|> ServeClient
 
-type ClearEntries = "entries" :> Delete '[] ()
+type ClearEntries = "entries" :> Delete '[JSON] [JEntry]
 type GetEntries = "entries" :> Get '[JSON] [JEntry]
 type PostEntry = "entry" :> ReqBody '[JSON] JEntry :> Post '[JSON] [JEntry]
 type DeleteEntry = "delete" :> Post '[JSON] [JEntry]
@@ -44,7 +44,8 @@ handleServeClient = serveDirectory "penguin"
 
 -- | DELETE /entries
 handleClearEntries :: JStore -> Server ClearEntries
-handleClearEntries store = liftIO $ atomically $ modifyTVar store (const [])
+handleClearEntries store = liftIO $ atomically $ do modifyTVar store (const [])
+                                                    readTVar store
 
 -- | GET /entries
 handleGetEntries :: JStore -> Server GetEntries

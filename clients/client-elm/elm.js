@@ -8285,6 +8285,203 @@ Elm.Json.Decode.make = function (_elm) {
                                     ,value: value
                                     ,customDecoder: customDecoder};
 };
+Elm.Native.Effects = {};
+Elm.Native.Effects.make = function(localRuntime) {
+
+	localRuntime.Native = localRuntime.Native || {};
+	localRuntime.Native.Effects = localRuntime.Native.Effects || {};
+	if (localRuntime.Native.Effects.values)
+	{
+		return localRuntime.Native.Effects.values;
+	}
+
+	var Task = Elm.Native.Task.make(localRuntime);
+	var Utils = Elm.Native.Utils.make(localRuntime);
+	var Signal = Elm.Signal.make(localRuntime);
+	var List = Elm.Native.List.make(localRuntime);
+
+
+	// polyfill so things will work even if rAF is not available for some reason
+	var _requestAnimationFrame =
+		typeof requestAnimationFrame !== 'undefined'
+			? requestAnimationFrame
+			: function(cb) { setTimeout(cb, 1000 / 60); }
+			;
+
+
+	// batchedSending and sendCallback implement a small state machine in order
+	// to schedule only one send(time) call per animation frame.
+	//
+	// Invariants:
+	// 1. In the NO_REQUEST state, there is never a scheduled sendCallback.
+	// 2. In the PENDING_REQUEST and EXTRA_REQUEST states, there is always exactly
+	//    one scheduled sendCallback.
+	var NO_REQUEST = 0;
+	var PENDING_REQUEST = 1;
+	var EXTRA_REQUEST = 2;
+	var state = NO_REQUEST;
+	var messageArray = [];
+
+
+	function batchedSending(address, tickMessages)
+	{
+		// insert ticks into the messageArray
+		var foundAddress = false;
+
+		for (var i = messageArray.length; i--; )
+		{
+			if (messageArray[i].address === address)
+			{
+				foundAddress = true;
+				messageArray[i].tickMessages = A3(List.foldl, List.cons, messageArray[i].tickMessages, tickMessages);
+				break;
+			}
+		}
+
+		if (!foundAddress)
+		{
+			messageArray.push({ address: address, tickMessages: tickMessages });
+		}
+
+		// do the appropriate state transition
+		switch (state)
+		{
+			case NO_REQUEST:
+				_requestAnimationFrame(sendCallback);
+				state = PENDING_REQUEST;
+				break;
+			case PENDING_REQUEST:
+				state = PENDING_REQUEST;
+				break;
+			case EXTRA_REQUEST:
+				state = PENDING_REQUEST;
+				break;
+		}
+	}
+
+
+	function sendCallback(time)
+	{
+		switch (state)
+		{
+			case NO_REQUEST:
+				// This state should not be possible. How can there be no
+				// request, yet somehow we are actively fulfilling a
+				// request?
+				throw new Error(
+					'Unexpected send callback.\n' +
+					'Please report this to <https://github.com/evancz/elm-effects/issues>.'
+				);
+
+			case PENDING_REQUEST:
+				// At this point, we do not *know* that another frame is
+				// needed, but we make an extra request to rAF just in
+				// case. It's possible to drop a frame if rAF is called
+				// too late, so we just do it preemptively.
+				_requestAnimationFrame(sendCallback);
+				state = EXTRA_REQUEST;
+
+				// There's also stuff we definitely need to send.
+				send(time);
+				return;
+
+			case EXTRA_REQUEST:
+				// Turns out the extra request was not needed, so we will
+				// stop calling rAF. No reason to call it all the time if
+				// no one needs it.
+				state = NO_REQUEST;
+				return;
+		}
+	}
+
+
+	function send(time)
+	{
+		for (var i = messageArray.length; i--; )
+		{
+			var messages = A3(
+				List.foldl,
+				F2( function(toAction, list) { return List.Cons(toAction(time), list); } ),
+				List.Nil,
+				messageArray[i].tickMessages
+			);
+			Task.perform( A2(Signal.send, messageArray[i].address, messages) );
+		}
+		messageArray = [];
+	}
+
+
+	function requestTickSending(address, tickMessages)
+	{
+		return Task.asyncFunction(function(callback) {
+			batchedSending(address, tickMessages);
+			callback(Task.succeed(Utils.Tuple0));
+		});
+	}
+
+
+	return localRuntime.Native.Effects.values = {
+		requestTickSending: F2(requestTickSending)
+	};
+
+};
+
+Elm.Effects = Elm.Effects || {};
+Elm.Effects.make = function (_elm) {
+   "use strict";
+   _elm.Effects = _elm.Effects || {};
+   if (_elm.Effects.values) return _elm.Effects.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Native$Effects = Elm.Native.Effects.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $Task = Elm.Task.make(_elm),
+   $Time = Elm.Time.make(_elm);
+   var _op = {};
+   var ignore = function (task) {    return A2($Task.map,$Basics.always({ctor: "_Tuple0"}),task);};
+   var requestTickSending = $Native$Effects.requestTickSending;
+   var toTaskHelp = F3(function (address,effect,_p0) {
+      var _p1 = _p0;
+      var _p5 = _p1._1;
+      var _p4 = _p1;
+      var _p3 = _p1._0;
+      var _p2 = effect;
+      switch (_p2.ctor)
+      {case "Task": var reporter = A2($Task.andThen,_p2._0,function (answer) {    return A2($Signal.send,address,_U.list([answer]));});
+           return {ctor: "_Tuple2",_0: A2($Task.andThen,_p3,$Basics.always(ignore($Task.spawn(reporter)))),_1: _p5};
+         case "Tick": return {ctor: "_Tuple2",_0: _p3,_1: A2($List._op["::"],_p2._0,_p5)};
+         case "None": return _p4;
+         default: return A3($List.foldl,toTaskHelp(address),_p4,_p2._0);}
+   });
+   var toTask = F2(function (address,effect) {
+      var _p6 = A3(toTaskHelp,address,effect,{ctor: "_Tuple2",_0: $Task.succeed({ctor: "_Tuple0"}),_1: _U.list([])});
+      var combinedTask = _p6._0;
+      var tickMessages = _p6._1;
+      return $List.isEmpty(tickMessages) ? combinedTask : A2($Task.andThen,combinedTask,$Basics.always(A2(requestTickSending,address,tickMessages)));
+   });
+   var Never = function (a) {    return {ctor: "Never",_0: a};};
+   var Batch = function (a) {    return {ctor: "Batch",_0: a};};
+   var batch = Batch;
+   var None = {ctor: "None"};
+   var none = None;
+   var Tick = function (a) {    return {ctor: "Tick",_0: a};};
+   var tick = Tick;
+   var Task = function (a) {    return {ctor: "Task",_0: a};};
+   var task = Task;
+   var map = F2(function (func,effect) {
+      var _p7 = effect;
+      switch (_p7.ctor)
+      {case "Task": return Task(A2($Task.map,func,_p7._0));
+         case "Tick": return Tick(function (_p8) {    return func(_p7._0(_p8));});
+         case "None": return None;
+         default: return Batch(A2($List.map,map(func),_p7._0));}
+   });
+   return _elm.Effects.values = {_op: _op,none: none,task: task,tick: tick,map: map,batch: batch,toTask: toTask};
+};
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 
 },{}],2:[function(require,module,exports){
@@ -10747,37 +10944,43 @@ Elm.Http.make = function (_elm) {
                              ,RawNetworkError: RawNetworkError};
 };
 Elm.StartApp = Elm.StartApp || {};
-Elm.StartApp.Simple = Elm.StartApp.Simple || {};
-Elm.StartApp.Simple.make = function (_elm) {
+Elm.StartApp.make = function (_elm) {
    "use strict";
    _elm.StartApp = _elm.StartApp || {};
-   _elm.StartApp.Simple = _elm.StartApp.Simple || {};
-   if (_elm.StartApp.Simple.values) return _elm.StartApp.Simple.values;
+   if (_elm.StartApp.values) return _elm.StartApp.values;
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
    $Debug = Elm.Debug.make(_elm),
+   $Effects = Elm.Effects.make(_elm),
    $Html = Elm.Html.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
-   $Signal = Elm.Signal.make(_elm);
+   $Signal = Elm.Signal.make(_elm),
+   $Task = Elm.Task.make(_elm);
    var _op = {};
    var start = function (config) {
-      var update = F2(function (maybeAction,model) {
-         var _p0 = maybeAction;
-         if (_p0.ctor === "Just") {
-               return A2(config.update,_p0._0,model);
-            } else {
-               return _U.crashCase("StartApp.Simple",{start: {line: 91,column: 7},end: {line: 96,column: 52}},_p0)("This should never happen.");
-            }
+      var updateStep = F2(function (action,_p0) {
+         var _p1 = _p0;
+         var _p2 = A2(config.update,action,_p1._0);
+         var newModel = _p2._0;
+         var additionalEffects = _p2._1;
+         return {ctor: "_Tuple2",_0: newModel,_1: $Effects.batch(_U.list([_p1._1,additionalEffects]))};
       });
-      var actions = $Signal.mailbox($Maybe.Nothing);
-      var address = A2($Signal.forwardTo,actions.address,$Maybe.Just);
-      var model = A3($Signal.foldp,update,config.model,actions.signal);
-      return A2($Signal.map,config.view(address),model);
+      var update = F2(function (actions,_p3) {    var _p4 = _p3;return A3($List.foldl,updateStep,{ctor: "_Tuple2",_0: _p4._0,_1: $Effects.none},actions);});
+      var messages = $Signal.mailbox(_U.list([]));
+      var singleton = function (action) {    return _U.list([action]);};
+      var address = A2($Signal.forwardTo,messages.address,singleton);
+      var inputs = $Signal.mergeMany(A2($List._op["::"],messages.signal,A2($List.map,$Signal.map(singleton),config.inputs)));
+      var effectsAndModel = A3($Signal.foldp,update,config.init,inputs);
+      var model = A2($Signal.map,$Basics.fst,effectsAndModel);
+      return {html: A2($Signal.map,config.view(address),model)
+             ,model: model
+             ,tasks: A2($Signal.map,function (_p5) {    return A2($Effects.toTask,messages.address,$Basics.snd(_p5));},effectsAndModel)};
    };
-   var Config = F3(function (a,b,c) {    return {model: a,view: b,update: c};});
-   return _elm.StartApp.Simple.values = {_op: _op,Config: Config,start: start};
+   var App = F3(function (a,b,c) {    return {html: a,model: b,tasks: c};});
+   var Config = F4(function (a,b,c,d) {    return {init: a,update: b,view: c,inputs: d};});
+   return _elm.StartApp.values = {_op: _op,start: start,Config: Config,App: App};
 };
 Elm.Native.TaskTutorial = {};
 Elm.Native.TaskTutorial.make = function(localRuntime) {
@@ -10841,18 +11044,22 @@ Elm.Hledger.make = function (_elm) {
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
    $Debug = Elm.Debug.make(_elm),
+   $Effects = Elm.Effects.make(_elm),
    $Html = Elm.Html.make(_elm),
    $Html$Attributes = Elm.Html.Attributes.make(_elm),
    $Html$Events = Elm.Html.Events.make(_elm),
    $Http = Elm.Http.make(_elm),
+   $Json$Decode = Elm.Json.Decode.make(_elm),
+   $Json$Encode = Elm.Json.Encode.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm),
+   $String = Elm.String.make(_elm),
    $Task = Elm.Task.make(_elm);
    var _op = {};
    _op["=>"] = F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};});
-   var appStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"font-size","20px"),A2(_op["=>"],"font-family","arial")]));
+   var appStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"class","container"),A2(_op["=>"],"font-size","20px"),A2(_op["=>"],"font-family","arial")]));
    var inputStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"width","100%")
                                                    ,A2(_op["=>"],"height","40px")
                                                    ,A2(_op["=>"],"font-size","20px")
@@ -10861,79 +11068,95 @@ Elm.Hledger.make = function (_elm) {
                                                        ,A2(_op["=>"],"height","40px")
                                                        ,A2(_op["=>"],"font-size","20px")
                                                        ,A2(_op["=>"],"padding","5px")]));
-   var buttonStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"width","25%"),A2(_op["=>"],"height","40px"),A2(_op["=>"],"font-size","20px")]));
+   var buttonStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"width","25%")
+                                                    ,A2(_op["=>"],"border","4px")
+                                                    ,A2(_op["=>"],"height","40px")
+                                                    ,A2(_op["=>"],"font-size","20px")]));
    var statusBoxStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"white-space","pre")]));
-   var encodeJEntry = function (entry) {
-      var _p0 = function (_) {    return _.postings;}(entry);
-      var _p2 = _p0._1;
-      var _p1 = _p0._0;
-      return A2($Basics._op["++"],
-      function (_) {
-         return _.description;
-      }(entry),
-      A2($Basics._op["++"],
-      "\n",
-      A2($Basics._op["++"],
-      _U.eq(function (_) {    return _.comment;}(entry),"") ? "\n" : A2($Basics._op["++"],
-      "\t; ",
-      A2($Basics._op["++"],function (_) {    return _.comment;}(entry),"\n")),
-      A2($Basics._op["++"],
-      "  ",
-      A2($Basics._op["++"],
-      function (_) {
-         return _.account;
-      }(_p1),
-      A2($Basics._op["++"],
-      "   ",
-      A2($Basics._op["++"],
-      function (_) {
-         return _.amount;
-      }(_p1),
-      A2($Basics._op["++"],
-      "\n",
-      A2($Basics._op["++"],
-      "  ",
-      A2($Basics._op["++"],
-      function (_) {
-         return _.account;
-      }(_p2),
-      A2($Basics._op["++"],"   ",A2($Basics._op["++"],function (_) {    return _.amount;}(_p2),"\n"))))))))))));
-   };
-   var encodeModel = function (model) {
-      var _p3 = function (_) {    return _.restEntries;}(model);
-      if (_p3.ctor === "[]") {
-            return "";
-         } else {
-            return A2($Basics._op["++"],encodeJEntry(_p3._0),A2($Basics._op["++"],"\n\n",encodeModel(_U.update(model,{restEntries: _p3._1}))));
-         }
-   };
-   var SetAmnt2 = function (a) {    return {ctor: "SetAmnt2",_0: a};};
-   var SetAmnt1 = function (a) {    return {ctor: "SetAmnt1",_0: a};};
-   var SetAcc2 = function (a) {    return {ctor: "SetAcc2",_0: a};};
-   var SetAcc1 = function (a) {    return {ctor: "SetAcc1",_0: a};};
+   var bannerStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"font-size","22px")]));
+   var imgStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"width","auto"),A2(_op["=>"],"height","100px")]));
+   var ClearedAll = function (a) {    return {ctor: "ClearedAll",_0: a};};
+   var FetchedAll = function (a) {    return {ctor: "FetchedAll",_0: a};};
+   var DeletedLast = function (a) {    return {ctor: "DeletedLast",_0: a};};
+   var AddedNew = function (a) {    return {ctor: "AddedNew",_0: a};};
+   var NewGif = function (a) {    return {ctor: "NewGif",_0: a};};
+   var SetAmountB = function (a) {    return {ctor: "SetAmountB",_0: a};};
+   var SetAmountA = function (a) {    return {ctor: "SetAmountA",_0: a};};
+   var SetAccountB = function (a) {    return {ctor: "SetAccountB",_0: a};};
+   var SetAccountA = function (a) {    return {ctor: "SetAccountA",_0: a};};
    var SetComment = function (a) {    return {ctor: "SetComment",_0: a};};
    var SetDesc = function (a) {    return {ctor: "SetDesc",_0: a};};
    var ClearAll = {ctor: "ClearAll"};
    var FetchAll = {ctor: "FetchAll"};
    var DeleteLast = {ctor: "DeleteLast"};
    var AddNew = {ctor: "AddNew"};
+   var getPostings2 = function (jentry) {
+      var defaultPosting = {account: "",amount: ""};
+      var postings = jentry.postings;
+      var p1 = A2($Maybe.withDefault,defaultPosting,$List.head(postings));
+      var ptail = A2($Maybe.withDefault,_U.list([]),$List.tail(postings));
+      var p2 = A2($Maybe.withDefault,defaultPosting,$List.head(ptail));
+      var rest = A2($Maybe.withDefault,_U.list([]),$List.tail(ptail));
+      return {ctor: "_Tuple3",_0: p1,_1: p2,_2: rest};
+   };
+   var viewJEntry = function (entry) {
+      var comment = entry.comment;
+      var description = entry.description;
+      var _p0 = getPostings2(entry);
+      var p1 = _p0._0;
+      var p2 = _p0._1;
+      var rest = _p0._2;
+      return A2($Html.div,
+      _U.list([]),
+      _U.list([A2($Html.div,_U.list([]),_U.list([$Html.text(description)]))
+              ,A2($Html.div,_U.list([]),_U.list([$Html.text($String.concat(_U.list(["          ;",comment])))]))
+              ,A2($Html.div,
+              _U.list([]),
+              _U.list([$Html.text($String.concat(_U.list(["   "
+                                                         ,function (_) {
+                                                            return _.account;
+                                                         }(p1)
+                                                         ,"   "
+                                                         ,function (_) {
+                                                            return _.amount;
+                                                         }(p1)])))]))]));
+   };
+   var viewModel = function (model) {
+      var _p1 = function (_) {    return _.restEntries;}(model);
+      if (_p1.ctor === "[]") {
+            return A2($Html.div,_U.list([]),_U.list([]));
+         } else {
+            return A2($Html.div,
+            _U.list([]),
+            _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("materical-icons")]),_U.list([]))
+                    ,viewJEntry(_p1._0)
+                    ,viewModel(_U.update(model,{restEntries: _p1._1}))]));
+         }
+   };
    var view = F2(function (address,model) {
       return A2($Html.div,
-      _U.list([appStyle]),
+      _U.list([$Html$Attributes.$class("container")]),
       _U.list([A2($Html.div,
+              _U.list([bannerStyle]),
+              _U.list([A2($Html.span,
+              _U.list([]),
+              _U.list([A2($Html.img,_U.list([imgStyle,$Html$Attributes.src(model.imgUrl)]),_U.list([])),$Html.text("Penguin\'s \n Hledger Client")]))]))
+              ,A2($Html.div,
               _U.list([]),
               _U.list([A2($Html.div,
                       _U.list([]),
                       _U.list([A2($Html.input,
                       _U.list([$Html$Attributes.placeholder("Description")
                               ,inputStyle
-                              ,A3($Html$Events.on,"input",$Html$Events.targetValue,function (_p4) {    return A2($Signal.message,address,SetDesc(_p4));})]),
+                              ,$Html$Attributes.value(model.currentFields.description)
+                              ,A3($Html$Events.on,"input",$Html$Events.targetValue,function (_p2) {    return A2($Signal.message,address,SetDesc(_p2));})]),
                       _U.list([]))]))
                       ,A2($Html.div,
                       _U.list([]),
                       _U.list([A2($Html.input,
                       _U.list([$Html$Attributes.placeholder("Comment")
-                              ,A3($Html$Events.on,"input",$Html$Events.targetValue,function (_p5) {    return A2($Signal.message,address,SetComment(_p5));})
+                              ,$Html$Attributes.value(model.currentFields.comment)
+                              ,A3($Html$Events.on,"input",$Html$Events.targetValue,function (_p3) {    return A2($Signal.message,address,SetComment(_p3));})
                               ,inputStyle]),
                       _U.list([]))]))
                       ,A2($Html.div,
@@ -10944,8 +11167,8 @@ Elm.Hledger.make = function (_elm) {
                                       ,A3($Html$Events.on,
                                       "input",
                                       $Html$Events.targetValue,
-                                      function (_p6) {
-                                         return A2($Signal.message,address,SetAcc1(_p6));
+                                      function (_p4) {
+                                         return A2($Signal.message,address,SetAccountA(_p4));
                                       })]),
                               _U.list([]))
                               ,A2($Html.input,
@@ -10954,8 +11177,8 @@ Elm.Hledger.make = function (_elm) {
                                       ,A3($Html$Events.on,
                                       "input",
                                       $Html$Events.targetValue,
-                                      function (_p7) {
-                                         return A2($Signal.message,address,SetAmnt1(_p7));
+                                      function (_p5) {
+                                         return A2($Signal.message,address,SetAmountA(_p5));
                                       })]),
                               _U.list([]))]))
                       ,A2($Html.div,
@@ -10966,8 +11189,8 @@ Elm.Hledger.make = function (_elm) {
                                       ,A3($Html$Events.on,
                                       "input",
                                       $Html$Events.targetValue,
-                                      function (_p8) {
-                                         return A2($Signal.message,address,SetAcc2(_p8));
+                                      function (_p6) {
+                                         return A2($Signal.message,address,SetAccountB(_p6));
                                       })]),
                               _U.list([]))
                               ,A2($Html.input,
@@ -10976,95 +11199,160 @@ Elm.Hledger.make = function (_elm) {
                                       ,A3($Html$Events.on,
                                       "input",
                                       $Html$Events.targetValue,
-                                      function (_p9) {
-                                         return A2($Signal.message,address,SetAmnt2(_p9));
+                                      function (_p7) {
+                                         return A2($Signal.message,address,SetAmountB(_p7));
                                       })]),
                               _U.list([]))]))]))
               ,A2($Html.div,
               _U.list([appStyle]),
-              _U.list([A2($Html.button,_U.list([buttonStyle,A2($Html$Events.onClick,address,AddNew)]),_U.list([$Html.text("Add")]))
-                      ,A2($Html.button,_U.list([buttonStyle,A2($Html$Events.onClick,address,DeleteLast)]),_U.list([$Html.text("Delete")]))
-                      ,A2($Html.button,_U.list([buttonStyle,A2($Html$Events.onClick,address,FetchAll)]),_U.list([$Html.text("Fetch")]))
-                      ,A2($Html.button,_U.list([buttonStyle,A2($Html$Events.onClick,address,ClearAll)]),_U.list([$Html.text("Clear")]))]))
+              _U.list([A2($Html.button,
+                      _U.list([$Html$Attributes.$class("btn btn-primary"),buttonStyle,A2($Html$Events.onClick,address,AddNew)]),
+                      _U.list([$Html.text("Add")]))
+                      ,A2($Html.button,
+                      _U.list([$Html$Attributes.$class("btn btn-primary"),buttonStyle,A2($Html$Events.onClick,address,DeleteLast)]),
+                      _U.list([$Html.text("Delete")]))
+                      ,A2($Html.button,
+                      _U.list([$Html$Attributes.$class("btn btn-primary"),buttonStyle,A2($Html$Events.onClick,address,FetchAll)]),
+                      _U.list([$Html.text("Fetch")]))
+                      ,A2($Html.button,
+                      _U.list([$Html$Attributes.$class("btn btn-primary"),buttonStyle,A2($Html$Events.onClick,address,ClearAll)]),
+                      _U.list([$Html.text("Clear")]))]))
               ,A2($Html.div,
               _U.list([statusBoxStyle]),
-              _U.list([$Html.text(A2($Basics._op["++"],encodeJEntry(model.currentFields),A2($Basics._op["++"],"\n",encodeModel(model))))]))]));
+              _U.list([A2($Html.div,
+              _U.list([]),
+              _U.list([A2($Html.div,_U.list([]),_U.list([viewJEntry(model.currentFields)])),A2($Html.div,_U.list([]),_U.list([viewModel(model)]))]))]))]));
    });
-   var emptyJEntry = {description: "",comment: "",postings: {ctor: "_Tuple2",_0: {account: "",amount: ""},_1: {account: "",amount: ""}}};
-   var emptyModel = {currentFields: emptyJEntry,restEntries: _U.list([])};
-   var update = F2(function (action,model) {
-      var fields = model.currentFields;
-      var _p10 = action;
-      switch (_p10.ctor)
-      {case "AddNew": var newEntry = model.currentFields;
-           return _U.update(model,{restEntries: A2($Basics._op["++"],_U.list([newEntry]),model.restEntries),currentFields: emptyJEntry});
-         case "DeleteLast": var two = A2($Debug.log,"Delete last",2);
-           return model;
-         case "ClearAll": return emptyModel;
-         case "FetchAll": return model;
-         case "SetDesc": var newFields = _U.update(fields,{description: _p10._0});
-           return _U.update(model,{currentFields: newFields});
-         case "SetComment": var newFields = _U.update(fields,{comment: _p10._0});
-           return _U.update(model,{currentFields: newFields});
-         case "SetAcc1": var _p11 = fields.postings;
-           var p1 = _p11._0;
-           var p2 = _p11._1;
-           var newPostings = {ctor: "_Tuple2",_0: _U.update(p1,{account: _p10._0}),_1: p2};
-           var newFields = _U.update(fields,{postings: newPostings});
-           return _U.update(model,{currentFields: newFields});
-         case "SetAcc2": var _p12 = fields.postings;
-           var p1 = _p12._0;
-           var p2 = _p12._1;
-           var newPostings = {ctor: "_Tuple2",_0: p1,_1: _U.update(p2,{account: _p10._0})};
-           var newFields = _U.update(fields,{postings: newPostings});
-           return _U.update(model,{currentFields: newFields});
-         case "SetAmnt1": var a1_ = A2($Basics._op["++"],"₹ ",_p10._0);
-           var _p13 = fields.postings;
-           var p1 = _p13._0;
-           var p2 = _p13._1;
-           var newPostings = {ctor: "_Tuple2",_0: _U.update(p1,{amount: a1_}),_1: p2};
-           var newFields = _U.update(fields,{postings: newPostings});
-           return _U.update(model,{currentFields: newFields});
-         default: var a2_ = A2($Basics._op["++"],"₹ ",_p10._0);
-           var _p14 = fields.postings;
-           var p1 = _p14._0;
-           var p2 = _p14._1;
-           var newPostings = {ctor: "_Tuple2",_0: p1,_1: _U.update(p2,{amount: a2_})};
-           var newFields = _U.update(fields,{postings: newPostings});
-           return _U.update(model,{currentFields: newFields});}
-   });
-   var Model = F2(function (a,b) {    return {currentFields: a,restEntries: b};});
+   var initialPostings = _U.list([{account: "",amount: ""},{account: "",amount: ""}]);
+   var initialJEntry = {description: "",comment: "",postings: initialPostings};
+   var initialModel = {currentFields: initialJEntry,restEntries: _U.list([]),imgUrl: "penguin.png"};
+   var Model = F3(function (a,b,c) {    return {currentFields: a,restEntries: b,imgUrl: c};});
    var JEntry = F3(function (a,b,c) {    return {description: a,comment: b,postings: c};});
    var Posting = F2(function (a,b) {    return {account: a,amount: b};});
-   var serviceUrl = "http://services.vicarie.in";
-   var fetchEntries = $Http.getString(A2($Basics._op["++"],serviceUrl,"/entries"));
+   var encodePosting = function (posting) {
+      return $Json$Encode.object(_U.list([{ctor: "_Tuple2",_0: "account",_1: $Json$Encode.string(posting.account)}
+                                         ,{ctor: "_Tuple2",_0: "amount",_1: $Json$Encode.string(posting.amount)}]));
+   };
+   var encodeJEntry = function (jentry) {
+      return $Json$Encode.object(_U.list([{ctor: "_Tuple2",_0: "description",_1: $Json$Encode.string(jentry.description)}
+                                         ,{ctor: "_Tuple2",_0: "comment",_1: $Json$Encode.string(jentry.comment)}
+                                         ,{ctor: "_Tuple2",_0: "postings",_1: $Json$Encode.list(A2($List.map,encodePosting,jentry.postings))}]));
+   };
+   var decodePosting = A3($Json$Decode.object2,
+   Posting,
+   A2($Json$Decode._op[":="],"account",$Json$Decode.string),
+   A2($Json$Decode._op[":="],"amount",$Json$Decode.string));
+   var decodeJEntry = A4($Json$Decode.object3,
+   JEntry,
+   A2($Json$Decode._op[":="],"description",$Json$Decode.string),
+   A2($Json$Decode._op[":="],"comment",$Json$Decode.string),
+   A2($Json$Decode._op[":="],"postings",$Json$Decode.list(decodePosting)));
+   var decodeJEntryList = $Json$Decode.list(decodeJEntry);
+   var randomUrl = function (topic) {
+      return A2($Http.url,"http://api.giphy.com/v1/gifs/random",_U.list([A2(_op["=>"],"api_key","dc6zaTOxFJmzC"),A2(_op["=>"],"tag",topic)]));
+   };
+   var decodeUrl = A2($Json$Decode.at,_U.list(["data","image_url"]),$Json$Decode.string);
+   var getRandomGif = function (topic) {    return $Effects.task(A2($Task.map,NewGif,$Task.toMaybe(A2($Http.get,decodeUrl,randomUrl(topic)))));};
+   var getAPenguin = getRandomGif("cute penguin");
+   var init = {ctor: "_Tuple2",_0: initialModel,_1: getAPenguin};
+   var serviceUri = "http://services.vicarie.in/";
+   var fetchAll = $Effects.task(A2($Task.map,FetchedAll,$Task.toMaybe(A2($Http.get,decodeJEntryList,A2($Basics._op["++"],serviceUri,"/entries")))));
+   var clearAll = $Effects.task(A2($Task.map,
+   ClearedAll,
+   $Task.toMaybe(A2($Http.fromJson,
+   decodeJEntryList,
+   A2($Http.send,$Http.defaultSettings,{verb: "DELETE",url: A2($Basics._op["++"],serviceUri,"/delete"),headers: _U.list([]),body: $Http.empty})))));
+   var update = F2(function (action,model) {
+      var setEntries = function (serverEntries) {    return _U.update(model,{restEntries: A2($Maybe.withDefault,model.restEntries,serverEntries)});};
+      var noEf = function (model) {    return {ctor: "_Tuple2",_0: model,_1: $Effects.none};};
+      var fields = model.currentFields;
+      var _p8 = getPostings2(fields);
+      var p1 = _p8._0;
+      var p2 = _p8._1;
+      var rest = _p8._2;
+      var _p9 = action;
+      switch (_p9.ctor)
+      {case "AddNew": var newEntry = model.currentFields;
+           return {ctor: "_Tuple2"
+                  ,_0: _U.update(model,{restEntries: A2($Basics._op["++"],_U.list([newEntry]),model.restEntries),currentFields: initialJEntry})
+                  ,_1: getAPenguin};
+         case "DeleteLast": var two = A2($Debug.log,"Delete last",2);
+           return noEf(model);
+         case "ClearAll": return {ctor: "_Tuple2",_0: model,_1: clearAll};
+         case "FetchAll": return {ctor: "_Tuple2",_0: model,_1: fetchAll};
+         case "AddedNew": return {ctor: "_Tuple2",_0: setEntries(_p9._0),_1: getAPenguin};
+         case "DeletedLast": return noEf(setEntries(_p9._0));
+         case "FetchedAll": return noEf(setEntries(_p9._0));
+         case "ClearedAll": return noEf(setEntries(_p9._0));
+         case "SetDesc": var newFields = _U.update(fields,{description: _p9._0});
+           return noEf(_U.update(model,{currentFields: newFields}));
+         case "SetComment": var newFields = _U.update(fields,{comment: _p9._0});
+           return noEf(_U.update(model,{currentFields: newFields}));
+         case "SetAccountA": var newPostings = A2($List._op["::"],_U.update(p1,{account: _p9._0}),A2($List._op["::"],p2,rest));
+           var newFields = _U.update(fields,{postings: newPostings});
+           return noEf(_U.update(model,{currentFields: newFields}));
+         case "SetAccountB": var newPostings = A2($List._op["::"],p1,A2($List._op["::"],_U.update(p2,{account: _p9._0}),rest));
+           var newFields = _U.update(fields,{postings: newPostings});
+           return noEf(_U.update(model,{currentFields: newFields}));
+         case "SetAmountA": var _p10 = _p9._0;
+           var a1_ = !_U.eq(_p10,"") ? A2($Basics._op["++"],"₹ ",_p10) : _p10;
+           var newPostings = A2($List._op["::"],_U.update(p1,{amount: a1_}),A2($List._op["::"],p2,rest));
+           var newFields = _U.update(fields,{postings: newPostings});
+           return noEf(_U.update(model,{currentFields: newFields}));
+         case "SetAmountB": var _p11 = _p9._0;
+           var a2_ = !_U.eq(_p11,"") ? A2($Basics._op["++"],"₹ ",_p11) : _p11;
+           var newPostings = A2($List._op["::"],p1,A2($List._op["::"],_U.update(p2,{amount: a2_}),rest));
+           var newFields = _U.update(fields,{postings: newPostings});
+           return noEf(_U.update(model,{currentFields: newFields}));
+         default: return noEf(_U.update(model,{imgUrl: A2($Maybe.withDefault,model.imgUrl,_p9._0)}));}
+   });
    return _elm.Hledger.values = {_op: _op
-                                ,serviceUrl: serviceUrl
-                                ,fetchEntries: fetchEntries
+                                ,serviceUri: serviceUri
+                                ,getRandomGif: getRandomGif
+                                ,decodeUrl: decodeUrl
+                                ,randomUrl: randomUrl
+                                ,decodePosting: decodePosting
+                                ,decodeJEntry: decodeJEntry
+                                ,decodeJEntryList: decodeJEntryList
+                                ,encodePosting: encodePosting
+                                ,encodeJEntry: encodeJEntry
+                                ,fetchAll: fetchAll
+                                ,clearAll: clearAll
+                                ,getAPenguin: getAPenguin
                                 ,Posting: Posting
                                 ,JEntry: JEntry
                                 ,Model: Model
-                                ,emptyJEntry: emptyJEntry
-                                ,emptyModel: emptyModel
+                                ,initialPostings: initialPostings
+                                ,initialJEntry: initialJEntry
+                                ,initialModel: initialModel
+                                ,getPostings2: getPostings2
+                                ,init: init
                                 ,AddNew: AddNew
                                 ,DeleteLast: DeleteLast
                                 ,FetchAll: FetchAll
                                 ,ClearAll: ClearAll
                                 ,SetDesc: SetDesc
                                 ,SetComment: SetComment
-                                ,SetAcc1: SetAcc1
-                                ,SetAcc2: SetAcc2
-                                ,SetAmnt1: SetAmnt1
-                                ,SetAmnt2: SetAmnt2
+                                ,SetAccountA: SetAccountA
+                                ,SetAccountB: SetAccountB
+                                ,SetAmountA: SetAmountA
+                                ,SetAmountB: SetAmountB
+                                ,NewGif: NewGif
+                                ,AddedNew: AddedNew
+                                ,DeletedLast: DeletedLast
+                                ,FetchedAll: FetchedAll
+                                ,ClearedAll: ClearedAll
                                 ,update: update
-                                ,encodeModel: encodeModel
-                                ,encodeJEntry: encodeJEntry
+                                ,viewModel: viewModel
+                                ,viewJEntry: viewJEntry
                                 ,view: view
                                 ,appStyle: appStyle
                                 ,inputStyle: inputStyle
                                 ,miniInputStyle: miniInputStyle
                                 ,buttonStyle: buttonStyle
-                                ,statusBoxStyle: statusBoxStyle};
+                                ,statusBoxStyle: statusBoxStyle
+                                ,bannerStyle: bannerStyle
+                                ,imgStyle: imgStyle};
 };
 Elm.Main = Elm.Main || {};
 Elm.Main.make = function (_elm) {
@@ -11074,23 +11362,17 @@ Elm.Main.make = function (_elm) {
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
    $Debug = Elm.Debug.make(_elm),
+   $Effects = Elm.Effects.make(_elm),
    $Hledger = Elm.Hledger.make(_elm),
-   $Http = Elm.Http.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm),
-   $StartApp$Simple = Elm.StartApp.Simple.make(_elm),
-   $Task = Elm.Task.make(_elm),
-   $TaskTutorial = Elm.TaskTutorial.make(_elm);
+   $StartApp = Elm.StartApp.make(_elm),
+   $Task = Elm.Task.make(_elm);
    var _op = {};
-   var main = $StartApp$Simple.start({model: $Hledger.emptyModel,update: $Hledger.update,view: $Hledger.view});
-   var fetchTask = A2($Task.andThen,
-   A2($Task.andThen,$Hledger.fetchEntries,$TaskTutorial.print),
-   function (_p0) {
-      var _p1 = _p0;
-      return A2($Task.andThen,$TaskTutorial.getCurrentTime,$TaskTutorial.print);
-   });
-   var runner = Elm.Native.Task.make(_elm).perform(fetchTask);
-   return _elm.Main.values = {_op: _op,fetchTask: fetchTask,main: main};
+   var app = $StartApp.start({init: $Hledger.init,update: $Hledger.update,view: $Hledger.view,inputs: _U.list([])});
+   var main = app.html;
+   var tasks = Elm.Native.Task.make(_elm).performSignal("tasks",app.tasks);
+   return _elm.Main.values = {_op: _op,app: app,main: main};
 };

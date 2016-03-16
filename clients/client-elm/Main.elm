@@ -1,21 +1,19 @@
 import Http
-import Task exposing (Task, andThen)
+import Task exposing (Task)
 import TaskTutorial exposing (print, getCurrentTime)
+import StartApp exposing (start)
+import Effects exposing (Effects, Never)
 
-import Hledger exposing (update, view, emptyModel, fetchEntries)
-import StartApp.Simple exposing (start)
+import Hledger exposing (init, update, view)
 
-fetchTask : Task Http.Error ()
-fetchTask = fetchEntries 
-              `andThen` print 
-              `andThen` \() -> getCurrentTime
-              `andThen` print
-port runner : Task Http.Error ()
-port runner = fetchTask
-
-main =
+app =
   start
-    { model = emptyModel
+    { init = init
     , update = update
     , view = view
+    , inputs = []
     }
+main = app.html
+    
+port tasks : Signal (Task Never ())
+port tasks = app.tasks
