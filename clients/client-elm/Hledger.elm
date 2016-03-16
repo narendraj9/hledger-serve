@@ -253,6 +253,8 @@ viewJEntry entry = let (p1, p2, rest) = getPostings2 entry
   
 view : Signal.Address Action -> Model -> Html
 view address model =
+  let (p1, p2, rest) = getPostings2 model.currentFields
+  in
   div [class "container"]
   [ div [bannerStyle]
       [ span [] [ img [imgStyle, src model.imgUrl] [] 
@@ -279,20 +281,24 @@ view address model =
       , div []
           [ input [ placeholder "Account Name"
                   , miniInputStyle
+                  , value p1.account
                   , on "input" targetValue (Signal.message address << SetAccountA) ]
               []
           , input [ placeholder "Amount (₹)"
                   , miniInputStyle
+                  , value p1.amount
                   , on "input" targetValue (Signal.message address << SetAmountA)]
               []
           ]
       , div []
           [ input [ placeholder "Account Name"
                   , miniInputStyle
+                  , value p2.account
                   , on "input" targetValue (Signal.message address << SetAccountB) ]
               []
           , input [ placeholder "Amount (₹)"
                   , miniInputStyle
+                  , value p2.amount
                   , on "input" targetValue (Signal.message address << SetAmountB) ] 
               []
           ]              

@@ -11134,6 +11134,10 @@ Elm.Hledger.make = function (_elm) {
          }
    };
    var view = F2(function (address,model) {
+      var _p2 = getPostings2(model.currentFields);
+      var p1 = _p2._0;
+      var p2 = _p2._1;
+      var rest = _p2._2;
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("container")]),
       _U.list([A2($Html.div,
@@ -11149,14 +11153,14 @@ Elm.Hledger.make = function (_elm) {
                       _U.list([$Html$Attributes.placeholder("Description")
                               ,inputStyle
                               ,$Html$Attributes.value(model.currentFields.description)
-                              ,A3($Html$Events.on,"input",$Html$Events.targetValue,function (_p2) {    return A2($Signal.message,address,SetDesc(_p2));})]),
+                              ,A3($Html$Events.on,"input",$Html$Events.targetValue,function (_p3) {    return A2($Signal.message,address,SetDesc(_p3));})]),
                       _U.list([]))]))
                       ,A2($Html.div,
                       _U.list([]),
                       _U.list([A2($Html.input,
                       _U.list([$Html$Attributes.placeholder("Comment")
                               ,$Html$Attributes.value(model.currentFields.comment)
-                              ,A3($Html$Events.on,"input",$Html$Events.targetValue,function (_p3) {    return A2($Signal.message,address,SetComment(_p3));})
+                              ,A3($Html$Events.on,"input",$Html$Events.targetValue,function (_p4) {    return A2($Signal.message,address,SetComment(_p4));})
                               ,inputStyle]),
                       _U.list([]))]))
                       ,A2($Html.div,
@@ -11164,21 +11168,23 @@ Elm.Hledger.make = function (_elm) {
                       _U.list([A2($Html.input,
                               _U.list([$Html$Attributes.placeholder("Account Name")
                                       ,miniInputStyle
+                                      ,$Html$Attributes.value(p1.account)
                                       ,A3($Html$Events.on,
                                       "input",
                                       $Html$Events.targetValue,
-                                      function (_p4) {
-                                         return A2($Signal.message,address,SetAccountA(_p4));
+                                      function (_p5) {
+                                         return A2($Signal.message,address,SetAccountA(_p5));
                                       })]),
                               _U.list([]))
                               ,A2($Html.input,
                               _U.list([$Html$Attributes.placeholder("Amount (₹)")
                                       ,miniInputStyle
+                                      ,$Html$Attributes.value(p1.amount)
                                       ,A3($Html$Events.on,
                                       "input",
                                       $Html$Events.targetValue,
-                                      function (_p5) {
-                                         return A2($Signal.message,address,SetAmountA(_p5));
+                                      function (_p6) {
+                                         return A2($Signal.message,address,SetAmountA(_p6));
                                       })]),
                               _U.list([]))]))
                       ,A2($Html.div,
@@ -11186,21 +11192,23 @@ Elm.Hledger.make = function (_elm) {
                       _U.list([A2($Html.input,
                               _U.list([$Html$Attributes.placeholder("Account Name")
                                       ,miniInputStyle
+                                      ,$Html$Attributes.value(p2.account)
                                       ,A3($Html$Events.on,
                                       "input",
                                       $Html$Events.targetValue,
-                                      function (_p6) {
-                                         return A2($Signal.message,address,SetAccountB(_p6));
+                                      function (_p7) {
+                                         return A2($Signal.message,address,SetAccountB(_p7));
                                       })]),
                               _U.list([]))
                               ,A2($Html.input,
                               _U.list([$Html$Attributes.placeholder("Amount (₹)")
                                       ,miniInputStyle
+                                      ,$Html$Attributes.value(p2.amount)
                                       ,A3($Html$Events.on,
                                       "input",
                                       $Html$Events.targetValue,
-                                      function (_p7) {
-                                         return A2($Signal.message,address,SetAmountB(_p7));
+                                      function (_p8) {
+                                         return A2($Signal.message,address,SetAmountB(_p8));
                                       })]),
                               _U.list([]))]))]))
               ,A2($Html.div,
@@ -11281,43 +11289,43 @@ Elm.Hledger.make = function (_elm) {
       var setEntries = function (serverEntries) {    return _U.update(model,{restEntries: A2($Maybe.withDefault,model.restEntries,serverEntries)});};
       var noEf = function (model) {    return {ctor: "_Tuple2",_0: model,_1: $Effects.none};};
       var fields = model.currentFields;
-      var _p8 = getPostings2(fields);
-      var p1 = _p8._0;
-      var p2 = _p8._1;
-      var rest = _p8._2;
-      var _p9 = action;
-      switch (_p9.ctor)
+      var _p9 = getPostings2(fields);
+      var p1 = _p9._0;
+      var p2 = _p9._1;
+      var rest = _p9._2;
+      var _p10 = action;
+      switch (_p10.ctor)
       {case "AddNew": var newEntry = model.currentFields;
            return {ctor: "_Tuple2",_0: model,_1: $Effects.batch(_U.list([addNew(newEntry),getAPenguin]))};
          case "DeleteLast": return {ctor: "_Tuple2",_0: model,_1: deleteLast};
          case "ClearAll": return {ctor: "_Tuple2",_0: model,_1: clearAll};
          case "FetchAll": return {ctor: "_Tuple2",_0: model,_1: fetchAll};
-         case "AddedNew": var newModel = setEntries(_p9._0);
+         case "AddedNew": var newModel = setEntries(_p10._0);
            return noEf(_U.update(newModel,{currentFields: initialJEntry}));
-         case "DeletedLast": return noEf(setEntries(_p9._0));
-         case "FetchedAll": return noEf(setEntries(_p9._0));
-         case "ClearedAll": return noEf(setEntries(_p9._0));
-         case "SetDesc": var newFields = _U.update(fields,{description: _p9._0});
+         case "DeletedLast": return noEf(setEntries(_p10._0));
+         case "FetchedAll": return noEf(setEntries(_p10._0));
+         case "ClearedAll": return noEf(setEntries(_p10._0));
+         case "SetDesc": var newFields = _U.update(fields,{description: _p10._0});
            return noEf(_U.update(model,{currentFields: newFields}));
-         case "SetComment": var newFields = _U.update(fields,{comment: _p9._0});
+         case "SetComment": var newFields = _U.update(fields,{comment: _p10._0});
            return noEf(_U.update(model,{currentFields: newFields}));
-         case "SetAccountA": var newPostings = A2($List._op["::"],_U.update(p1,{account: _p9._0}),A2($List._op["::"],p2,rest));
+         case "SetAccountA": var newPostings = A2($List._op["::"],_U.update(p1,{account: _p10._0}),A2($List._op["::"],p2,rest));
            var newFields = _U.update(fields,{postings: newPostings});
            return noEf(_U.update(model,{currentFields: newFields}));
-         case "SetAccountB": var newPostings = A2($List._op["::"],p1,A2($List._op["::"],_U.update(p2,{account: _p9._0}),rest));
+         case "SetAccountB": var newPostings = A2($List._op["::"],p1,A2($List._op["::"],_U.update(p2,{account: _p10._0}),rest));
            var newFields = _U.update(fields,{postings: newPostings});
            return noEf(_U.update(model,{currentFields: newFields}));
-         case "SetAmountA": var _p10 = _p9._0;
-           var a1_ = !_U.eq(_p10,"") ? A2($Basics._op["++"],"₹ ",_p10) : _p10;
+         case "SetAmountA": var _p11 = _p10._0;
+           var a1_ = !_U.eq(_p11,"") ? A2($Basics._op["++"],"₹ ",_p11) : _p11;
            var newPostings = A2($List._op["::"],_U.update(p1,{amount: a1_}),A2($List._op["::"],p2,rest));
            var newFields = _U.update(fields,{postings: newPostings});
            return noEf(_U.update(model,{currentFields: newFields}));
-         case "SetAmountB": var _p11 = _p9._0;
-           var a2_ = !_U.eq(_p11,"") ? A2($Basics._op["++"],"₹ ",_p11) : _p11;
+         case "SetAmountB": var _p12 = _p10._0;
+           var a2_ = !_U.eq(_p12,"") ? A2($Basics._op["++"],"₹ ",_p12) : _p12;
            var newPostings = A2($List._op["::"],p1,A2($List._op["::"],_U.update(p2,{amount: a2_}),rest));
            var newFields = _U.update(fields,{postings: newPostings});
            return noEf(_U.update(model,{currentFields: newFields}));
-         default: return noEf(_U.update(model,{imgUrl: A2($Maybe.withDefault,model.imgUrl,_p9._0)}));}
+         default: return noEf(_U.update(model,{imgUrl: A2($Maybe.withDefault,model.imgUrl,_p10._0)}));}
    });
    return _elm.Hledger.values = {_op: _op
                                 ,serviceUri: serviceUri
