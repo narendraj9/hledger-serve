@@ -348,53 +348,92 @@ viewButtons address = let fabStyle = style [ ("bottom" , "45px")
 
 viewForm : Signal.Address Action -> Model -> Html
 viewForm address model =  
-  let (p1, p2, rest) = getPostings2 model.currentFields
-  in  div [ class "row" ]
-      [ div []
-          [ input [ placeholder "Description"
-                  , value model.currentFields.description
-                  , on "input" targetValue (Signal.message address << SetDesc)
-                  ]
-              []
-          ]
-      , div []
-          [ textarea [ placeholder "Comment (Optional)"
-                     , value model.currentFields.comment
-                     , on "input" targetValue (Signal.message address << SetComment)
-                     ]
-              []
-          ]
-      , div []
-          [ input [ placeholder "Account Name"
-                  , value p1.account
-                  , on "input" targetValue (Signal.message address << SetAccountA) ]
-              []
-          , input [ placeholder "Amount (₹)"
-                  , value p1.amount
-                  , on "input" targetValue (Signal.message address << SetAmountA)]
-              []
-          ]
-      , div []
-          [ input [ placeholder "Account Name"
-                  , value p2.account
-                  , on "input" targetValue (Signal.message address << SetAccountB) ]
-              []
-          , input [ placeholder "Amount (₹)"
-                  , value p2.amount
-                  , on "input" targetValue (Signal.message address << SetAmountB) ] 
-              []
-          ]             
-      , div [class "right"]
-          [ a [ class "btn btn-small teal"
-              , onClick address AddNew 
-              , noTouchToSearchStyle
-              ] 
-              [ i [ class "material-icons left"  ] 
-                  [ text "done" ]
-              , text "Submit"
-              ]
-          ]
-      ]
+  let  fields = model.currentFields 
+       (p1, p2, rest) = getPostings2 fields
+       -- This is Lisp-style stuff | Still slightly messy [: fieldType :]
+       htmlFormField f colWidth fieldType labelText fieldId pval val onInput = 
+         div [ class ("input-field col " ++ colWidth) ]
+               [ f [ id fieldId 
+                   , type' fieldType
+                   , class "validate"
+                   , placeholder pval
+                   , value val
+                   , on "input" targetValue onInput
+                   ]
+                   []
+               , label [ for fieldId ]
+                   [ text labelText ]
+               ]
+       htmlFormTextarea = htmlFormField textarea 
+       htmlFormInput = htmlFormField input 
+  in div [ class "row" ]
+       [ Html.form [ class "col s12" ]
+           [ div [ class "row" ]
+                 [ htmlFormInput "s12" "text" "Description" "descField" 
+                     ""
+                     fields.description
+                     (Signal.message address << SetDesc)
+                 ]
+
+           , div [ class "row" ]
+                 [ htmlFormTextarea "s12" "textarea" "Comments (Optional)" "comField"
+                     ""
+                     fields.comment
+                     (Signal.message address << SetComment)
+                 ]
+           ]
+       ]
+
+
+
+
+         --  [ textarea [ placeholder "Comment (Optional)"
+         --             , value model.currentFields.comment
+         --             , 
+         --             ]
+         --      []
+         --  ]
+
+
+
+         --  [ input [ placeholder "Account Name"
+         --          , value p1.account
+         --          , on "input" targetValue (Signal.message address << SetAccountA) ]
+         --      []
+
+         --  ]
+
+         -- [ input [ placeholder "Amount (₹)"
+         --          , value p1.amount
+         --          , on "input" targetValue (Signal.message address << SetAmountA)]
+         --      []
+         -- ]
+
+
+         --  [ input [ placeholder "Account Name"
+         --          , value p2.account
+         --          , on "input" targetValue (Signal.message address << SetAccountB) ]
+         --      []
+         --  ]
+          
+         --  [ input [ placeholder "Amount (₹)"
+         --          , value p2.amount
+         --          , on "input" targetValue (Signal.message address << SetAmountB) ] 
+         --      []
+         --  ]
+           
+  
+         --  [ div [class "right"]
+         --      [ a [ class "btn btn-small teal"
+         --          , onClick address AddNew 
+         --          , noTouchToSearchStyle
+         --          ] 
+         --          [ i [ class "material-icons left"  ] 
+         --              [ text "done" ]
+         --          , text "Submit"
+         --          ]
+         --      ]
+         --  ]
   
                              
 
