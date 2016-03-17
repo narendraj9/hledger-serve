@@ -11058,23 +11058,11 @@ Elm.Hledger.make = function (_elm) {
    $String = Elm.String.make(_elm),
    $Task = Elm.Task.make(_elm);
    var _op = {};
+   var appStyle = $Html$Attributes.style(_U.list([]));
    _op["=>"] = F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};});
-   var appStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"class","container"),A2(_op["=>"],"font-size","20px"),A2(_op["=>"],"font-family","arial")]));
-   var inputStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"width","100%")
-                                                   ,A2(_op["=>"],"height","40px")
-                                                   ,A2(_op["=>"],"font-size","20px")
-                                                   ,A2(_op["=>"],"padding","5px")]));
-   var miniInputStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"width","45%")
-                                                       ,A2(_op["=>"],"height","40px")
-                                                       ,A2(_op["=>"],"font-size","20px")
-                                                       ,A2(_op["=>"],"padding","5px")]));
-   var buttonStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"width","25%")
-                                                    ,A2(_op["=>"],"border","4px")
-                                                    ,A2(_op["=>"],"height","40px")
-                                                    ,A2(_op["=>"],"font-size","20px")]));
-   var statusBoxStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"white-space","pre")]));
-   var bannerStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"font-size","22px"),A2(_op["=>"],"background","#ee6e73")]));
-   var imgStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"width","auto"),A2(_op["=>"],"border-top","4px"),A2(_op["=>"],"height","64px")]));
+   var cardStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"padding","10px")]));
+   var bannerStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"background","#ee6e73")]));
+   var imgStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"width","auto"),A2(_op["=>"],"padding-top","4px"),A2(_op["=>"],"height","78px")]));
    var ClearedAll = function (a) {    return {ctor: "ClearedAll",_0: a};};
    var FetchedAll = function (a) {    return {ctor: "FetchedAll",_0: a};};
    var DeletedLast = function (a) {    return {ctor: "DeletedLast",_0: a};};
@@ -11090,6 +11078,36 @@ Elm.Hledger.make = function (_elm) {
    var FetchAll = {ctor: "FetchAll"};
    var DeleteLast = {ctor: "DeleteLast"};
    var AddNew = {ctor: "AddNew"};
+   var viewButtons = function (address) {
+      var fabStyle = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "bottom",_1: "45px"},{ctor: "_Tuple2",_0: "right",_1: "24px"}]));
+      return A2($Html.div,
+      _U.list([$Html$Attributes.$class("fixed-action-btn horizontal"),fabStyle]),
+      _U.list([A2($Html.a,
+              _U.list([$Html$Attributes.$class("btn-floating btn-large red")]),
+              _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("large material-icons")]),_U.list([$Html.text("mode_edit")]))]))
+              ,A2($Html.ul,
+              _U.list([]),
+              _U.list([A2($Html.li,
+                      _U.list([]),
+                      _U.list([A2($Html.a,
+                      _U.list([$Html$Attributes.$class("btn-floating btn-small red darken-2"),A2($Html$Events.onClick,address,ClearAll)]),
+                      _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("material-icons")]),_U.list([$Html.text("delete")])),$Html.text("Clear")]))]))
+                      ,A2($Html.li,
+                      _U.list([]),
+                      _U.list([A2($Html.a,
+                      _U.list([$Html$Attributes.$class("btn-floating btn-small red"),A2($Html$Events.onClick,address,DeleteLast)]),
+                      _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("material-icons")]),_U.list([$Html.text("remove")]))]))]))
+                      ,A2($Html.li,
+                      _U.list([]),
+                      _U.list([A2($Html.a,
+                      _U.list([$Html$Attributes.$class("btn-floating btn-small blue"),A2($Html$Events.onClick,address,FetchAll)]),
+                      _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("material-icons")]),_U.list([$Html.text("loop")]))]))]))
+                      ,A2($Html.li,
+                      _U.list([]),
+                      _U.list([A2($Html.a,
+                      _U.list([$Html$Attributes.$class("btn-floating btn-small teal"),A2($Html$Events.onClick,address,AddNew)]),
+                      _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("material-icons")]),_U.list([$Html.text("add")]))]))]))]))]));
+   };
    var getPostings2 = function (jentry) {
       var defaultPosting = {account: "",amount: ""};
       var postings = jentry.postings;
@@ -11099,8 +11117,16 @@ Elm.Hledger.make = function (_elm) {
       var rest = A2($Maybe.withDefault,_U.list([]),$List.tail(ptail));
       return {ctor: "_Tuple3",_0: p1,_1: p2,_2: rest};
    };
-   var viewJEntry = function (entry) {
-      var comment = entry.comment;
+   var htmlJEntry = function (entry) {
+      var htmlPosting = function (p) {
+         return A2($Html.div,
+         _U.list([$Html$Attributes.$class("col offset-s1 s12")]),
+         _U.list([A2($Html.span,
+         _U.list([$Html$Attributes.$class("black-text")]),
+         _U.list([$Html.text(A2($Basics._op["++"],p.account,A2($Basics._op["++"],"   ",p.amount)))]))]));
+      };
+      var comment = $String.trim(entry.comment);
+      var hasComment = $Basics.not($String.isEmpty(comment));
       var description = entry.description;
       var date = entry.date;
       var _p0 = getPostings2(entry);
@@ -11108,139 +11134,107 @@ Elm.Hledger.make = function (_elm) {
       var p2 = _p0._1;
       var rest = _p0._2;
       return A2($Html.div,
-      _U.list([]),
-      _U.list([A2($Html.div,_U.list([]),_U.list([$Html.text(A2($Basics._op["++"],date,A2($Basics._op["++"]," ",description)))]))
-              ,A2($Html.div,_U.list([]),_U.list([$Html.text($String.concat(_U.list(["          ;",comment])))]))
+      _U.list([$Html$Attributes.$class("row")]),
+      _U.list([A2($Html.div,
+      _U.list([$Html$Attributes.$class("col s12 m8 offset-m2 z-depth-1")]),
+      _U.list([A2($Html.div,
+              _U.list([$Html$Attributes.$class("col s12")]),
+              _U.list([A2($Html.span,_U.list([]),_U.list([$Html.text(A2($Basics._op["++"],date," "))]))
+                      ,A2($Html.span,_U.list([]),_U.list([$Html.text(description)]))]))
               ,A2($Html.div,
-              _U.list([]),
-              _U.list([$Html.text($String.concat(_U.list(["   "
-                                                         ,function (_) {
-                                                            return _.account;
-                                                         }(p1)
-                                                         ,"   "
-                                                         ,function (_) {
-                                                            return _.amount;
-                                                         }(p1)])))]))]));
+              _U.list([$Html$Attributes.$class("col s8 offset-s2")]),
+              _U.list([A2($Html.blockquote,_U.list([$Html$Attributes.$class("right s8")]),_U.list([A2($Html.p,_U.list([]),_U.list([$Html.text(comment)]))]))]))
+              ,htmlPosting(p1)
+              ,htmlPosting(p2)]))]));
    };
-   var viewModel = function (model) {
+   var htmlJEntryList = function (model) {
       var _p1 = function (_) {    return _.restEntries;}(model);
       if (_p1.ctor === "[]") {
             return A2($Html.div,_U.list([]),_U.list([]));
          } else {
             return A2($Html.div,
-            _U.list([]),
-            _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("materical-icons")]),_U.list([]))
-                    ,viewJEntry(_p1._0)
-                    ,viewModel(_U.update(model,{restEntries: _p1._1}))]));
+            _U.list([$Html$Attributes.$class("container")]),
+            _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("divider")]),_U.list([]))
+                    ,htmlJEntry(_p1._0)
+                    ,htmlJEntryList(_U.update(model,{restEntries: _p1._1}))]));
          }
    };
-   var view = F2(function (address,model) {
+   var viewForm = F2(function (address,model) {
       var _p2 = getPostings2(model.currentFields);
       var p1 = _p2._0;
       var p2 = _p2._1;
       var rest = _p2._2;
       return A2($Html.div,
+      _U.list([$Html$Attributes.$class("row")]),
+      _U.list([A2($Html.div,
+              _U.list([]),
+              _U.list([A2($Html.input,
+              _U.list([$Html$Attributes.placeholder("Description")
+                      ,$Html$Attributes.value(model.currentFields.description)
+                      ,A3($Html$Events.on,"input",$Html$Events.targetValue,function (_p3) {    return A2($Signal.message,address,SetDesc(_p3));})]),
+              _U.list([]))]))
+              ,A2($Html.div,
+              _U.list([]),
+              _U.list([A2($Html.textarea,
+              _U.list([$Html$Attributes.placeholder("Comment (Optional)")
+                      ,$Html$Attributes.value(model.currentFields.comment)
+                      ,A3($Html$Events.on,"input",$Html$Events.targetValue,function (_p4) {    return A2($Signal.message,address,SetComment(_p4));})]),
+              _U.list([]))]))
+              ,A2($Html.div,
+              _U.list([]),
+              _U.list([A2($Html.input,
+                      _U.list([$Html$Attributes.placeholder("Account Name")
+                              ,$Html$Attributes.value(p1.account)
+                              ,A3($Html$Events.on,"input",$Html$Events.targetValue,function (_p5) {    return A2($Signal.message,address,SetAccountA(_p5));})]),
+                      _U.list([]))
+                      ,A2($Html.input,
+                      _U.list([$Html$Attributes.placeholder("Amount (₹)")
+                              ,$Html$Attributes.value(p1.amount)
+                              ,A3($Html$Events.on,"input",$Html$Events.targetValue,function (_p6) {    return A2($Signal.message,address,SetAmountA(_p6));})]),
+                      _U.list([]))]))
+              ,A2($Html.div,
+              _U.list([]),
+              _U.list([A2($Html.input,
+                      _U.list([$Html$Attributes.placeholder("Account Name")
+                              ,$Html$Attributes.value(p2.account)
+                              ,A3($Html$Events.on,"input",$Html$Events.targetValue,function (_p7) {    return A2($Signal.message,address,SetAccountB(_p7));})]),
+                      _U.list([]))
+                      ,A2($Html.input,
+                      _U.list([$Html$Attributes.placeholder("Amount (₹)")
+                              ,$Html$Attributes.value(p2.amount)
+                              ,A3($Html$Events.on,"input",$Html$Events.targetValue,function (_p8) {    return A2($Signal.message,address,SetAmountB(_p8));})]),
+                      _U.list([]))]))]));
+   });
+   var view = F2(function (address,model) {
+      return A2($Html.div,
       _U.list([$Html$Attributes.$class("container")]),
       _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("divider")]),_U.list([]))
               ,A2($Html.div,
-              _U.list([$Html$Attributes.$class("row")]),
+              _U.list([$Html$Attributes.$class("row indigo lighten-4")]),
               _U.list([A2($Html.div,
-              _U.list([$Html$Attributes.$class("row")]),
-              _U.list([A2($Html.div,
-                      _U.list([$Html$Attributes.$class("col")]),
+                      _U.list([$Html$Attributes.$class("col s6")]),
                       _U.list([A2($Html.a,
                       _U.list([$Html$Attributes.href("#")]),
-                      _U.list([A2($Html.img,_U.list([$Html$Attributes.$class("responsive-img"),imgStyle,$Html$Attributes.src(model.imgUrl)]),_U.list([]))]))]))
-                      ,A2($Html.div,_U.list([$Html$Attributes.$class("col")]),_U.list([$Html.text("Penguin\'s \n Hledger Client")]))]))]))
-              ,A2($Html.div,
-              _U.list([$Html$Attributes.$class("row")]),
-              _U.list([A2($Html.div,
-                      _U.list([]),
-                      _U.list([A2($Html.input,
-                      _U.list([$Html$Attributes.placeholder("Description")
-                              ,inputStyle
-                              ,$Html$Attributes.value(model.currentFields.description)
-                              ,A3($Html$Events.on,"input",$Html$Events.targetValue,function (_p3) {    return A2($Signal.message,address,SetDesc(_p3));})]),
-                      _U.list([]))]))
+                      _U.list([A2($Html.img,
+                      _U.list([$Html$Attributes.$class("responsive-img z-depth-3"),imgStyle,$Html$Attributes.src(model.imgUrl)]),
+                      _U.list([]))]))]))
                       ,A2($Html.div,
-                      _U.list([]),
-                      _U.list([A2($Html.textarea,
-                      _U.list([$Html$Attributes.placeholder("Comment (Optional)")
-                              ,$Html$Attributes.rows(10)
-                              ,$Html$Attributes.value(model.currentFields.comment)
-                              ,A3($Html$Events.on,"input",$Html$Events.targetValue,function (_p4) {    return A2($Signal.message,address,SetComment(_p4));})
-                              ,inputStyle]),
-                      _U.list([]))]))
-                      ,A2($Html.div,
-                      _U.list([]),
-                      _U.list([A2($Html.input,
-                              _U.list([$Html$Attributes.placeholder("Account Name")
-                                      ,miniInputStyle
-                                      ,$Html$Attributes.value(p1.account)
-                                      ,A3($Html$Events.on,
-                                      "input",
-                                      $Html$Events.targetValue,
-                                      function (_p5) {
-                                         return A2($Signal.message,address,SetAccountA(_p5));
-                                      })]),
-                              _U.list([]))
-                              ,A2($Html.input,
-                              _U.list([$Html$Attributes.placeholder("Amount (₹)")
-                                      ,miniInputStyle
-                                      ,$Html$Attributes.value(p1.amount)
-                                      ,A3($Html$Events.on,
-                                      "input",
-                                      $Html$Events.targetValue,
-                                      function (_p6) {
-                                         return A2($Signal.message,address,SetAmountA(_p6));
-                                      })]),
-                              _U.list([]))]))
-                      ,A2($Html.div,
-                      _U.list([]),
-                      _U.list([A2($Html.input,
-                              _U.list([$Html$Attributes.placeholder("Account Name")
-                                      ,miniInputStyle
-                                      ,$Html$Attributes.value(p2.account)
-                                      ,A3($Html$Events.on,
-                                      "input",
-                                      $Html$Events.targetValue,
-                                      function (_p7) {
-                                         return A2($Signal.message,address,SetAccountB(_p7));
-                                      })]),
-                              _U.list([]))
-                              ,A2($Html.input,
-                              _U.list([$Html$Attributes.placeholder("Amount (₹)")
-                                      ,miniInputStyle
-                                      ,$Html$Attributes.value(p2.amount)
-                                      ,A3($Html$Events.on,
-                                      "input",
-                                      $Html$Events.targetValue,
-                                      function (_p8) {
-                                         return A2($Signal.message,address,SetAmountB(_p8));
-                                      })]),
-                              _U.list([]))]))]))
-              ,A2($Html.div,
-              _U.list([$Html$Attributes.$class("row")]),
-              _U.list([A2($Html.a,
-                      _U.list([$Html$Attributes.$class("waves-effect waves-light btn"),A2($Html$Events.onClick,address,AddNew)]),
-                      _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("material-icons left")]),_U.list([$Html.text("cloud")])),$Html.text("Add")]))
-                      ,A2($Html.a,
-                      _U.list([$Html$Attributes.$class("waves-effect waves-light btn"),A2($Html$Events.onClick,address,DeleteLast)]),
-                      _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("material-icons left")]),_U.list([$Html.text("cloud")])),$Html.text("Delete")]))
-                      ,A2($Html.a,
-                      _U.list([$Html$Attributes.$class("waves-effect waves-light btn"),A2($Html$Events.onClick,address,FetchAll)]),
-                      _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("material-icons left")]),_U.list([$Html.text("cloud")])),$Html.text("Fetch")]))
-                      ,A2($Html.a,
-                      _U.list([$Html$Attributes.$class("waves-effect waves-light btn"),A2($Html$Events.onClick,address,ClearAll)]),
-                      _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("material-icons left")]),_U.list([$Html.text("cloud")])),$Html.text("Clear")]))]))
-              ,A2($Html.div,
-              _U.list([statusBoxStyle]),
-              _U.list([A2($Html.div,
-              _U.list([]),
-              _U.list([A2($Html.div,_U.list([]),_U.list([viewJEntry(model.currentFields)])),A2($Html.div,_U.list([]),_U.list([viewModel(model)]))]))]))]));
+                      _U.list([$Html$Attributes.$class("col small-text right-text right z-depth-3")]),
+                      _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("flow-text black-text")]),_U.list([$Html.text("Penguin\'s")]))
+                              ,A2($Html.div,_U.list([$Html$Attributes.$class("flow-text")]),_U.list([$Html.text("Hledger Client")]))]))]))
+              ,A2(viewForm,address,model)
+              ,htmlJEntryList(model)
+              ,viewButtons(address)]));
    });
-   var initialPostings = _U.list([{account: "",amount: ""},{account: "",amount: ""}]);
-   var initialJEntry = {date: "",description: "",comment: "",postings: initialPostings};
+   var initialPostings = _U.list([{account: "expenses:travel:commute",amount: "600"},{account: "assets:wallet:cash",amount: "-600"}]);
+   var initialJEntry = {date: "2016-02-18"
+                       ,description: "We rented bicycles from Auroville Visitor\'s Center"
+                       ,comment: A2($Basics._op["++"],
+                       "We had a very hard time doing so Because the lady at",
+                       A2($Basics._op["++"],
+                       " the Visitors\' Center won\'t just rent us bicycles.",
+                       A2($Basics._op["++"]," Saccharine had to make a fake call to her to see if she"," really had any bicycles.")))
+                       ,postings: initialPostings};
    var initialModel = {currentFields: initialJEntry,restEntries: _U.list([]),imgUrl: "_assets/penguin.png"};
    var Model = F3(function (a,b,c) {    return {currentFields: a,restEntries: b,imgUrl: c};});
    var JEntry = F4(function (a,b,c,d) {    return {date: a,description: b,comment: c,postings: d};});
@@ -11269,7 +11263,7 @@ Elm.Hledger.make = function (_elm) {
    var randomUrl = function (topic) {
       return A2($Http.url,"http://api.giphy.com/v1/gifs/random",_U.list([A2(_op["=>"],"api_key","dc6zaTOxFJmzC"),A2(_op["=>"],"tag",topic)]));
    };
-   var decodeUrl = A2($Json$Decode.at,_U.list(["data","image_url"]),$Json$Decode.string);
+   var decodeUrl = A2($Json$Decode.at,_U.list(["data","fixed_height_small_url"]),$Json$Decode.string);
    var getRandomGif = function (topic) {    return $Effects.task(A2($Task.map,NewGif,$Task.toMaybe(A2($Http.get,decodeUrl,randomUrl(topic)))));};
    var getAPenguin = getRandomGif("cute penguin");
    var init = {ctor: "_Tuple2",_0: initialModel,_1: getAPenguin};
@@ -11376,14 +11370,13 @@ Elm.Hledger.make = function (_elm) {
                                 ,FetchedAll: FetchedAll
                                 ,ClearedAll: ClearedAll
                                 ,update: update
-                                ,viewModel: viewModel
-                                ,viewJEntry: viewJEntry
                                 ,view: view
+                                ,htmlJEntryList: htmlJEntryList
+                                ,htmlJEntry: htmlJEntry
+                                ,viewButtons: viewButtons
+                                ,viewForm: viewForm
                                 ,appStyle: appStyle
-                                ,inputStyle: inputStyle
-                                ,miniInputStyle: miniInputStyle
-                                ,buttonStyle: buttonStyle
-                                ,statusBoxStyle: statusBoxStyle
+                                ,cardStyle: cardStyle
                                 ,bannerStyle: bannerStyle
                                 ,imgStyle: imgStyle};
 };

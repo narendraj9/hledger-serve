@@ -25,7 +25,7 @@ getRandomGif topic = Http.get decodeUrl (randomUrl topic)
                    |> Effects.task
 
 decodeUrl : Json.Decoder String
-decodeUrl = Json.at ["data", "image_url"] Json.string
+decodeUrl = Json.at ["data", "fixed_height_small_url"] Json.string
 
 randomUrl : String -> String
 randomUrl topic = Http.url "http://api.giphy.com/v1/gifs/random"
@@ -114,13 +114,18 @@ type alias Model = { currentFields : JEntry
                    }
                  
 initialPostings : List Posting
-initialPostings = [ { account =  "", amount = ""}
-                  , { account = "", amount = ""}
+initialPostings = [ { account =  "expenses:travel:commute", amount = "600"}
+                  , { account = "assets:wallet:cash", amount = "-600"}
                   ]
 initialJEntry : JEntry
-initialJEntry = { date = ""
-                , description = ""
-                , comment = ""
+initialJEntry = { date = "2016-02-18"
+                , description = "We rented bicycles from Auroville Visitor's Center"
+                , comment = "We had a very hard time doing so Because the lady at" ++
+                            " the Visitors' Center won't just rent us bicycles." ++
+                            " Saccharine had to make a fake call to her to see if she" ++
+                            " really had any bicycles."
+
+
                 , postings = initialPostings
                 }
 initialModel : Model
@@ -224,65 +229,125 @@ update action model =
                                   | imgUrl = Maybe.withDefault model.imgUrl maybeUrl }
                        
 -- VIEW
-viewModel : Model -> Html
-viewModel model = 
-  case .restEntries model of
-    [] -> div [] []
-    (entry::entries) -> div []
-                            [ i [class "materical-icons"] []
-                            , viewJEntry entry
-                            , viewModel {model | restEntries = entries}
-                            ]
-                        
-viewJEntry : JEntry -> Html
-viewJEntry entry = let (p1, p2, rest) = getPostings2 entry
-                       date = entry.date
-                       description = entry.description
-                       comment = entry.comment
-                     in
-                       div []
-                           [ div []
-                               [ text (date ++ " " ++ description) ]
-                           , div []
-                               [ text (String.concat [ "          ;"
-                                                     , comment
-                                                     ]) ]
-                           , div []
-                               [ text (String.concat [ "   "
-                                                     , .account p1
-                                                     , "   "
-                                                     , .amount p1
-                                                     ])
-                               ]
-                                      
-                           ]
-  
 view : Signal.Address Action -> Model -> Html
 view address model =
-  let (p1, p2, rest) = getPostings2 model.currentFields
-  in
   div [class "container"]
   [ div [ class "divider" ]
       []
-  , div [ class "row" ]
-      [ div [ class "row" ]
-          [ div [ class "col" ]
+  --- Navbar
+  , div [ class "row indigo lighten-4" ]
+      [ div [ class "col s6" ]
               [ a [ href "#" ] 
-                  [ img [ class "responsive-img"
+                  [ img [ class "responsive-img z-depth-3"
                         , imgStyle
                         , src model.imgUrl
                         ] 
                       [] 
                   ]
               ]
-          , div [ class "col" ]
-                [ text "Penguin's \n Hledger Client" ]
-          ]
+          , div [ class "col small-text right-text right z-depth-3" ]
+              [ div [class "flow-text black-text"] [ text "Penguin's" ]
+              , div [class "flow-text"] [ text "Hledger Client" ]
+              ]
       ]
-  , div [ class "row" ]
+  -- Rest
+  , viewForm address model
+  , htmlJEntryList model
+  , viewButtons address
+  ]
+
+-- Auxiliary functions for building the view
+htmlJEntryList : Model -> Html
+htmlJEntryList model = 
+  case .restEntries model of
+    [] -> div [] []
+    (entry::entries) -> div [ class "container" ]
+                            [ div [ class "divider" ] []
+                            , htmlJEntry entry
+                            , htmlJEntryList { model | restEntries = entries}
+                            ]
+                        
+htmlJEntry : JEntry -> Html
+htmlJEntry entry =   let (p1, p2, rest) = getPostings2 entry
+                         date = entry.date
+                         description = entry.description
+                         comment = String.trim entry.comment
+                         hasComment = not (String.isEmpty comment)
+                         htmlPosting p = div [ class "col offset-s1 s12" ]
+                                         [ span [ class "black-text" ]
+                                                  [ text (p.account ++ "   " ++ p.amount) ]
+                                         ]
+                         
+
+                     in
+                       div [ class "row" ]
+                             [ div [ class "col s12 m8 offset-m2 z-depth-1" ]
+                                     [ div [ class "col s12"]
+                                               [ span [] [ text (date ++ " ") ]
+                                               , span [] [ text description ]
+                                               ]
+                                     , div [ class "col s8 offset-s2" ]
+                                             [ blockquote [ class "right s8" ]
+                                                 [ p [] [text comment ] ]
+                                             ]
+                                     , htmlPosting p1
+                                     , htmlPosting p2
+                                     ]
+                             ]
+
+viewButtons : Signal.Address Action -> Html
+viewButtons address = let fabStyle = style [ ("bottom" , "45px")
+                                   , ("right" , "24px")
+                   ]
+              in div [ class "fixed-action-btn horizontal"
+                     , fabStyle ]
+                   [ a [ class "btn-floating btn-large red" ]
+                       [ i [ class "large material-icons" ] 
+                           [ text "mode_edit" ]
+                       ]
+                   , ul []
+                       [ li []
+                           [ a [ class "btn-floating btn-small red darken-2"
+                               , onClick address ClearAll 
+                               ] 
+                               [ i [ class "material-icons"  ] 
+                                   [ text "delete" ]
+                               , text "Clear"
+                               ]
+                           ]
+                       , li []
+                           [ a [ class "btn-floating btn-small red"
+                               , onClick address DeleteLast 
+                               ] 
+                               [ i [ class "material-icons"  ] 
+                                   [ text "remove" ]
+                               ]
+                           ]
+                       , li []  
+                           [ a [ class "btn-floating btn-small blue"
+                               , onClick address FetchAll 
+                               ]
+                               [ i [ class "material-icons"  ] 
+                                   [ text "loop" ]
+                               ]
+                           ]
+                       , li [] 
+                           [ a [ class "btn-floating btn-small teal"
+                               , onClick address AddNew 
+                               ] 
+                               [ i [ class "material-icons"  ] 
+                                   [ text "add" ]
+                               ]
+                           ]
+                       ]
+                   ]
+
+viewForm : Signal.Address Action -> Model -> Html
+viewForm address model =  
+  let (p1, p2, rest) = getPostings2 model.currentFields
+  in  div [ class "row" ]
       [ div []
           [ input [ placeholder "Description"
-                  , inputStyle
                   , value model.currentFields.description
                   , on "input" targetValue (Signal.message address << SetDesc)
                   ]
@@ -290,128 +355,59 @@ view address model =
           ]
       , div []
           [ textarea [ placeholder "Comment (Optional)"
-                     , rows 10
                      , value model.currentFields.comment
                      , on "input" targetValue (Signal.message address << SetComment)
-                     , inputStyle
                      ]
               []
           ]
       , div []
           [ input [ placeholder "Account Name"
-                  , miniInputStyle
                   , value p1.account
                   , on "input" targetValue (Signal.message address << SetAccountA) ]
               []
           , input [ placeholder "Amount (₹)"
-                  , miniInputStyle
                   , value p1.amount
                   , on "input" targetValue (Signal.message address << SetAmountA)]
               []
           ]
       , div []
           [ input [ placeholder "Account Name"
-                  , miniInputStyle
                   , value p2.account
                   , on "input" targetValue (Signal.message address << SetAccountB) ]
               []
           , input [ placeholder "Amount (₹)"
-                  , miniInputStyle
                   , value p2.amount
                   , on "input" targetValue (Signal.message address << SetAmountB) ] 
               []
           ]              
       ]
-  , div [class "row"]
-      [ a [ class "waves-effect waves-light btn"
-          , onClick address AddNew 
-          ] 
-          [ i [ class "material-icons left"  ] 
-              [ text "cloud" ]
-          , text "Add"
-          ]
-      , a [ class "waves-effect waves-light btn"
-          , onClick address DeleteLast 
-          ] 
-          [ i [ class "material-icons left"  ] 
-              [ text "cloud" ]
-          , text "Delete"
-          ]
-      , a [ class "waves-effect waves-light btn"
-          , onClick address FetchAll 
-          ]
-          [ i [ class "material-icons left"  ] 
-                        [ text "cloud" ]
-          , text "Fetch"
-          ]
-      , a [ class "waves-effect waves-light btn"
-          , onClick address ClearAll 
-          ] 
-          [ i [ class "material-icons left"  ] 
-              [ text "cloud" ]
-          , text "Clear"
-          ]
-      ]
-  , div [statusBoxStyle] [ div []
-                             [ div [] [ viewJEntry model.currentFields ]
-                             , div [] [ viewModel model ]
-                             ]
-                         ]
-  ]
+  
+                             
 
 -- Styling
 (=>) = (,)
 
 appStyle : Attribute
 appStyle = 
-  style
-    [ "class" => "container"
-    , "font-size" => "20px"
-    , "font-family" => "arial"
-    ]
-inputStyle : Attribute
-inputStyle = 
-  style
-    [ "width" => "100%"
-    , "height" => "40px"
-    , "font-size" => "20px"
-    , "padding" => "5px"
-    ]
-miniInputStyle : Attribute
-miniInputStyle = 
-  style
-    [ "width" => "45%"
-    , "height" => "40px"
-    , "font-size" => "20px"
-    , "padding" => "5px"
-    ]
-     
-buttonStyle : Attribute
-buttonStyle = 
-  style 
-    [ "width" => "25%"
-    , "border" => "4px"
-    , "height" => "40px"
-    , "font-size" => "20px"
-    ]
-statusBoxStyle : Attribute
-statusBoxStyle =
-  style 
-    [ "white-space" => "pre"
-    ]
+  style []
 
+
+cardStyle : Attribute
+cardStyle = 
+  style
+    [ "padding" => "10px"
+    ]
 
 bannerStyle : Attribute
 bannerStyle =
   style
-    [ "font-size" => "22px"
-    , "background" => "#ee6e73"
+    [ "background" => "#ee6e73"
     ]
 
 imgStyle : Attribute
 imgStyle =
   style
     [ "width" => "auto"
-    , "border-top" => "4px"
-    , "height" => "64px"
+    , "padding-top" => "4px"
+    , "height" => "78px"
     ]
