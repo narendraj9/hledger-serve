@@ -11102,13 +11102,14 @@ Elm.Hledger.make = function (_elm) {
    var viewJEntry = function (entry) {
       var comment = entry.comment;
       var description = entry.description;
+      var date = entry.date;
       var _p0 = getPostings2(entry);
       var p1 = _p0._0;
       var p2 = _p0._1;
       var rest = _p0._2;
       return A2($Html.div,
       _U.list([]),
-      _U.list([A2($Html.div,_U.list([]),_U.list([$Html.text(description)]))
+      _U.list([A2($Html.div,_U.list([]),_U.list([$Html.text(A2($Basics._op["++"],date,A2($Basics._op["++"]," ",description)))]))
               ,A2($Html.div,_U.list([]),_U.list([$Html.text($String.concat(_U.list(["          ;",comment])))]))
               ,A2($Html.div,
               _U.list([]),

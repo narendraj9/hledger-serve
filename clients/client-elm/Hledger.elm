@@ -236,12 +236,13 @@ viewModel model =
                         
 viewJEntry : JEntry -> Html
 viewJEntry entry = let (p1, p2, rest) = getPostings2 entry
+                       date = entry.date
                        description = entry.description
                        comment = entry.comment
                      in
                        div []
                            [ div []
-                               [ text description ]
+                               [ text (date ++ " " ++ description) ]
                            , div []
                                [ text (String.concat [ "          ;"
                                                      , comment
