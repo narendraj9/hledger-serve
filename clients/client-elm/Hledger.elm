@@ -266,7 +266,9 @@ htmlJEntry entry =   let (p1, p2, rest) = getPostings2 entry
                          date = entry.date
                          description = entry.description
                          comment = String.trim entry.comment
-                         hasComment = not (String.isEmpty comment)
+                         commentDisplay = if not (String.isEmpty comment)
+                                          then style [ ("display", "block") ]
+                                          else style [ ("display", "none") ]
                          htmlPosting p = div [ class "col offset-s1 s12" ]
                                          [ span [ class "black-text" ]
                                                   [ text (p.account ++ "   " ++ p.amount) ]
@@ -280,10 +282,12 @@ htmlJEntry entry =   let (p1, p2, rest) = getPostings2 entry
                                                [ span [] [ text (date ++ " ") ]
                                                , span [] [ text description ]
                                                ]
-                                     , div [ class "col s8 offset-s2" ]
-                                             [ blockquote [ class "right s8" ]
-                                                 [ p [] [text comment ] ]
-                                             ]
+                                     , div [ class "col s8 offset-s2"
+                                           , commentDisplay ]
+                                               [ blockquote [ class "right s8" ]
+                                                   [ p [] [text comment ] ]
+                                               ]
+
                                      , htmlPosting p1
                                      , htmlPosting p2
                                      ]

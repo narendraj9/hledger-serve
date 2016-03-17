@@ -11126,7 +11126,11 @@ Elm.Hledger.make = function (_elm) {
          _U.list([$Html.text(A2($Basics._op["++"],p.account,A2($Basics._op["++"],"   ",p.amount)))]))]));
       };
       var comment = $String.trim(entry.comment);
-      var hasComment = $Basics.not($String.isEmpty(comment));
+      var commentDisplay = $Basics.not($String.isEmpty(comment)) ? $Html$Attributes.style(_U.list([{ctor: "_Tuple2"
+                                                                                                   ,_0: "display"
+                                                                                                   ,_1: "block"}])) : $Html$Attributes.style(_U.list([{ctor: "_Tuple2"
+                                                                                                                                                      ,_0: "display"
+                                                                                                                                                      ,_1: "none"}]));
       var description = entry.description;
       var date = entry.date;
       var _p0 = getPostings2(entry);
@@ -11142,7 +11146,7 @@ Elm.Hledger.make = function (_elm) {
               _U.list([A2($Html.span,_U.list([]),_U.list([$Html.text(A2($Basics._op["++"],date," "))]))
                       ,A2($Html.span,_U.list([]),_U.list([$Html.text(description)]))]))
               ,A2($Html.div,
-              _U.list([$Html$Attributes.$class("col s8 offset-s2")]),
+              _U.list([$Html$Attributes.$class("col s8 offset-s2"),commentDisplay]),
               _U.list([A2($Html.blockquote,_U.list([$Html$Attributes.$class("right s8")]),_U.list([A2($Html.p,_U.list([]),_U.list([$Html.text(comment)]))]))]))
               ,htmlPosting(p1)
               ,htmlPosting(p2)]))]));
@@ -11203,7 +11207,7 @@ Elm.Hledger.make = function (_elm) {
               ,A2($Html.div,
               _U.list([]),
               _U.list([A2($Html.a,
-              _U.list([$Html$Attributes.$class("btn btn-small teal right-align"),A2($Html$Events.onClick,address,AddNew)]),
+              _U.list([$Html$Attributes.$class("btn btn-small teal"),A2($Html$Events.onClick,address,AddNew)]),
               _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("material-icons left")]),_U.list([$Html.text("done")])),$Html.text("Submit")]))]))]));
    });
    var view = F2(function (address,model) {
