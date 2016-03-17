@@ -295,8 +295,9 @@ htmlJEntry entry =   let (p1, p2, rest) = getPostings2 entry
 
 viewButtons : Signal.Address Action -> Html
 viewButtons address = let fabStyle = style [ ("bottom" , "45px")
-                                   , ("right" , "24px")
-                   ]
+                                           , ("right" , "24px")
+                                           , ("role", "button")
+                                           ]
               in div [ class "fixed-action-btn horizontal"
                      , fabStyle ]
                    [ a [ class "btn-floating btn-large red" ]

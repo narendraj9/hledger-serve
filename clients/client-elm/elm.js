@@ -11079,7 +11079,9 @@ Elm.Hledger.make = function (_elm) {
    var DeleteLast = {ctor: "DeleteLast"};
    var AddNew = {ctor: "AddNew"};
    var viewButtons = function (address) {
-      var fabStyle = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "bottom",_1: "45px"},{ctor: "_Tuple2",_0: "right",_1: "24px"}]));
+      var fabStyle = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "bottom",_1: "45px"}
+                                                    ,{ctor: "_Tuple2",_0: "right",_1: "24px"}
+                                                    ,{ctor: "_Tuple2",_0: "role",_1: "button"}]));
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("fixed-action-btn horizontal"),fabStyle]),
       _U.list([A2($Html.a,
