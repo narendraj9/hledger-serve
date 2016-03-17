@@ -145,7 +145,7 @@ getPostings2 jentry = let postings = jentry.postings
 -- Init
 init : (Model, Effects Action)
 init = ( initialModel
-       , getAPenguin
+       , Effects.batch [ fetchAll, getAPenguin ]
        )
 
 -- UPDATE
@@ -384,9 +384,10 @@ viewForm address model =
                   , on "input" targetValue (Signal.message address << SetAmountB) ] 
               []
           ]             
-      , div []
+      , div [class "right"]
           [ a [ class "btn btn-small teal"
               , onClick address AddNew 
+              , noTouchToSearchStyle
               ] 
               [ i [ class "material-icons left"  ] 
                   [ text "done" ]

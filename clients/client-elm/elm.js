@@ -11208,9 +11208,9 @@ Elm.Hledger.make = function (_elm) {
                               ,A3($Html$Events.on,"input",$Html$Events.targetValue,function (_p8) {    return A2($Signal.message,address,SetAmountB(_p8));})]),
                       _U.list([]))]))
               ,A2($Html.div,
-              _U.list([]),
+              _U.list([$Html$Attributes.$class("right")]),
               _U.list([A2($Html.a,
-              _U.list([$Html$Attributes.$class("btn btn-small teal"),A2($Html$Events.onClick,address,AddNew)]),
+              _U.list([$Html$Attributes.$class("btn btn-small teal"),A2($Html$Events.onClick,address,AddNew),noTouchToSearchStyle]),
               _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("material-icons left")]),_U.list([$Html.text("done")])),$Html.text("Submit")]))]))]));
    });
    var view = F2(function (address,model) {
@@ -11267,9 +11267,9 @@ Elm.Hledger.make = function (_elm) {
    var decodeUrl = A2($Json$Decode.at,_U.list(["data","fixed_height_small_url"]),$Json$Decode.string);
    var getRandomGif = function (topic) {    return $Effects.task(A2($Task.map,NewGif,$Task.toMaybe(A2($Http.get,decodeUrl,randomUrl(topic)))));};
    var getAPenguin = getRandomGif("cute penguin");
-   var init = {ctor: "_Tuple2",_0: initialModel,_1: getAPenguin};
    var serviceUri = "http://services.vicarie.in/";
    var fetchAll = $Effects.task(A2($Task.map,FetchedAll,$Task.toMaybe(A2($Http.get,decodeJEntryList,A2($Basics._op["++"],serviceUri,"/entries")))));
+   var init = {ctor: "_Tuple2",_0: initialModel,_1: $Effects.batch(_U.list([fetchAll,getAPenguin]))};
    var addNew = function (jentry) {
       return $Effects.task(A2($Task.map,
       AddedNew,
