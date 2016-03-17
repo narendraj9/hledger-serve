@@ -296,17 +296,19 @@ htmlJEntry entry =   let (p1, p2, rest) = getPostings2 entry
 viewButtons : Signal.Address Action -> Html
 viewButtons address = let fabStyle = style [ ("bottom" , "45px")
                                            , ("right" , "24px")
-                                           , ("role", "button")
                                            ]
               in div [ class "fixed-action-btn horizontal"
-                     , fabStyle ]
+                     , fabStyle
+                     , noTouchToSearchStyle ]
                    [ a [ class "btn-floating btn-large red" ]
-                       [ i [ class "large material-icons" ] 
+                       [ i [ class "large material-icons"
+                           , noTouchToSearchStyle ] 
                            [ text "mode_edit" ]
                        ]
                    , ul []
                        [ li []
                            [ a [ class "btn-floating btn-small red darken-2"
+                               , noTouchToSearchStyle
                                , onClick address ClearAll 
                                ] 
                                [ i [ class "material-icons"  ] 
@@ -316,6 +318,7 @@ viewButtons address = let fabStyle = style [ ("bottom" , "45px")
                            ]
                        , li []
                            [ a [ class "btn-floating btn-small red"
+                               , noTouchToSearchStyle
                                , onClick address DeleteLast 
                                ] 
                                [ i [ class "material-icons"  ] 
@@ -324,6 +327,7 @@ viewButtons address = let fabStyle = style [ ("bottom" , "45px")
                            ]
                        , li []  
                            [ a [ class "btn-floating btn-small blue"
+                               , noTouchToSearchStyle
                                , onClick address FetchAll 
                                ]
                                [ i [ class "material-icons"  ] 
@@ -332,6 +336,7 @@ viewButtons address = let fabStyle = style [ ("bottom" , "45px")
                            ]
                        , li [] 
                            [ a [ class "btn-floating btn-small teal"
+                               , noTouchToSearchStyle
                                , onClick address AddNew 
                                ] 
                                [ i [ class "material-icons"  ] 
@@ -418,4 +423,13 @@ imgStyle =
     [ "width" => "auto"
     , "padding-top" => "4px"
     , "height" => "78px"
+    ]
+
+-- An attempt to fix "touch to search" on buttons
+noTouchToSearchStyle : Attribute
+noTouchToSearchStyle = 
+  style 
+    [ ("role", "button")
+    , ("tabindex", "1")
+    , ("-webkit-user-select", "none")
     ]

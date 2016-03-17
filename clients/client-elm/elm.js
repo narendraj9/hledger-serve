@@ -11058,6 +11058,9 @@ Elm.Hledger.make = function (_elm) {
    $String = Elm.String.make(_elm),
    $Task = Elm.Task.make(_elm);
    var _op = {};
+   var noTouchToSearchStyle = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "role",_1: "button"}
+                                                             ,{ctor: "_Tuple2",_0: "tabindex",_1: "1"}
+                                                             ,{ctor: "_Tuple2",_0: "-webkit-user-select",_1: "none"}]));
    var appStyle = $Html$Attributes.style(_U.list([]));
    _op["=>"] = F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};});
    var cardStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"padding","10px")]));
@@ -11079,35 +11082,33 @@ Elm.Hledger.make = function (_elm) {
    var DeleteLast = {ctor: "DeleteLast"};
    var AddNew = {ctor: "AddNew"};
    var viewButtons = function (address) {
-      var fabStyle = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "bottom",_1: "45px"}
-                                                    ,{ctor: "_Tuple2",_0: "right",_1: "24px"}
-                                                    ,{ctor: "_Tuple2",_0: "role",_1: "button"}]));
+      var fabStyle = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "bottom",_1: "45px"},{ctor: "_Tuple2",_0: "right",_1: "24px"}]));
       return A2($Html.div,
-      _U.list([$Html$Attributes.$class("fixed-action-btn horizontal"),fabStyle]),
+      _U.list([$Html$Attributes.$class("fixed-action-btn horizontal"),fabStyle,noTouchToSearchStyle]),
       _U.list([A2($Html.a,
               _U.list([$Html$Attributes.$class("btn-floating btn-large red")]),
-              _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("large material-icons")]),_U.list([$Html.text("mode_edit")]))]))
+              _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("large material-icons"),noTouchToSearchStyle]),_U.list([$Html.text("mode_edit")]))]))
               ,A2($Html.ul,
               _U.list([]),
               _U.list([A2($Html.li,
                       _U.list([]),
                       _U.list([A2($Html.a,
-                      _U.list([$Html$Attributes.$class("btn-floating btn-small red darken-2"),A2($Html$Events.onClick,address,ClearAll)]),
+                      _U.list([$Html$Attributes.$class("btn-floating btn-small red darken-2"),noTouchToSearchStyle,A2($Html$Events.onClick,address,ClearAll)]),
                       _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("material-icons")]),_U.list([$Html.text("delete")])),$Html.text("Clear")]))]))
                       ,A2($Html.li,
                       _U.list([]),
                       _U.list([A2($Html.a,
-                      _U.list([$Html$Attributes.$class("btn-floating btn-small red"),A2($Html$Events.onClick,address,DeleteLast)]),
+                      _U.list([$Html$Attributes.$class("btn-floating btn-small red"),noTouchToSearchStyle,A2($Html$Events.onClick,address,DeleteLast)]),
                       _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("material-icons")]),_U.list([$Html.text("remove")]))]))]))
                       ,A2($Html.li,
                       _U.list([]),
                       _U.list([A2($Html.a,
-                      _U.list([$Html$Attributes.$class("btn-floating btn-small blue"),A2($Html$Events.onClick,address,FetchAll)]),
+                      _U.list([$Html$Attributes.$class("btn-floating btn-small blue"),noTouchToSearchStyle,A2($Html$Events.onClick,address,FetchAll)]),
                       _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("material-icons")]),_U.list([$Html.text("loop")]))]))]))
                       ,A2($Html.li,
                       _U.list([]),
                       _U.list([A2($Html.a,
-                      _U.list([$Html$Attributes.$class("btn-floating btn-small teal"),A2($Html$Events.onClick,address,AddNew)]),
+                      _U.list([$Html$Attributes.$class("btn-floating btn-small teal"),noTouchToSearchStyle,A2($Html$Events.onClick,address,AddNew)]),
                       _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("material-icons")]),_U.list([$Html.text("add")]))]))]))]))]));
    };
    var getPostings2 = function (jentry) {
@@ -11378,7 +11379,8 @@ Elm.Hledger.make = function (_elm) {
                                 ,appStyle: appStyle
                                 ,cardStyle: cardStyle
                                 ,bannerStyle: bannerStyle
-                                ,imgStyle: imgStyle};
+                                ,imgStyle: imgStyle
+                                ,noTouchToSearchStyle: noTouchToSearchStyle};
 };
 Elm.Main = Elm.Main || {};
 Elm.Main.make = function (_elm) {
