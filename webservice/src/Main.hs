@@ -14,6 +14,9 @@ import Servant
 import Control.Monad.Trans
 import Control.Concurrent.STM
 
+import Data.Time.LocalTime
+import Data.Time.Format
+
 data Posting = Posting
                { account :: String
                , amount :: String
@@ -22,7 +25,8 @@ instance ToJSON Posting
 instance FromJSON Posting
 
 data JEntry = JEntry
-              { description :: String
+              { date :: String
+              , description :: String
               , comment :: String
               , postings :: [Posting]
               } deriving (Eq, Show, Generic)
@@ -53,8 +57,13 @@ handleGetEntries store = liftIO $ readTVarIO store
 
 -- | POST /entry                            
 handlePostEntry :: JStore -> Server PostEntry
-handlePostEntry store jentry = liftIO $ atomically $ do modifyTVar store (jentry:)
-                                                        readTVar store
+handlePostEntry store jentry =
+  let  dateNow = do now <- getZonedTime
+                    return $ formatTime defaultTimeLocale "%Y-%m-%d" now
+  in liftIO $ do today <- dateNow
+                 let jentry' = jentry { date = today }
+                 atomically $ do modifyTVar store (jentry':)
+                                 readTVar store
 
 -- | POST /delete
 handleDeleteEntry :: JStore -> Server DeleteEntry
@@ -83,7 +92,8 @@ main = do store <- newTVarIO entries
 -- Sample entries for initial testing
 entries :: [JEntry]
 entries =
-  [ JEntry { description = "We rented bicylces."
+  [ JEntry { date = "2016-02-18"
+           , description = "We rented bicylces."
            , comment =  "It wasn't as easy as it sounds."
            , postings = [ Posting { account = "expenses:travel:commute"
                                  , amount = "600"

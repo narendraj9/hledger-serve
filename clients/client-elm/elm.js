@@ -11073,8 +11073,8 @@ Elm.Hledger.make = function (_elm) {
                                                     ,A2(_op["=>"],"height","40px")
                                                     ,A2(_op["=>"],"font-size","20px")]));
    var statusBoxStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"white-space","pre")]));
-   var bannerStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"font-size","22px")]));
-   var imgStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"width","auto"),A2(_op["=>"],"height","64px")]));
+   var bannerStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"font-size","22px"),A2(_op["=>"],"background","#ee6e73")]));
+   var imgStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"width","auto"),A2(_op["=>"],"border-top","4px"),A2(_op["=>"],"height","64px")]));
    var ClearedAll = function (a) {    return {ctor: "ClearedAll",_0: a};};
    var FetchedAll = function (a) {    return {ctor: "FetchedAll",_0: a};};
    var DeletedLast = function (a) {    return {ctor: "DeletedLast",_0: a};};
@@ -11140,18 +11140,19 @@ Elm.Hledger.make = function (_elm) {
       var rest = _p2._2;
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("container")]),
-      _U.list([A2($Html.nav,
-              _U.list([]),
-              _U.list([A2($Html.div,
-              _U.list([$Html$Attributes.$class("nav-wrapper")]),
-              _U.list([A2($Html.a,
-                      _U.list([$Html$Attributes.href("#")]),
-                      _U.list([A2($Html.img,
-                      _U.list([$Html$Attributes.$class("brand-logo responsive-img"),imgStyle,$Html$Attributes.src(model.imgUrl)]),
-                      _U.list([]))]))
-                      ,$Html.text("Penguin\'s \n Hledger Client")]))]))
+      _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("divider")]),_U.list([]))
               ,A2($Html.div,
-              _U.list([]),
+              _U.list([$Html$Attributes.$class("row")]),
+              _U.list([A2($Html.div,
+              _U.list([$Html$Attributes.$class("row")]),
+              _U.list([A2($Html.div,
+                      _U.list([$Html$Attributes.$class("col")]),
+                      _U.list([A2($Html.a,
+                      _U.list([$Html$Attributes.href("#")]),
+                      _U.list([A2($Html.img,_U.list([$Html$Attributes.$class("responsive-img"),imgStyle,$Html$Attributes.src(model.imgUrl)]),_U.list([]))]))]))
+                      ,A2($Html.div,_U.list([$Html$Attributes.$class("col")]),_U.list([$Html.text("Penguin\'s \n Hledger Client")]))]))]))
+              ,A2($Html.div,
+              _U.list([$Html$Attributes.$class("row")]),
               _U.list([A2($Html.div,
                       _U.list([]),
                       _U.list([A2($Html.input,
@@ -11162,8 +11163,9 @@ Elm.Hledger.make = function (_elm) {
                       _U.list([]))]))
                       ,A2($Html.div,
                       _U.list([]),
-                      _U.list([A2($Html.input,
-                      _U.list([$Html$Attributes.placeholder("Comment")
+                      _U.list([A2($Html.textarea,
+                      _U.list([$Html$Attributes.placeholder("Comment (Optional)")
+                              ,$Html$Attributes.rows(10)
                               ,$Html$Attributes.value(model.currentFields.comment)
                               ,A3($Html$Events.on,"input",$Html$Events.targetValue,function (_p4) {    return A2($Signal.message,address,SetComment(_p4));})
                               ,inputStyle]),
@@ -11217,19 +11219,19 @@ Elm.Hledger.make = function (_elm) {
                                       })]),
                               _U.list([]))]))]))
               ,A2($Html.div,
-              _U.list([appStyle]),
-              _U.list([A2($Html.button,
-                      _U.list([$Html$Attributes.$class("btn btn-primary"),buttonStyle,A2($Html$Events.onClick,address,AddNew)]),
-                      _U.list([$Html.text("Add")]))
-                      ,A2($Html.button,
-                      _U.list([$Html$Attributes.$class("btn btn-primary"),buttonStyle,A2($Html$Events.onClick,address,DeleteLast)]),
-                      _U.list([$Html.text("Delete")]))
-                      ,A2($Html.button,
-                      _U.list([$Html$Attributes.$class("btn btn-primary"),buttonStyle,A2($Html$Events.onClick,address,FetchAll)]),
-                      _U.list([$Html.text("Fetch")]))
-                      ,A2($Html.button,
-                      _U.list([$Html$Attributes.$class("btn btn-primary"),buttonStyle,A2($Html$Events.onClick,address,ClearAll)]),
-                      _U.list([$Html.text("Clear")]))]))
+              _U.list([$Html$Attributes.$class("row")]),
+              _U.list([A2($Html.a,
+                      _U.list([$Html$Attributes.$class("waves-effect waves-light btn"),A2($Html$Events.onClick,address,AddNew)]),
+                      _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("material-icons left")]),_U.list([$Html.text("cloud")])),$Html.text("Add")]))
+                      ,A2($Html.a,
+                      _U.list([$Html$Attributes.$class("waves-effect waves-light btn"),A2($Html$Events.onClick,address,DeleteLast)]),
+                      _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("material-icons left")]),_U.list([$Html.text("cloud")])),$Html.text("Delete")]))
+                      ,A2($Html.a,
+                      _U.list([$Html$Attributes.$class("waves-effect waves-light btn"),A2($Html$Events.onClick,address,FetchAll)]),
+                      _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("material-icons left")]),_U.list([$Html.text("cloud")])),$Html.text("Fetch")]))
+                      ,A2($Html.a,
+                      _U.list([$Html$Attributes.$class("waves-effect waves-light btn"),A2($Html$Events.onClick,address,ClearAll)]),
+                      _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("material-icons left")]),_U.list([$Html.text("cloud")])),$Html.text("Clear")]))]))
               ,A2($Html.div,
               _U.list([statusBoxStyle]),
               _U.list([A2($Html.div,
@@ -11237,17 +11239,18 @@ Elm.Hledger.make = function (_elm) {
               _U.list([A2($Html.div,_U.list([]),_U.list([viewJEntry(model.currentFields)])),A2($Html.div,_U.list([]),_U.list([viewModel(model)]))]))]))]));
    });
    var initialPostings = _U.list([{account: "",amount: ""},{account: "",amount: ""}]);
-   var initialJEntry = {description: "",comment: "",postings: initialPostings};
+   var initialJEntry = {date: "",description: "",comment: "",postings: initialPostings};
    var initialModel = {currentFields: initialJEntry,restEntries: _U.list([]),imgUrl: "penguin.png"};
    var Model = F3(function (a,b,c) {    return {currentFields: a,restEntries: b,imgUrl: c};});
-   var JEntry = F3(function (a,b,c) {    return {description: a,comment: b,postings: c};});
+   var JEntry = F4(function (a,b,c,d) {    return {date: a,description: b,comment: c,postings: d};});
    var Posting = F2(function (a,b) {    return {account: a,amount: b};});
    var encodePosting = function (posting) {
       return $Json$Encode.object(_U.list([{ctor: "_Tuple2",_0: "account",_1: $Json$Encode.string(posting.account)}
                                          ,{ctor: "_Tuple2",_0: "amount",_1: $Json$Encode.string(posting.amount)}]));
    };
    var encodeJEntry = function (jentry) {
-      return $Json$Encode.object(_U.list([{ctor: "_Tuple2",_0: "description",_1: $Json$Encode.string(jentry.description)}
+      return $Json$Encode.object(_U.list([{ctor: "_Tuple2",_0: "date",_1: $Json$Encode.string(jentry.date)}
+                                         ,{ctor: "_Tuple2",_0: "description",_1: $Json$Encode.string(jentry.description)}
                                          ,{ctor: "_Tuple2",_0: "comment",_1: $Json$Encode.string(jentry.comment)}
                                          ,{ctor: "_Tuple2",_0: "postings",_1: $Json$Encode.list(A2($List.map,encodePosting,jentry.postings))}]));
    };
@@ -11255,8 +11258,9 @@ Elm.Hledger.make = function (_elm) {
    Posting,
    A2($Json$Decode._op[":="],"account",$Json$Decode.string),
    A2($Json$Decode._op[":="],"amount",$Json$Decode.string));
-   var decodeJEntry = A4($Json$Decode.object3,
+   var decodeJEntry = A5($Json$Decode.object4,
    JEntry,
+   A2($Json$Decode._op[":="],"date",$Json$Decode.string),
    A2($Json$Decode._op[":="],"description",$Json$Decode.string),
    A2($Json$Decode._op[":="],"comment",$Json$Decode.string),
    A2($Json$Decode._op[":="],"postings",$Json$Decode.list(decodePosting)));

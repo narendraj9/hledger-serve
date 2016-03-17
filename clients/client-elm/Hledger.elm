@@ -1,3 +1,4 @@
+
 module Hledger where
 
 import String
@@ -38,7 +39,8 @@ decodePosting = Json.object2 Posting ("account" := Json.string)
                                      ("amount" := Json.string)
 
 decodeJEntry : Json.Decoder JEntry
-decodeJEntry =  Json.object3 JEntry ("description" := Json.string)
+decodeJEntry =  Json.object4 JEntry ("date" := Json.string)
+                                    ("description" := Json.string)
                                     ("comment" := Json.string)
                                     ("postings" := Json.list decodePosting)
 
@@ -51,7 +53,8 @@ encodePosting posting = JsonEn.object [ ("account", string posting.account)
                                       ]
 
 encodeJEntry : JEntry -> Value
-encodeJEntry jentry = JsonEn.object [ ("description", string jentry.description)
+encodeJEntry jentry = JsonEn.object [ ("date", string jentry.date)
+                                    , ("description", string jentry.description)
                                     , ("comment", string jentry.comment)
                                     , ("postings", JsonEn.list
                                          (List.map encodePosting jentry.postings))
@@ -100,7 +103,8 @@ getAPenguin = getRandomGif "cute penguin"
 type alias Posting = { account : String
                      , amount : String
                      }
-type alias JEntry = { description : String
+type alias JEntry = { date : String
+                    , description : String
                     , comment : String
                     , postings : List Posting
                     }
@@ -114,7 +118,8 @@ initialPostings = [ { account =  "", amount = ""}
                   , { account = "", amount = ""}
                   ]
 initialJEntry : JEntry
-initialJEntry = { description = ""
+initialJEntry = { date = ""
+                , description = ""
                 , comment = ""
                 , postings = initialPostings
                 }
@@ -256,19 +261,24 @@ view address model =
   let (p1, p2, rest) = getPostings2 model.currentFields
   in
   div [class "container"]
-  [ nav []
-      [ div [ class "nav-wrapper" ]
-          [ a [ href "#" ] 
-              [ img [ class "brand-logo responsive-img"
-                    , imgStyle, src model.imgUrl
-                    ] 
-                  [] 
+  [ div [ class "divider" ]
+      []
+  , div [ class "row" ]
+      [ div [ class "row" ]
+          [ div [ class "col" ]
+              [ a [ href "#" ] 
+                  [ img [ class "responsive-img"
+                        , imgStyle
+                        , src model.imgUrl
+                        ] 
+                      [] 
+                  ]
               ]
-          , text "Penguin's \n Hledger Client"
+          , div [ class "col" ]
+                [ text "Penguin's \n Hledger Client" ]
           ]
-
       ]
-  , div []
+  , div [ class "row" ]
       [ div []
           [ input [ placeholder "Description"
                   , inputStyle
@@ -278,11 +288,12 @@ view address model =
               []
           ]
       , div []
-          [ input [ placeholder "Comment"
-                  , value model.currentFields.comment
-                  , on "input" targetValue (Signal.message address << SetComment)
-                  , inputStyle
-                  ]
+          [ textarea [ placeholder "Comment (Optional)"
+                     , rows 10
+                     , value model.currentFields.comment
+                     , on "input" targetValue (Signal.message address << SetComment)
+                     , inputStyle
+                     ]
               []
           ]
       , div []
@@ -310,11 +321,35 @@ view address model =
               []
           ]              
       ]
-  , div [appStyle]
-      [ button [ class "btn btn-primary", buttonStyle, onClick address AddNew ] [ text "Add" ]
-      , button [ class "btn btn-primary", buttonStyle, onClick address DeleteLast ] [ text "Delete" ]
-      , button [ class "btn btn-primary", buttonStyle, onClick address FetchAll ] [ text "Fetch" ]
-      , button [ class "btn btn-primary", buttonStyle, onClick address ClearAll ] [ text "Clear" ]
+  , div [class "row"]
+      [ a [ class "waves-effect waves-light btn"
+          , onClick address AddNew 
+          ] 
+          [ i [ class "material-icons left"  ] 
+              [ text "cloud" ]
+          , text "Add"
+          ]
+      , a [ class "waves-effect waves-light btn"
+          , onClick address DeleteLast 
+          ] 
+          [ i [ class "material-icons left"  ] 
+              [ text "cloud" ]
+          , text "Delete"
+          ]
+      , a [ class "waves-effect waves-light btn"
+          , onClick address FetchAll 
+          ]
+          [ i [ class "material-icons left"  ] 
+                        [ text "cloud" ]
+          , text "Fetch"
+          ]
+      , a [ class "waves-effect waves-light btn"
+          , onClick address ClearAll 
+          ] 
+          [ i [ class "material-icons left"  ] 
+              [ text "cloud" ]
+          , text "Clear"
+          ]
       ]
   , div [statusBoxStyle] [ div []
                              [ div [] [ viewJEntry model.currentFields ]
@@ -369,11 +404,13 @@ bannerStyle : Attribute
 bannerStyle =
   style
     [ "font-size" => "22px"
+    , "background" => "#ee6e73"
     ]
 
 imgStyle : Attribute
 imgStyle =
   style
     [ "width" => "auto"
+    , "border-top" => "4px"
     , "height" => "64px"
     ]
