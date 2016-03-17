@@ -11240,7 +11240,7 @@ Elm.Hledger.make = function (_elm) {
    });
    var initialPostings = _U.list([{account: "",amount: ""},{account: "",amount: ""}]);
    var initialJEntry = {date: "",description: "",comment: "",postings: initialPostings};
-   var initialModel = {currentFields: initialJEntry,restEntries: _U.list([]),imgUrl: "penguin.png"};
+   var initialModel = {currentFields: initialJEntry,restEntries: _U.list([]),imgUrl: "_assets/penguin.png"};
    var Model = F3(function (a,b,c) {    return {currentFields: a,restEntries: b,imgUrl: c};});
    var JEntry = F4(function (a,b,c,d) {    return {date: a,description: b,comment: c,postings: d};});
    var Posting = F2(function (a,b) {    return {account: a,amount: b};});

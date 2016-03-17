@@ -126,7 +126,7 @@ initialJEntry = { date = ""
 initialModel : Model
 initialModel = { currentFields = initialJEntry
                , restEntries = []
-               , imgUrl = "penguin.png"
+               , imgUrl = "_assets/penguin.png"
                }
 -- Auxiliary functions that query the model
 getPostings2 : JEntry -> (Posting, Posting, List Posting)
