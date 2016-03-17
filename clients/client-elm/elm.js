@@ -11152,11 +11152,7 @@ Elm.Hledger.make = function (_elm) {
       if (_p1.ctor === "[]") {
             return A2($Html.div,_U.list([]),_U.list([]));
          } else {
-            return A2($Html.div,
-            _U.list([$Html$Attributes.$class("container")]),
-            _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("divider")]),_U.list([]))
-                    ,htmlJEntry(_p1._0)
-                    ,htmlJEntryList(_U.update(model,{restEntries: _p1._1}))]));
+            return A2($Html.div,_U.list([$Html$Attributes.$class("container")]),A2($List.map,htmlJEntry,_p1));
          }
    };
    var viewForm = F2(function (address,model) {
@@ -11203,7 +11199,12 @@ Elm.Hledger.make = function (_elm) {
                       _U.list([$Html$Attributes.placeholder("Amount (₹)")
                               ,$Html$Attributes.value(p2.amount)
                               ,A3($Html$Events.on,"input",$Html$Events.targetValue,function (_p8) {    return A2($Signal.message,address,SetAmountB(_p8));})]),
-                      _U.list([]))]))]));
+                      _U.list([]))]))
+              ,A2($Html.div,
+              _U.list([]),
+              _U.list([A2($Html.a,
+              _U.list([$Html$Attributes.$class("btn btn-small teal right-align"),A2($Html$Events.onClick,address,AddNew)]),
+              _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("material-icons left")]),_U.list([$Html.text("done")])),$Html.text("Submit")]))]))]));
    });
    var view = F2(function (address,model) {
       return A2($Html.div,
@@ -11226,15 +11227,8 @@ Elm.Hledger.make = function (_elm) {
               ,htmlJEntryList(model)
               ,viewButtons(address)]));
    });
-   var initialPostings = _U.list([{account: "expenses:travel:commute",amount: "600"},{account: "assets:wallet:cash",amount: "-600"}]);
-   var initialJEntry = {date: "2016-02-18"
-                       ,description: "We rented bicycles from Auroville Visitor\'s Center"
-                       ,comment: A2($Basics._op["++"],
-                       "We had a very hard time doing so Because the lady at",
-                       A2($Basics._op["++"],
-                       " the Visitors\' Center won\'t just rent us bicycles.",
-                       A2($Basics._op["++"]," Saccharine had to make a fake call to her to see if she"," really had any bicycles.")))
-                       ,postings: initialPostings};
+   var initialPostings = _U.list([{account: "",amount: ""},{account: "",amount: ""}]);
+   var initialJEntry = {date: "",description: "",comment: "",postings: initialPostings};
    var initialModel = {currentFields: initialJEntry,restEntries: _U.list([]),imgUrl: "_assets/penguin.png"};
    var Model = F3(function (a,b,c) {    return {currentFields: a,restEntries: b,imgUrl: c};});
    var JEntry = F4(function (a,b,c,d) {    return {date: a,description: b,comment: c,postings: d};});

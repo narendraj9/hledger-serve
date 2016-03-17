@@ -114,16 +114,13 @@ type alias Model = { currentFields : JEntry
                    }
                  
 initialPostings : List Posting
-initialPostings = [ { account =  "expenses:travel:commute", amount = "600"}
-                  , { account = "assets:wallet:cash", amount = "-600"}
+initialPostings = [ { account =  "", amount = ""}
+                  , { account = "", amount = ""}
                   ]
 initialJEntry : JEntry
-initialJEntry = { date = "2016-02-18"
-                , description = "We rented bicycles from Auroville Visitor's Center"
-                , comment = "We had a very hard time doing so Because the lady at" ++
-                            " the Visitors' Center won't just rent us bicycles." ++
-                            " Saccharine had to make a fake call to her to see if she" ++
-                            " really had any bicycles."
+initialJEntry = { date = ""
+                , description = ""
+                , comment = ""
 
 
                 , postings = initialPostings
@@ -261,11 +258,8 @@ htmlJEntryList : Model -> Html
 htmlJEntryList model = 
   case .restEntries model of
     [] -> div [] []
-    (entry::entries) -> div [ class "container" ]
-                            [ div [ class "divider" ] []
-                            , htmlJEntry entry
-                            , htmlJEntryList { model | restEntries = entries}
-                            ]
+    entries -> div [ class "container" ] 
+               (List.map htmlJEntry entries)
                         
 htmlJEntry : JEntry -> Html
 htmlJEntry entry =   let (p1, p2, rest) = getPostings2 entry
@@ -379,7 +373,16 @@ viewForm address model =
                   , value p2.amount
                   , on "input" targetValue (Signal.message address << SetAmountB) ] 
               []
-          ]              
+          ]             
+      , div []
+          [ a [ class "btn btn-small teal"
+              , onClick address AddNew 
+              ] 
+              [ i [ class "material-icons left"  ] 
+                  [ text "done" ]
+              , text "Submit"
+              ]
+          ]
       ]
   
                              
