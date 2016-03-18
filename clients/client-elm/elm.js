@@ -11102,7 +11102,7 @@ Elm.UIComponents.make = function (_elm) {
          _U.list([$Html$Attributes.$class("col offset-s1 s12")]),
          _U.list([A2($Html.span,
          _U.list([$Html$Attributes.$class("black-text")]),
-         _U.list([$Html.text(A2($Basics._op["++"],p.account,A2($Basics._op["++"],"   ",p.amount)))]))]));
+         _U.list([$Html.text(A2($Basics._op["++"],p.account,A2($Basics._op["++"],"    &#x20B9; ",p.amount)))]))]));
       };
       var comment = $String.trim(entry.comment);
       var commentDisplay = $Basics.not($String.isEmpty(comment)) ? $Html$Attributes.style(_U.list([{ctor: "_Tuple2"
@@ -11166,10 +11166,28 @@ Elm.UIComponents.make = function (_elm) {
    };
    var prefixIcon = icon("material-icons prefix");
    var displayStyle = function (value) {    return $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "display",_1: value}]));};
+   var htmlEmptyState = function (model) {
+      return A2($Html.div,
+      _U.list([$Html$Attributes.$class("container"),displayStyle(model.ui.entryListDisp)]),
+      _U.list([A2($Html.div,
+      _U.list([$Html$Attributes.$class("row")]),
+      _U.list([A2($Html.div,
+      _U.list([$Html$Attributes.$class("col s12")]),
+      _U.list([A2($Html.div,
+      _U.list([$Html$Attributes.$class("card-panel grey lighten-5 z-depth-1")]),
+      _U.list([A2($Html.div,
+      _U.list([$Html$Attributes.$class("row valign-wrapper")]),
+      _U.list([A2($Html.div,
+              _U.list([$Html$Attributes.$class("col s4")]),
+              _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("grey-text flow-text")]),_U.list([$Html.text("Time to add a journal entry! :)")]))]))
+              ,A2($Html.div,
+              _U.list([$Html$Attributes.$class("col s8 align-left")]),
+              _U.list([A2($Html.img,_U.list([$Html$Attributes.src("_assets/empty-state-penguin.png")]),_U.list([]))]))]))]))]))]))]));
+   };
    var htmlJEntryList = function (model) {
       var _p1 = function (_) {    return _.restEntries;}(model);
       if (_p1.ctor === "[]") {
-            return A2($Html.div,_U.list([displayStyle(model.ui.entryListDisp)]),_U.list([$Html.text("Empty State")]));
+            return htmlEmptyState(model);
          } else {
             return A2($Html.div,_U.list([$Html$Attributes.$class("container"),displayStyle(model.ui.entryListDisp)]),A2($List.map,htmlJEntry,_p1));
          }

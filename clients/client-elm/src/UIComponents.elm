@@ -25,12 +25,34 @@ materialIcon = icon "material-icons"
 prefixIcon = icon "material-icons prefix" 
 
 
+htmlEmptyState : Model -> Html
+htmlEmptyState model =  div [ class "container"
+                            , displayStyle model.ui.entryListDisp
+                            ]
+                        [ div [ class "row" ]
+                            [ div [ class "col s12"]
+                                [ div [ class "card-panel grey lighten-5 z-depth-1" ]
+                                    [ div [ class "row valign-wrapper" ]
+                                        [ div [ class "col s4" ]
+                                            [ div [ class "grey-text flow-text" ] 
+                                                [ text "Time to add a journal entry! :)" ]
+                                            ]
+                                        , div [ class "col s8" ]
+                                            [ img [src "_assets/empty-state-penguin.png"]
+                                                []
+                                            ]
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+
+
 -- Auxiliary functions for building the view
 htmlJEntryList : Model -> Html
 htmlJEntryList model = 
   case .restEntries model of
-    [] -> div [ displayStyle model.ui.entryListDisp ]
-          [ text "Empty State" ]
+    [] -> htmlEmptyState model
     entries -> div [ class "container"
                    , displayStyle model.ui.entryListDisp ] 
                (List.map htmlJEntry entries)
@@ -45,7 +67,7 @@ htmlJEntry entry =   let (p1, p2, rest) = getPostings2 entry
                                           else style [ ("display", "none") ]
                          htmlPosting p = div [ class "col offset-s1 s12" ]
                                          [ span [ class "black-text" ]
-                                                  [ text (p.account ++ "   " ++ p.amount) ]
+                                                  [ text (p.account ++ "    &#x20B9; " ++ p.amount) ]
                                          ]
                          
 
