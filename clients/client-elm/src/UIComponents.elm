@@ -229,31 +229,33 @@ viewForm address model =
                             ] 
 
   in
-    div [ class "row"
-        , displayStyle model.ui.formDisp
-        ]
-      [ Html.form [ class "col s12" ]
-          [ description
-          , comments
-          , div [ class "row" ]
-              [ account "Account #1" "acc-1" SetAccountA
-              , amount  "Amount (Rs)" "amount-1" SetAmountA
-              ]
-          , div [ class "row" ]
-              [ account "Account #2" "acc-2" SetAccountB
-              , amount "Amount (Rs)" "amount-2" SetAmountB
-              ]
-          , div [ class "row right" ]
-              [ a [ class "btn btn-small teal"
-                  , onClick address AddNew 
-                  , noTouchToSearchStyle
-                  ] 
-                  [ icon "material-icons right" "send"
-                  , text "Submit"
+    div [ class "container" ]
+          [ div [ class "row"
+                , displayStyle model.ui.formDisp
+                ]
+              [ Html.form [ class "col s12" ]
+                  [ description
+                  , comments
+                  , div [ class "row" ]
+                      [ account "Account #1" "acc-1" SetAccountA
+                      , amount  "Amount (Rs)" "amount-1" SetAmountA
+                      ]
+                  , div [ class "row" ]
+                      [ account "Account #2" "acc-2" SetAccountB
+                      , amount "Amount (Rs)" "amount-2" SetAmountB
+                      ]
+                  , div [ class "row right" ]
+                      [ a [ class "btn btn-small teal"
+                          , onClick address AddNew 
+                          , noTouchToSearchStyle
+                          ] 
+                          [ icon "material-icons right" "send"
+                          , text "Submit"
+                          ]
+                      ]
                   ]
               ]
           ]
-      ]
                                
 
 -- Styling
