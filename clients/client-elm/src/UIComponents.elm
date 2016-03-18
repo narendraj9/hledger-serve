@@ -208,7 +208,7 @@ viewForm address model =
                   ]
        account l i tag = div [ class "input-field col s6" ]
                          [ input [ id i
-                                 , type' "text"
+                                 , type' "email"
                                  , style [("autocapitalize", "off")]
                                  , onInput tag
                                     ]
