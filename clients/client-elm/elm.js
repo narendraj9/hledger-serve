@@ -11222,7 +11222,7 @@ Elm.UIComponents.make = function (_elm) {
       var description = A2($Html.div,
       _U.list([$Html$Attributes.$class("row")]),
       _U.list([A2($Html.div,
-      _U.list([$Html$Attributes.$class("input-field col s12")]),
+      _U.list([$Html$Attributes.$class("input-field col s12 text-left")]),
       _U.list([A2($Html.input,
               _U.list([$Html$Attributes.id("description-field")
                       ,$Html$Attributes.$class("validate")
@@ -11247,7 +11247,13 @@ Elm.UIComponents.make = function (_elm) {
       var account = F3(function (l,i,tag) {
          return A2($Html.div,
          _U.list([$Html$Attributes.$class("input-field col s6")]),
-         _U.list([A2($Html.input,_U.list([$Html$Attributes.id(i),$Html$Attributes.$class("validate"),$Html$Attributes.type$("text"),onInput(tag)]),_U.list([]))
+         _U.list([A2($Html.input,
+                 _U.list([$Html$Attributes.id(i)
+                         ,$Html$Attributes.$class("validate")
+                         ,$Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "autocapitalize",_1: "none"}]))
+                         ,$Html$Attributes.type$("text")
+                         ,onInput(tag)]),
+                 _U.list([]))
                  ,A2($Html.label,_U.list([$Html$Attributes.$for(i)]),_U.list([$Html.text(l)]))]));
       });
       var amount = F3(function (l,i,tag) {

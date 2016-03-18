@@ -181,7 +181,7 @@ viewForm address model =
        (p1, p2, rest) = getPostings2 fields
        onInput tag = on "input" targetValue (Signal.message address << tag)
        description = div [ class "row" ]
-                     [ div [ class "input-field col s12" ]
+                     [ div [ class "input-field col s12 text-left" ]
                          [ input [ id "description-field"
                                  , class "validate"
                                  , type' "text"
@@ -210,6 +210,7 @@ viewForm address model =
        account l i tag = div [ class "input-field col s6" ]
                          [ input [ id i
                                  , class "validate"
+                                 , style [ ("autocapitalize", "none") ]
                                  , type' "text"
                                  , onInput tag
                                     ]
