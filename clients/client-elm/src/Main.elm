@@ -1,10 +1,9 @@
 import Http
 import Task exposing (Task)
-import TaskTutorial exposing (print, getCurrentTime)
 import StartApp exposing (start)
 import Effects exposing (Effects, Never)
 
-import Hledger exposing (init, update, view)
+import HLedger exposing (init, update, view)
 
 app =
   start
