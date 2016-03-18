@@ -11264,6 +11264,8 @@ Elm.UIComponents.make = function (_elm) {
       var p2 = _p3._1;
       var rest = _p3._2;
       return A2($Html.div,
+      _U.list([$Html$Attributes.$class("container")]),
+      _U.list([A2($Html.div,
       _U.list([$Html$Attributes.$class("row"),displayStyle(model.ui.formDisp)]),
       _U.list([A2($Html.form,
       _U.list([$Html$Attributes.$class("col s12")]),
@@ -11279,7 +11281,7 @@ Elm.UIComponents.make = function (_elm) {
               _U.list([$Html$Attributes.$class("row right")]),
               _U.list([A2($Html.a,
               _U.list([$Html$Attributes.$class("btn btn-small teal"),A2($Html$Events.onClick,address,$Model.AddNew),noTouchToSearchStyle]),
-              _U.list([A2(icon,"material-icons right","send"),$Html.text("Submit")]))]))]))]));
+              _U.list([A2(icon,"material-icons right","send"),$Html.text("Submit")]))]))]))]))]));
    });
    return _elm.UIComponents.values = {_op: _op
                                      ,viewForm: viewForm
