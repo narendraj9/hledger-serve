@@ -183,7 +183,6 @@ viewForm address model =
        description = div [ class "row" ]
                      [ div [ class "input-field col s12 text-left" ]
                          [ input [ id "description-field"
-                                 , class "validate"
                                  , type' "text"
                                  , value model.currentFields.description
                                  , onInput SetDesc
@@ -209,9 +208,8 @@ viewForm address model =
                   ]
        account l i tag = div [ class "input-field col s6" ]
                          [ input [ id i
-                                 , class "validate"
-                                 , style [ ("autocapitalize", "none") ]
                                  , type' "text"
+                                 , style [("autocapitalize", "none")]
                                  , onInput tag
                                     ]
                                 []
