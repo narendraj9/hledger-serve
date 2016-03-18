@@ -11225,7 +11225,6 @@ Elm.UIComponents.make = function (_elm) {
       _U.list([$Html$Attributes.$class("input-field col s12 text-left")]),
       _U.list([A2($Html.input,
               _U.list([$Html$Attributes.id("description-field")
-                      ,$Html$Attributes.$class("validate")
                       ,$Html$Attributes.type$("text")
                       ,$Html$Attributes.value(model.currentFields.description)
                       ,onInput($Model.SetDesc)]),
@@ -11249,9 +11248,8 @@ Elm.UIComponents.make = function (_elm) {
          _U.list([$Html$Attributes.$class("input-field col s6")]),
          _U.list([A2($Html.input,
                  _U.list([$Html$Attributes.id(i)
-                         ,$Html$Attributes.$class("validate")
-                         ,$Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "autocapitalize",_1: "none"}]))
-                         ,$Html$Attributes.type$("text")
+                         ,$Html$Attributes.type$("email")
+                         ,$Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "autocapitalize",_1: "off"}]))
                          ,onInput(tag)]),
                  _U.list([]))
                  ,A2($Html.label,_U.list([$Html$Attributes.$for(i)]),_U.list([$Html.text(l)]))]));
