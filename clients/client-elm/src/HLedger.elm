@@ -118,7 +118,7 @@ view address model =
   , htmlNav model
   , htmlPreloader model
   , viewForm address model
-  , htmlJEntryList model
+  , viewJEntryList address model
   , viewButtons address
   ]
 

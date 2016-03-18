@@ -11073,6 +11073,11 @@ Elm.UIComponents.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm),
    $String = Elm.String.make(_elm);
    var _op = {};
+   var blockquoteStyle = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "border-left",_1: "2px solid #ee6e73"}]));
+   var entryStyle = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "transition",_1: "box-shadow .25s"}
+                                                   ,{ctor: "_Tuple2",_0: "padding",_1: "10px"}
+                                                   ,{ctor: "_Tuple2",_0: "margin",_1: "0.5rem 0 1rem 0"}
+                                                   ,{ctor: "_Tuple2",_0: "border-radius",_1: "2px"}]));
    var noTouchToSearchStyle = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "role",_1: "button"}
                                                              ,{ctor: "_Tuple2",_0: "tabindex",_1: "1"}
                                                              ,{ctor: "_Tuple2",_0: "-webkit-user-select",_1: "none"}]));
@@ -11119,20 +11124,18 @@ Elm.UIComponents.make = function (_elm) {
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("row")]),
       _U.list([A2($Html.div,
-      _U.list([$Html$Attributes.$class("col s12")]),
-      _U.list([A2($Html.div,
-      _U.list([$Html$Attributes.$class("card-panel grey lighten-5 z-depth-1")]),
-      _U.list([A2($Html.div,
-      _U.list([$Html$Attributes.$class("row valign-wrapper")]),
+      _U.list([$Html$Attributes.$class("col s12 m8 offset-m2 z-depth-1"),entryStyle]),
       _U.list([A2($Html.div,
               _U.list([$Html$Attributes.$class("col s12")]),
               _U.list([A2($Html.span,_U.list([]),_U.list([$Html.text(A2($Basics._op["++"],date," "))]))
                       ,A2($Html.span,_U.list([]),_U.list([$Html.text(description)]))]))
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("col s8 offset-s2"),commentDisplay]),
-              _U.list([A2($Html.blockquote,_U.list([$Html$Attributes.$class("right s8")]),_U.list([A2($Html.p,_U.list([]),_U.list([$Html.text(comment)]))]))]))
+              _U.list([A2($Html.blockquote,
+              _U.list([$Html$Attributes.$class("right s8"),blockquoteStyle]),
+              _U.list([A2($Html.p,_U.list([]),_U.list([$Html.text(comment)]))]))]))
               ,htmlPosting(p1)
-              ,htmlPosting(p2)]))]))]))]));
+              ,htmlPosting(p2)]))]));
    };
    var icon = F2(function (classNames,iconName) {    return A2($Html.i,_U.list([$Html$Attributes.$class(classNames)]),_U.list([$Html.text(iconName)]));});
    var materialIcon = icon("material-icons");
@@ -11170,7 +11173,7 @@ Elm.UIComponents.make = function (_elm) {
    };
    var prefixIcon = icon("material-icons prefix");
    var displayStyle = function (value) {    return $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "display",_1: value}]));};
-   var htmlEmptyState = function (model) {
+   var viewEmptyState = F2(function (address,model) {
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("container"),displayStyle(model.ui.entryListDisp)]),
       _U.list([A2($Html.div,
@@ -11180,26 +11183,33 @@ Elm.UIComponents.make = function (_elm) {
       _U.list([A2($Html.div,
       _U.list([$Html$Attributes.$class("card-panel grey lighten-5 z-depth-1")]),
       _U.list([A2($Html.div,
-      _U.list([$Html$Attributes.$class("row valign-wrapper")]),
-      _U.list([A2($Html.div,
-              _U.list([$Html$Attributes.$class("col s4")]),
+              _U.list([$Html$Attributes.$class("row")]),
               _U.list([A2($Html.div,
-              _U.list([$Html$Attributes.$class("grey-text flow-text")]),
-              _U.list([A2(icon,"material-icons large","add_alert"),$Html.text("Time to add a journal entry! :)")]))]))
+              _U.list([$Html$Attributes.$class("col offset-s2 s8 center")]),
+              _U.list([A2($Html.a,
+              _U.list([$Html$Attributes.$class("btn btn-large"),noTouchToSearchStyle,A2($Html$Events.onClick,address,$Model.ShowForm)]),
+              _U.list([A2(icon,"material-icons large","add_alert")]))]))]))
               ,A2($Html.div,
-              _U.list([$Html$Attributes.$class("col s8")]),
+              _U.list([$Html$Attributes.$class("row")]),
+              _U.list([A2($Html.div,
+              _U.list([$Html$Attributes.$class("col offset-s2 s8 center  orange-text flow-text")]),
+              _U.list([$Html.text("Time to add a journal entry! :)")]))]))
+              ,A2($Html.div,
+              _U.list([$Html$Attributes.$class("row")]),
+              _U.list([A2($Html.div,
+              _U.list([$Html$Attributes.$class("col offset-s2 s8 center")]),
               _U.list([A2($Html.img,
-              _U.list([$Html$Attributes.$class("responsive-img"),$Html$Attributes.src("_assets/empty-state-penguin.png")]),
+              _U.list([$Html$Attributes.$class("responsive-img"),$Html$Attributes.src("_assets/empty-state-bear.png")]),
               _U.list([]))]))]))]))]))]))]));
-   };
-   var htmlJEntryList = function (model) {
+   });
+   var viewJEntryList = F2(function (address,model) {
       var _p1 = function (_) {    return _.restEntries;}(model);
       if (_p1.ctor === "[]") {
-            return htmlEmptyState(model);
+            return A2(viewEmptyState,address,model);
          } else {
             return A2($Html.div,_U.list([$Html$Attributes.$class("container"),displayStyle(model.ui.entryListDisp)]),A2($List.map,htmlJEntry,_p1));
          }
-   };
+   });
    var htmlPreloader = function (model) {
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("progress"),displayStyle(model.ui.preloaderDisp)]),
@@ -11273,7 +11283,7 @@ Elm.UIComponents.make = function (_elm) {
    });
    return _elm.UIComponents.values = {_op: _op
                                      ,viewForm: viewForm
-                                     ,htmlJEntryList: htmlJEntryList
+                                     ,viewJEntryList: viewJEntryList
                                      ,viewButtons: viewButtons
                                      ,htmlNav: htmlNav
                                      ,htmlPreloader: htmlPreloader};
@@ -11377,7 +11387,7 @@ Elm.HLedger.make = function (_elm) {
               ,$UIComponents.htmlNav(model)
               ,$UIComponents.htmlPreloader(model)
               ,A2($UIComponents.viewForm,address,model)
-              ,$UIComponents.htmlJEntryList(model)
+              ,A2($UIComponents.viewJEntryList,address,model)
               ,$UIComponents.viewButtons(address)]));
    });
    var update = F2(function (action,model) {

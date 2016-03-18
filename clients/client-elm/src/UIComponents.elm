@@ -1,5 +1,5 @@
 module UIComponents ( viewForm
-                    , htmlJEntryList
+                    , viewJEntryList
                     , viewButtons
                     , (=>)
                     , htmlNav
@@ -25,38 +25,46 @@ materialIcon = icon "material-icons"
 prefixIcon = icon "material-icons prefix" 
 
 
-htmlEmptyState : Model -> Html
-htmlEmptyState model =  div [ class "container"
-                            , displayStyle model.ui.entryListDisp
-                            ]
-                        [ div [ class "row" ]
-                            [ div [ class "col s12"]
-                                [ div [ class "card-panel grey lighten-5 z-depth-1" ]
-                                    [ div [ class "row valign-wrapper" ]
-                                        [ div [ class "col s4" ]
-                                            [ div [ class "grey-text flow-text" ] 
-                                                [ icon "material-icons large"  "add_alert"
-                                                , text "Time to add a journal entry! :)"
+viewEmptyState : Signal.Address Action -> Model -> Html
+viewEmptyState address model =  div [ class "container"
+                                    , displayStyle model.ui.entryListDisp
+                                    ]
+                                [ div [ class "row" ]
+                                    [ div [ class "col s12"]
+                                        [ div [ class "card-panel grey lighten-5 z-depth-1" ]
+                                            [ div [ class "row" ]
+                                                [ div [ class "col offset-s2 s8 center" ]
+                                                    [ a [ class "btn btn-large"
+                                                        , noTouchToSearchStyle
+                                                        , onClick address ShowForm 
+                                                        ] 
+                                                        [ icon "material-icons large" "add_alert" ]
+                                                    ]
                                                 ]
-                                            ]
-                                        , div [ class "col s8" ]
-                                            [ img [ class "responsive-img"
-                                                  , src "_assets/empty-state-penguin.png"
-                                                  ]
-                                                []
+                                            , div [ class "row" ]
+                                                [ div [ class "col offset-s2 s8 center  orange-text flow-text" ] 
+                                                    [ text "Time to add a journal entry! :)" ]
+                                                ]
+                                            , div [ class "row" ]
+                                                [ div [ class "col offset-s2 s8 center" ]
+                                                    [ img [ class "responsive-img"
+                                                          , src "_assets/empty-state-bear.png"
+                                                          ]
+                                                        []
+                                                    ]
+                                                ]
                                             ]
                                         ]
                                     ]
                                 ]
-                            ]
-                        ]
+
 
 
 -- Auxiliary functions for building the view
-htmlJEntryList : Model -> Html
-htmlJEntryList model = 
+viewJEntryList : Signal.Address Action -> Model -> Html
+viewJEntryList address model = 
   case .restEntries model of
-    [] -> htmlEmptyState model
+    [] -> viewEmptyState address model
     entries -> div [ class "container"
                    , displayStyle model.ui.entryListDisp ] 
                (List.map htmlJEntry entries)
@@ -78,26 +86,25 @@ htmlJEntry entry =   let (p1, p2, rest) = getPostings2 entry
                                                   ]
                                          ]
                      in
-                        div [ class "row" ]
-                            [ div [ class "col s12"]
-                                [ div [ class "card-panel grey lighten-5 z-depth-1" ]
-                                    [ div [ class "row valign-wrapper" ]
-                                        [ div [ class "col s12"]
-                                            [ span [] [ text (date ++ " ") ]
-                                            , span [] [ text description ]
-                                            ]
-                                        , div [ class "col s8 offset-s2"
-                                              , commentDisplay ]
-                                            [ blockquote [ class "right s8" ]
-                                                [ p [] [text comment ] ]
-                                            ]
+                       div [ class "row" ]
+                             [ div [ class "col s12 m8 offset-m2 z-depth-1"
+                                   , entryStyle ]
+                                     [ div [ class "col s12"]
+                                               [ span [] [ text (date ++ " ") ]
+                                               , span [] [ text description ]
+                                               ]
+                                     , div [ class "col s8 offset-s2"
+                                           , commentDisplay ]
+                                               [ blockquote [ class "right s8"
+                                                            , blockquoteStyle
+                                                            ]
+                                                   [ p [] [text comment ] ]
+                                               ]
 
-                                        , htmlPosting p1
-                                        , htmlPosting p2
-                                        ]
-                                    ]
-                                ]
-                            ]
+                                     , htmlPosting p1
+                                     , htmlPosting p2
+                                     ]
+                             ]
 
 viewButtons : Signal.Address Action -> Html
 viewButtons address = let fabStyle = style [ ("bottom" , "45px")
@@ -285,3 +292,21 @@ noTouchToSearchStyle =
     , ("tabindex", "1")
     , ("-webkit-user-select", "none")
     ]
+
+-- Attributes exactly similar to a card-panel  
+entryStyle : Attribute
+entryStyle =
+  style
+    [ ("transition", "box-shadow .25s")
+    , ("padding", "10px")
+    , ("margin", "0.5rem 0 1rem 0")
+    , ("border-radius", "2px")
+    ]
+
+-- materialize.css blockquote with thinner border    
+blockquoteStyle : Attribute
+blockquoteStyle =
+  style
+    [ ("border-left", "2px solid #ee6e73")
+    ]
+
