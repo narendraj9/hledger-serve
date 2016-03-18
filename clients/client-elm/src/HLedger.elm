@@ -94,13 +94,11 @@ update action model =
                                newFields = { fields | postings = newPostings }
                            in noEf { model | currentFields = newFields }
                               
-      (SetAmountA a1) -> let a1_ = if a1 /= "" then "₹ " ++ a1 else a1
-                             newPostings = { p1 | amount = a1_ } :: p2 :: rest
+      (SetAmountA a1) -> let newPostings = { p1 | amount = a1 } :: p2 :: rest
                              newFields = { fields | postings = newPostings }
                        in noEf { model | currentFields = newFields }
                               
-      (SetAmountB a2) -> let a2_ = if a2 /= "" then "₹ " ++ a2 else a2
-                             newPostings = p1 :: { p2 | amount = a2_ } :: rest
+      (SetAmountB a2) -> let newPostings = p1 :: { p2 | amount = a2 } :: rest
                              newFields = { fields | postings = newPostings }
                          in noEf { model | currentFields = newFields }
     -- A new penguin gif just arrived

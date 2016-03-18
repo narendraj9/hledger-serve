@@ -11102,7 +11102,7 @@ Elm.UIComponents.make = function (_elm) {
          _U.list([$Html$Attributes.$class("col offset-s1 s12")]),
          _U.list([A2($Html.span,
          _U.list([$Html$Attributes.$class("black-text")]),
-         _U.list([$Html.text(A2($Basics._op["++"],p.account,A2($Basics._op["++"],"    &#x20B9; ",p.amount)))]))]));
+         _U.list([$Html.text(A2($Basics._op["++"],p.account,$String.isEmpty($String.trim(p.amount)) ? "" : A2($Basics._op["++"],"   ₹ ",p.amount)))]))]));
       };
       var comment = $String.trim(entry.comment);
       var commentDisplay = $Basics.not($String.isEmpty(comment)) ? $Html$Attributes.style(_U.list([{ctor: "_Tuple2"
@@ -11119,7 +11119,11 @@ Elm.UIComponents.make = function (_elm) {
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("row")]),
       _U.list([A2($Html.div,
-      _U.list([$Html$Attributes.$class("col s12 m8 offset-m2 z-depth-1")]),
+      _U.list([$Html$Attributes.$class("col s12")]),
+      _U.list([A2($Html.div,
+      _U.list([$Html$Attributes.$class("card-panel grey lighten-5 z-depth-1")]),
+      _U.list([A2($Html.div,
+      _U.list([$Html$Attributes.$class("row valign-wrapper")]),
       _U.list([A2($Html.div,
               _U.list([$Html$Attributes.$class("col s12")]),
               _U.list([A2($Html.span,_U.list([]),_U.list([$Html.text(A2($Basics._op["++"],date," "))]))
@@ -11128,7 +11132,7 @@ Elm.UIComponents.make = function (_elm) {
               _U.list([$Html$Attributes.$class("col s8 offset-s2"),commentDisplay]),
               _U.list([A2($Html.blockquote,_U.list([$Html$Attributes.$class("right s8")]),_U.list([A2($Html.p,_U.list([]),_U.list([$Html.text(comment)]))]))]))
               ,htmlPosting(p1)
-              ,htmlPosting(p2)]))]));
+              ,htmlPosting(p2)]))]))]))]));
    };
    var icon = F2(function (classNames,iconName) {    return A2($Html.i,_U.list([$Html$Attributes.$class(classNames)]),_U.list([$Html.text(iconName)]));});
    var materialIcon = icon("material-icons");
@@ -11179,10 +11183,14 @@ Elm.UIComponents.make = function (_elm) {
       _U.list([$Html$Attributes.$class("row valign-wrapper")]),
       _U.list([A2($Html.div,
               _U.list([$Html$Attributes.$class("col s4")]),
-              _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("grey-text flow-text")]),_U.list([$Html.text("Time to add a journal entry! :)")]))]))
+              _U.list([A2($Html.div,
+              _U.list([$Html$Attributes.$class("grey-text flow-text")]),
+              _U.list([A2(icon,"material-icons large","add_alert"),$Html.text("Time to add a journal entry! :)")]))]))
               ,A2($Html.div,
-              _U.list([$Html$Attributes.$class("col s8 align-left")]),
-              _U.list([A2($Html.img,_U.list([$Html$Attributes.src("_assets/empty-state-penguin.png")]),_U.list([]))]))]))]))]))]))]));
+              _U.list([$Html$Attributes.$class("col s8")]),
+              _U.list([A2($Html.img,
+              _U.list([$Html$Attributes.$class("responsive-img"),$Html$Attributes.src("_assets/empty-state-penguin.png")]),
+              _U.list([]))]))]))]))]))]))]));
    };
    var htmlJEntryList = function (model) {
       var _p1 = function (_) {    return _.restEntries;}(model);
@@ -11418,14 +11426,10 @@ Elm.HLedger.make = function (_elm) {
          case "SetAccountB": var newPostings = A2($List._op["::"],p1,A2($List._op["::"],_U.update(p2,{account: _p1._0}),rest));
            var newFields = _U.update(fields,{postings: newPostings});
            return noEf(_U.update(model,{currentFields: newFields}));
-         case "SetAmountA": var _p2 = _p1._0;
-           var a1_ = !_U.eq(_p2,"") ? A2($Basics._op["++"],"₹ ",_p2) : _p2;
-           var newPostings = A2($List._op["::"],_U.update(p1,{amount: a1_}),A2($List._op["::"],p2,rest));
+         case "SetAmountA": var newPostings = A2($List._op["::"],_U.update(p1,{amount: _p1._0}),A2($List._op["::"],p2,rest));
            var newFields = _U.update(fields,{postings: newPostings});
            return noEf(_U.update(model,{currentFields: newFields}));
-         case "SetAmountB": var _p3 = _p1._0;
-           var a2_ = !_U.eq(_p3,"") ? A2($Basics._op["++"],"₹ ",_p3) : _p3;
-           var newPostings = A2($List._op["::"],p1,A2($List._op["::"],_U.update(p2,{amount: a2_}),rest));
+         case "SetAmountB": var newPostings = A2($List._op["::"],p1,A2($List._op["::"],_U.update(p2,{amount: _p1._0}),rest));
            var newFields = _U.update(fields,{postings: newPostings});
            return noEf(_U.update(model,{currentFields: newFields}));
          default: var uiStatus = model.ui;

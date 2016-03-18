@@ -35,10 +35,14 @@ htmlEmptyState model =  div [ class "container"
                                     [ div [ class "row valign-wrapper" ]
                                         [ div [ class "col s4" ]
                                             [ div [ class "grey-text flow-text" ] 
-                                                [ text "Time to add a journal entry! :)" ]
+                                                [ icon "material-icons large"  "add_alert"
+                                                , text "Time to add a journal entry! :)"
+                                                ]
                                             ]
                                         , div [ class "col s8" ]
-                                            [ img [src "_assets/empty-state-penguin.png"]
+                                            [ img [ class "responsive-img"
+                                                  , src "_assets/empty-state-penguin.png"
+                                                  ]
                                                 []
                                             ]
                                         ]
@@ -67,27 +71,33 @@ htmlJEntry entry =   let (p1, p2, rest) = getPostings2 entry
                                           else style [ ("display", "none") ]
                          htmlPosting p = div [ class "col offset-s1 s12" ]
                                          [ span [ class "black-text" ]
-                                                  [ text (p.account ++ "    &#x20B9; " ++ p.amount) ]
+                                                  [ text (p.account ++
+                                                            (if (String.isEmpty (String.trim p.amount))
+                                                             then ""
+                                                             else "   ₹ " ++ p.amount))
+                                                  ]
                                          ]
-                         
-
                      in
-                       div [ class "row" ]
-                             [ div [ class "col s12 m8 offset-m2 z-depth-1" ]
-                                     [ div [ class "col s12"]
-                                               [ span [] [ text (date ++ " ") ]
-                                               , span [] [ text description ]
-                                               ]
-                                     , div [ class "col s8 offset-s2"
-                                           , commentDisplay ]
-                                               [ blockquote [ class "right s8" ]
-                                                   [ p [] [text comment ] ]
-                                               ]
+                        div [ class "row" ]
+                            [ div [ class "col s12"]
+                                [ div [ class "card-panel grey lighten-5 z-depth-1" ]
+                                    [ div [ class "row valign-wrapper" ]
+                                        [ div [ class "col s12"]
+                                            [ span [] [ text (date ++ " ") ]
+                                            , span [] [ text description ]
+                                            ]
+                                        , div [ class "col s8 offset-s2"
+                                              , commentDisplay ]
+                                            [ blockquote [ class "right s8" ]
+                                                [ p [] [text comment ] ]
+                                            ]
 
-                                     , htmlPosting p1
-                                     , htmlPosting p2
-                                     ]
-                             ]
+                                        , htmlPosting p1
+                                        , htmlPosting p2
+                                        ]
+                                    ]
+                                ]
+                            ]
 
 viewButtons : Signal.Address Action -> Html
 viewButtons address = let fabStyle = style [ ("bottom" , "45px")
