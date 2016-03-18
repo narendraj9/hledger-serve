@@ -22,8 +22,8 @@ displayStyle value = style [ ("display", value) ]
 icon classNames iconName = i [ class classNames ] 
                            [ text iconName ]
 -- Instead of typing all the html manually, call these functions
-materialIcon = icon "material-icons"  
-prefixIcon = icon "material-icons prefix" 
+materialIcon = icon "material-icons waves-effect waves-light"  
+prefixIcon = icon "material-icons waves-effect waves-light prefix" 
 
 
 viewEmptyState : Signal.Address Action -> Model -> Html
@@ -35,7 +35,7 @@ viewEmptyState address model =  div [ class "container"
                                         [ div [ class "card-panel grey lighten-5 z-depth-1" ]
                                             [ div [ class "row" ]
                                                 [ div [ class "col offset-s2 s8 center" ]
-                                                    [ a [ class "btn btn-large"
+                                                    [ a [ class "waves-effect waves-light btn btn-large"
                                                         , noTouchToSearchStyle
                                                         , onClick address ShowForm 
                                                         ] 
@@ -113,35 +113,35 @@ viewButtons address = let fabStyle = style [ ("bottom" , "45px")
               in div [ class "fixed-action-btn horizontal"
                      , fabStyle
                      , noTouchToSearchStyle ]
-                   [ a [ class "btn-floating btn-large red" ]
+                   [ a [ class "btn-floating btn-large  waves-effect waves-light red" ]
                        [ i [ class "large material-icons"
                            , noTouchToSearchStyle ] 
                            [ text "mode_edit" ]
                        ]
                    , ul []
                        [ li []
-                           [ a [ class "btn-floating btn-small red darken-2"
+                           [ a [ class "btn-floating btn-small waves-effect waves-light red darken-2"
                                , noTouchToSearchStyle
                                , onClick address ClearAll 
                                ] 
                                [ materialIcon "delete_sweep" ]
                            ]
                        , li []
-                           [ a [ class "btn-floating btn-small red"
+                           [ a [ class "btn-floating btn-small waves-effect waves-light red"
                                , noTouchToSearchStyle
                                , onClick address DeleteLast 
                                ] 
                                [ materialIcon "remove" ]
                            ]
                        , li []  
-                           [ a [ class "btn-floating btn-small blue"
+                           [ a [ class "btn-floating btn-small waves-effect waves-light blue"
                                , noTouchToSearchStyle
                                , onClick address FetchAll 
                                ]
                                [ materialIcon "restore" ]
                            ]
                        , li [] 
-                           [ a [ class "btn-floating btn-small teal"
+                           [ a [ class "btn-floating btn-small waves-effect waves-light teal"
                                , noTouchToSearchStyle
                                , onClick address ShowForm 
                                ] 

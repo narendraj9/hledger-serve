@@ -11136,40 +11136,46 @@ Elm.UIComponents.make = function (_elm) {
               ,htmlPosting(p2)]))]));
    };
    var icon = F2(function (classNames,iconName) {    return A2($Html.i,_U.list([$Html$Attributes.$class(classNames)]),_U.list([$Html.text(iconName)]));});
-   var materialIcon = icon("material-icons");
+   var materialIcon = icon("material-icons waves-effect waves-light");
    var viewButtons = function (address) {
       var fabStyle = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "bottom",_1: "45px"},{ctor: "_Tuple2",_0: "right",_1: "24px"}]));
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("fixed-action-btn horizontal"),fabStyle,noTouchToSearchStyle]),
       _U.list([A2($Html.a,
-              _U.list([$Html$Attributes.$class("btn-floating btn-large red")]),
+              _U.list([$Html$Attributes.$class("btn-floating btn-large  waves-effect waves-light red")]),
               _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("large material-icons"),noTouchToSearchStyle]),_U.list([$Html.text("mode_edit")]))]))
               ,A2($Html.ul,
               _U.list([]),
               _U.list([A2($Html.li,
                       _U.list([]),
                       _U.list([A2($Html.a,
-                      _U.list([$Html$Attributes.$class("btn-floating btn-small red darken-2")
+                      _U.list([$Html$Attributes.$class("btn-floating btn-small waves-effect waves-light red darken-2")
                               ,noTouchToSearchStyle
                               ,A2($Html$Events.onClick,address,$Model.ClearAll)]),
                       _U.list([materialIcon("delete_sweep")]))]))
                       ,A2($Html.li,
                       _U.list([]),
                       _U.list([A2($Html.a,
-                      _U.list([$Html$Attributes.$class("btn-floating btn-small red"),noTouchToSearchStyle,A2($Html$Events.onClick,address,$Model.DeleteLast)]),
+                      _U.list([$Html$Attributes.$class("btn-floating btn-small waves-effect waves-light red")
+                              ,noTouchToSearchStyle
+                              ,A2($Html$Events.onClick,address,$Model.DeleteLast)]),
                       _U.list([materialIcon("remove")]))]))
                       ,A2($Html.li,
                       _U.list([]),
                       _U.list([A2($Html.a,
-                      _U.list([$Html$Attributes.$class("btn-floating btn-small blue"),noTouchToSearchStyle,A2($Html$Events.onClick,address,$Model.FetchAll)]),
+                      _U.list([$Html$Attributes.$class("btn-floating btn-small waves-effect waves-light blue")
+                              ,noTouchToSearchStyle
+                              ,A2($Html$Events.onClick,address,$Model.FetchAll)]),
                       _U.list([materialIcon("restore")]))]))
                       ,A2($Html.li,
                       _U.list([]),
                       _U.list([A2($Html.a,
-                      _U.list([$Html$Attributes.$class("btn-floating btn-small teal"),noTouchToSearchStyle,A2($Html$Events.onClick,address,$Model.ShowForm)]),
+                      _U.list([$Html$Attributes.$class("btn-floating btn-small waves-effect waves-light teal")
+                              ,noTouchToSearchStyle
+                              ,A2($Html$Events.onClick,address,$Model.ShowForm)]),
                       _U.list([materialIcon("add")]))]))]))]));
    };
-   var prefixIcon = icon("material-icons prefix");
+   var prefixIcon = icon("material-icons waves-effect waves-light prefix");
    var htmlFooter = function (_p1) {
       return A2($Html.footer,
       _U.list([$Html$Attributes.$class("footer")]),
@@ -11206,7 +11212,9 @@ Elm.UIComponents.make = function (_elm) {
               _U.list([A2($Html.div,
               _U.list([$Html$Attributes.$class("col offset-s2 s8 center")]),
               _U.list([A2($Html.a,
-              _U.list([$Html$Attributes.$class("btn btn-large"),noTouchToSearchStyle,A2($Html$Events.onClick,address,$Model.ShowForm)]),
+              _U.list([$Html$Attributes.$class("waves-effect waves-light btn btn-large")
+                      ,noTouchToSearchStyle
+                      ,A2($Html$Events.onClick,address,$Model.ShowForm)]),
               _U.list([A2(icon,"material-icons large","add_alert")]))]))]))
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("row")]),
