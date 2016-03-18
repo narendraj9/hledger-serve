@@ -11081,10 +11081,7 @@ Elm.UIComponents.make = function (_elm) {
    var noTouchToSearchStyle = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "role",_1: "button"}
                                                              ,{ctor: "_Tuple2",_0: "tabindex",_1: "1"}
                                                              ,{ctor: "_Tuple2",_0: "-webkit-user-select",_1: "none"}]));
-   var appStyle = $Html$Attributes.style(_U.list([]));
    _op["=>"] = F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};});
-   var cardStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"padding","10px")]));
-   var bannerStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"background","#ee6e73")]));
    var imgStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"width","auto"),A2(_op["=>"],"padding-top","4px"),A2(_op["=>"],"height","78px")]));
    var htmlNav = function (model) {
       return A2($Html.div,
@@ -11124,7 +11121,7 @@ Elm.UIComponents.make = function (_elm) {
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("row")]),
       _U.list([A2($Html.div,
-      _U.list([$Html$Attributes.$class("col s12 m8 offset-m2 z-depth-1"),entryStyle]),
+      _U.list([$Html$Attributes.$class("col s12 m10 offset-m2 z-depth-1"),entryStyle]),
       _U.list([A2($Html.div,
               _U.list([$Html$Attributes.$class("col s12")]),
               _U.list([A2($Html.span,_U.list([]),_U.list([$Html.text(A2($Basics._op["++"],date," "))]))
@@ -11197,10 +11194,18 @@ Elm.UIComponents.make = function (_elm) {
               _U.list([$Html$Attributes.$class("center")]),
               _U.list([$Html.text("Built with "),A2(icon,"material-icons red-text tiny","favorite")]))]))]))]))]))]));
    };
-   var displayStyle = function (value) {    return $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "display",_1: value}]));};
+   var displayStyle = function (value) {
+      var transition = "opacity 0.0s ease 0.0s";
+      var opacity = _U.eq(value,"none") ? "0" : "1";
+      return $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "display",_1: value}
+                                            ,{ctor: "_Tuple2",_0: "opacity",_1: opacity}
+                                            ,{ctor: "_Tuple2",_0: "transition",_1: transition}
+                                            ,{ctor: "_Tuple2",_0: "-webkit-transition",_1: transition}
+                                            ,{ctor: "_Tuple2",_0: "-moz-transition",_1: transition}]));
+   };
    var viewEmptyState = F2(function (address,model) {
       return A2($Html.div,
-      _U.list([$Html$Attributes.$class("container"),displayStyle(model.ui.entryListDisp)]),
+      _U.list([$Html$Attributes.$class("container"),$Html$Attributes.id("empty-state-bear"),displayStyle(model.ui.entryListDisp)]),
       _U.list([A2($Html.div,
       _U.list([$Html$Attributes.$class("row")]),
       _U.list([A2($Html.div,

@@ -14,9 +14,19 @@ import Html.Events exposing (onClick, on, targetValue)
 
 import Model exposing (..)
 
--- Function for setting display attribute
+-- Function for setting display attribute | Transition doesn't work. Why?
 displayStyle : String -> Attribute
-displayStyle value = style [ ("display", value) ]
+displayStyle value = let opacity = if value == "none"
+                                      then "0"
+                                      else "1"
+                         transition = "opacity 0.0s ease 0.0s"
+                     in style [ ("display", value)
+                              , ("opacity", opacity)
+                              -- Figure out why it isn't working
+                              , ("transition", transition)
+                              , ("-webkit-transition", transition)
+                              , ("-moz-transition", transition)
+                              ]
 
 -- Common Elm code for icons
 icon classNames iconName = i [ class classNames ] 
@@ -28,6 +38,7 @@ prefixIcon = icon "material-icons waves-effect waves-light prefix"
 
 viewEmptyState : Signal.Address Action -> Model -> Html
 viewEmptyState address model =  div [ class "container"
+                                    , id "empty-state-bear"
                                     , displayStyle model.ui.entryListDisp
                                     ]
                                 [ div [ class "row" ]
@@ -88,7 +99,7 @@ htmlJEntry entry =   let (p1, p2, rest) = getPostings2 entry
                                          ]
                      in
                        div [ class "row" ]
-                             [ div [ class "col s12 m8 offset-m2 z-depth-1"
+                             [ div [ class "col s12 m10 offset-m2 z-depth-1"
                                    , entryStyle ]
                                      [ div [ class "col s12"]
                                                [ span [] [ text (date ++ " ") ]
@@ -282,23 +293,6 @@ htmlFooter _ = footer [ class "footer" ]
                ]
 -- Styling
 (=>) = (,)
-
-appStyle : Attribute
-appStyle = 
-  style []
-
-
-cardStyle : Attribute
-cardStyle = 
-  style
-    [ "padding" => "10px"
-    ]
-
-bannerStyle : Attribute
-bannerStyle =
-  style
-    [ "background" => "#ee6e73"
-    ]
 
 imgStyle : Attribute
 imgStyle =
