@@ -11073,6 +11073,7 @@ Elm.UIComponents.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm),
    $String = Elm.String.make(_elm);
    var _op = {};
+   var whitespacePreWrap = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "white-space",_1: "pre"}]));
    var blockquoteStyle = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "border-left",_1: "2px solid #ee6e73"}]));
    var entryStyle = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "transition",_1: "box-shadow .25s"}
                                                    ,{ctor: "_Tuple2",_0: "padding",_1: "10px"}
@@ -11102,9 +11103,10 @@ Elm.UIComponents.make = function (_elm) {
       var htmlPosting = function (p) {
          return A2($Html.div,
          _U.list([$Html$Attributes.$class("col offset-s1 s12")]),
-         _U.list([A2($Html.span,
-         _U.list([$Html$Attributes.$class("black-text")]),
-         _U.list([$Html.text(A2($Basics._op["++"],p.account,$String.isEmpty($String.trim(p.amount)) ? "" : A2($Basics._op["++"],"   ₹ ",p.amount)))]))]));
+         _U.list([A2($Html.span,_U.list([$Html$Attributes.$class("black-text")]),_U.list([$Html.text(p.account)]))
+                 ,A2($Html.span,
+                 _U.list([$Html$Attributes.$class("teal-text"),whitespacePreWrap]),
+                 _U.list([$Html.text($String.isEmpty($String.trim(p.amount)) ? "" : A2($Basics._op["++"],"   ₹ ",p.amount))]))]));
       };
       var comment = $String.trim(entry.comment);
       var commentDisplay = $Basics.not($String.isEmpty(comment)) ? $Html$Attributes.style(_U.list([{ctor: "_Tuple2"
@@ -11121,13 +11123,13 @@ Elm.UIComponents.make = function (_elm) {
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("row")]),
       _U.list([A2($Html.div,
-      _U.list([$Html$Attributes.$class("col s12 m10 offset-m2 z-depth-1"),entryStyle]),
+      _U.list([$Html$Attributes.$class("col s12 m10 offset-m2 z-depth-2"),entryStyle]),
       _U.list([A2($Html.div,
-              _U.list([$Html$Attributes.$class("col s12")]),
-              _U.list([A2($Html.span,_U.list([]),_U.list([$Html.text(A2($Basics._op["++"],date," "))]))
-                      ,A2($Html.span,_U.list([]),_U.list([$Html.text(description)]))]))
+              _U.list([$Html$Attributes.$class("col s12"),whitespacePreWrap]),
+              _U.list([A2($Html.span,_U.list([$Html$Attributes.$class("blue-text")]),_U.list([$Html.text(A2($Basics._op["++"],date,"   "))]))
+                      ,A2($Html.span,_U.list([$Html$Attributes.$class("deep-purple-text accent-1")]),_U.list([$Html.text(description)]))]))
               ,A2($Html.div,
-              _U.list([$Html$Attributes.$class("col s8 offset-s2"),commentDisplay]),
+              _U.list([$Html$Attributes.$class("col s8 offset-s2 indigo-text lighten-5"),commentDisplay]),
               _U.list([A2($Html.blockquote,_U.list([blockquoteStyle]),_U.list([A2($Html.p,_U.list([]),_U.list([$Html.text(comment)]))]))]))
               ,htmlPosting(p1)
               ,htmlPosting(p2)]))]));

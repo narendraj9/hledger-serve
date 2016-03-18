@@ -91,21 +91,28 @@ htmlJEntry entry =   let (p1, p2, rest) = getPostings2 entry
                                           else style [ ("display", "none") ]
                          htmlPosting p = div [ class "col offset-s1 s12" ]
                                          [ span [ class "black-text" ]
-                                                  [ text (p.account ++
-                                                            (if (String.isEmpty (String.trim p.amount))
-                                                             then ""
-                                                             else "   ₹ " ++ p.amount))
-                                                  ]
+                                                  [ text p.account ]
+                                         , span [ class "teal-text"
+                                                , whitespacePreWrap
+                                                ]
+                                             [ text (if (String.isEmpty (String.trim p.amount))
+                                                     then ""
+                                                     else "   ₹ " ++ p.amount)
+                                             ]
                                          ]
                      in
                        div [ class "row" ]
                              [ div [ class "col s12 m10 offset-m2 z-depth-1"
                                    , entryStyle ]
-                                     [ div [ class "col s12"]
-                                               [ span [] [ text (date ++ " ") ]
-                                               , span [] [ text description ]
+                                     [ div [ class "col s12"
+                                           , whitespacePreWrap
+                                           ]
+                                               [ span [ class "blue-text" ]
+                                                   [ text (date ++ "   ") ]
+                                               , span [ class "deep-purple-text accent-1"]
+                                                   [ text description ]
                                                ]
-                                     , div [ class "col s8 offset-s2"
+                                     , div [ class "col s8 offset-s2 indigo-text lighten-5"
                                            , commentDisplay ]
                                                [ blockquote [ blockquoteStyle
                                                             ]
@@ -326,5 +333,12 @@ blockquoteStyle : Attribute
 blockquoteStyle =
   style
     [ ("border-left", "2px solid #ee6e73")
+    ]
+
+
+whitespacePreWrap : Attribute
+whitespacePreWrap =
+  style
+    [ ("white-space", "pre")
     ]
 
