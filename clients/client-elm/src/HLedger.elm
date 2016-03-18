@@ -43,7 +43,10 @@ update action model =
                                             , entryListDisp = "none"
                                             , preloaderDisp = "none"
                                           }
-                                 in { model | ui = ui }
+                                 in { model
+                                      | ui = ui
+                                      , currentFields = initialJEntry
+                                    }
       setEntries serverEntries model =
         { model
           | restEntries = Maybe.withDefault model.restEntries serverEntries
@@ -120,5 +123,6 @@ view address model =
   , viewForm address model
   , viewJEntryList address model
   , viewButtons address
+  , htmlFooter model
   ]
 

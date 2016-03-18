@@ -11131,9 +11131,7 @@ Elm.UIComponents.make = function (_elm) {
                       ,A2($Html.span,_U.list([]),_U.list([$Html.text(description)]))]))
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("col s8 offset-s2"),commentDisplay]),
-              _U.list([A2($Html.blockquote,
-              _U.list([$Html$Attributes.$class("right s8"),blockquoteStyle]),
-              _U.list([A2($Html.p,_U.list([]),_U.list([$Html.text(comment)]))]))]))
+              _U.list([A2($Html.blockquote,_U.list([blockquoteStyle]),_U.list([A2($Html.p,_U.list([]),_U.list([$Html.text(comment)]))]))]))
               ,htmlPosting(p1)
               ,htmlPosting(p2)]))]));
    };
@@ -11172,6 +11170,27 @@ Elm.UIComponents.make = function (_elm) {
                       _U.list([materialIcon("add")]))]))]))]));
    };
    var prefixIcon = icon("material-icons prefix");
+   var htmlFooter = function (_p1) {
+      return A2($Html.footer,
+      _U.list([$Html$Attributes.$class("footer")]),
+      _U.list([A2($Html.div,
+      _U.list([$Html$Attributes.$class("footer-copyright")]),
+      _U.list([A2($Html.div,
+      _U.list([$Html$Attributes.$class("container")]),
+      _U.list([A2($Html.div,
+      _U.list([$Html$Attributes.$class("row indigo lighten-4")]),
+      _U.list([A2($Html.div,
+              _U.list([$Html$Attributes.$class("col m2 offset-m1 s4 z-depth-1")]),
+              _U.list([A2($Html.span,
+              _U.list([]),
+              _U.list([A2(icon,"material-icons tiny","copyright")
+                      ,A2($Html.a,_U.list([$Html$Attributes.$class("black-text"),$Html$Attributes.src("#!")]),_U.list([$Html.text("Penguin")]))]))]))
+              ,A2($Html.div,
+              _U.list([$Html$Attributes.$class("col m2 offset-m2 s4 z-depth-1")]),
+              _U.list([A2($Html.span,
+              _U.list([$Html$Attributes.$class("center")]),
+              _U.list([$Html.text("Built with "),A2(icon,"material-icons red-text tiny","favorite")]))]))]))]))]))]));
+   };
    var displayStyle = function (value) {    return $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "display",_1: value}]));};
    var viewEmptyState = F2(function (address,model) {
       return A2($Html.div,
@@ -11203,11 +11222,11 @@ Elm.UIComponents.make = function (_elm) {
               _U.list([]))]))]))]))]))]))]));
    });
    var viewJEntryList = F2(function (address,model) {
-      var _p1 = function (_) {    return _.restEntries;}(model);
-      if (_p1.ctor === "[]") {
+      var _p2 = function (_) {    return _.restEntries;}(model);
+      if (_p2.ctor === "[]") {
             return A2(viewEmptyState,address,model);
          } else {
-            return A2($Html.div,_U.list([$Html$Attributes.$class("container"),displayStyle(model.ui.entryListDisp)]),A2($List.map,htmlJEntry,_p1));
+            return A2($Html.div,_U.list([$Html$Attributes.$class("container"),displayStyle(model.ui.entryListDisp)]),A2($List.map,htmlJEntry,_p2));
          }
    });
    var htmlPreloader = function (model) {
@@ -11217,7 +11236,7 @@ Elm.UIComponents.make = function (_elm) {
    };
    var viewForm = F2(function (address,model) {
       var onInput = function (tag) {
-         return A3($Html$Events.on,"input",$Html$Events.targetValue,function (_p2) {    return A2($Signal.message,address,tag(_p2));});
+         return A3($Html$Events.on,"input",$Html$Events.targetValue,function (_p3) {    return A2($Signal.message,address,tag(_p3));});
       };
       var description = A2($Html.div,
       _U.list([$Html$Attributes.$class("row")]),
@@ -11263,10 +11282,10 @@ Elm.UIComponents.make = function (_elm) {
                  ,A2($Html.label,_U.list([$Html$Attributes.$for(i)]),_U.list([$Html.text(l)]))]));
       });
       var fields = model.currentFields;
-      var _p3 = $Model.getPostings2(fields);
-      var p1 = _p3._0;
-      var p2 = _p3._1;
-      var rest = _p3._2;
+      var _p4 = $Model.getPostings2(fields);
+      var p1 = _p4._0;
+      var p2 = _p4._1;
+      var rest = _p4._2;
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("container")]),
       _U.list([A2($Html.div,
@@ -11292,6 +11311,7 @@ Elm.UIComponents.make = function (_elm) {
                                      ,viewJEntryList: viewJEntryList
                                      ,viewButtons: viewButtons
                                      ,htmlNav: htmlNav
+                                     ,htmlFooter: htmlFooter
                                      ,htmlPreloader: htmlPreloader};
 };
 Elm.HEffects = Elm.HEffects || {};
@@ -11394,14 +11414,15 @@ Elm.HLedger.make = function (_elm) {
               ,$UIComponents.htmlPreloader(model)
               ,A2($UIComponents.viewForm,address,model)
               ,A2($UIComponents.viewJEntryList,address,model)
-              ,$UIComponents.viewButtons(address)]));
+              ,$UIComponents.viewButtons(address)
+              ,$UIComponents.htmlFooter(model)]));
    });
    var update = F2(function (action,model) {
       var setEntries = F2(function (serverEntries,model) {    return _U.update(model,{restEntries: A2($Maybe.withDefault,model.restEntries,serverEntries)});});
       var setUiAfterShowForm = function (model) {
          var uiStatus = model.ui;
          var ui = _U.update(uiStatus,{formDisp: "block",entryListDisp: "none",preloaderDisp: "none"});
-         return _U.update(model,{ui: ui});
+         return _U.update(model,{ui: ui,currentFields: $Model.initialJEntry});
       };
       var setUiAfterResp = function (model) {
          var uiStatus = model.ui;

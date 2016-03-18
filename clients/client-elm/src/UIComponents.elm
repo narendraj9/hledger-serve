@@ -3,6 +3,7 @@ module UIComponents ( viewForm
                     , viewButtons
                     , (=>)
                     , htmlNav
+                    , htmlFooter
                     , htmlPreloader
                     ) where
 
@@ -95,8 +96,7 @@ htmlJEntry entry =   let (p1, p2, rest) = getPostings2 entry
                                                ]
                                      , div [ class "col s8 offset-s2"
                                            , commentDisplay ]
-                                               [ blockquote [ class "right s8"
-                                                            , blockquoteStyle
+                                               [ blockquote [ blockquoteStyle
                                                             ]
                                                    [ p [] [text comment ] ]
                                                ]
@@ -256,7 +256,30 @@ viewForm address model =
               ]
           ]
                                
-
+-- Takes Model as input for consitency
+htmlFooter : Model -> Html
+htmlFooter _ = footer [ class "footer" ]
+               [ div [ class "footer-copyright" ]
+                   [ div [ class "container" ]
+                       [ div [ class "row indigo lighten-4" ]
+                           [ div [ class "col m2 offset-m1 s4 z-depth-1" ]
+                               [ span  []
+                                   [ icon "material-icons tiny" "copyright"
+                                   , a [ class "black-text"
+                                       , src "#!"]
+                                       [ text "Penguin" ]
+                                   ]
+                               ]
+                           ,  div [ class "col m2 offset-m2 s4 z-depth-1" ]
+                               [ span [ class "center" ]
+                                   [ text "Built with "
+                                   , icon "material-icons red-text tiny" "favorite"
+                                   ]
+                               ]
+                           ]
+                       ]
+                   ]
+               ]
 -- Styling
 (=>) = (,)
 
