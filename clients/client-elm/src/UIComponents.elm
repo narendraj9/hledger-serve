@@ -138,7 +138,7 @@ viewButtons address = let fabStyle = style [ ("bottom" , "45px")
                        ]
                    , ul []
                        [ li []
-                           [ a [ class "btn-floating btn-small waves-effect waves-light red darken-2"
+                           [ a [ class "disabled btn-floating btn-small waves-effect waves-light red darken-2"
                                , noTouchToSearchStyle
                                , onClick address ClearAll 
                                ] 

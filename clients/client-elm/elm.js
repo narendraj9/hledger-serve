@@ -11123,7 +11123,7 @@ Elm.UIComponents.make = function (_elm) {
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("row")]),
       _U.list([A2($Html.div,
-      _U.list([$Html$Attributes.$class("col s12 m10 offset-m2 z-depth-2"),entryStyle]),
+      _U.list([$Html$Attributes.$class("col s12 m10 offset-m2 z-depth-1"),entryStyle]),
       _U.list([A2($Html.div,
               _U.list([$Html$Attributes.$class("col s12"),whitespacePreWrap]),
               _U.list([A2($Html.span,_U.list([$Html$Attributes.$class("blue-text")]),_U.list([$Html.text(A2($Basics._op["++"],date,"   "))]))
@@ -11148,7 +11148,7 @@ Elm.UIComponents.make = function (_elm) {
               _U.list([A2($Html.li,
                       _U.list([]),
                       _U.list([A2($Html.a,
-                      _U.list([$Html$Attributes.$class("btn-floating btn-small waves-effect waves-light red darken-2")
+                      _U.list([$Html$Attributes.$class("disabled btn-floating btn-small waves-effect waves-light red darken-2")
                               ,noTouchToSearchStyle
                               ,A2($Html$Events.onClick,address,$Model.ClearAll)]),
                       _U.list([materialIcon("delete_sweep")]))]))
