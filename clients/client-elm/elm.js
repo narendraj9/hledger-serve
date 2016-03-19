@@ -11020,12 +11020,12 @@ Elm.Model.make = function (_elm) {
       var rest = A2($Maybe.withDefault,_U.list([]),$List.tail(ptail));
       return {ctor: "_Tuple3",_0: p1,_1: p2,_2: rest};
    };
-   var initialUiStatus = {imgUrl: "_assets/penguin.png",preloaderDisp: "none",formDisp: "none",entryListDisp: "block"};
+   var initialUiStatus = {imgUrl: "_assets/penguin.png",preloaderDisp: "none",formDisp: "none",entryListDisp: "block",errorDisp: "none"};
    var initialPostings = _U.list([{account: "",amount: ""},{account: "",amount: ""}]);
    var initialJEntry = {date: "",description: "",comment: "",postings: initialPostings};
    var initialModel = {currentFields: initialJEntry,restEntries: _U.list([]),ui: initialUiStatus};
    var Model = F3(function (a,b,c) {    return {currentFields: a,restEntries: b,ui: c};});
-   var UiStatus = F4(function (a,b,c,d) {    return {imgUrl: a,preloaderDisp: b,formDisp: c,entryListDisp: d};});
+   var UiStatus = F5(function (a,b,c,d,e) {    return {imgUrl: a,preloaderDisp: b,formDisp: c,entryListDisp: d,errorDisp: e};});
    var JEntry = F4(function (a,b,c,d) {    return {date: a,description: b,comment: c,postings: d};});
    var Posting = F2(function (a,b) {    return {account: a,amount: b};});
    return _elm.Model.values = {_op: _op
@@ -11080,7 +11080,6 @@ Elm.UIComponents.make = function (_elm) {
                                                    ,{ctor: "_Tuple2",_0: "margin",_1: "0.5rem 0 1rem 0"}
                                                    ,{ctor: "_Tuple2",_0: "border-radius",_1: "2px"}]));
    var noTouchToSearchStyle = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "role",_1: "button"}
-                                                             ,{ctor: "_Tuple2",_0: "tabindex",_1: "1"}
                                                              ,{ctor: "_Tuple2",_0: "-webkit-user-select",_1: "none"}]));
    _op["=>"] = F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};});
    var imgStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"width","auto"),A2(_op["=>"],"padding-top","4px"),A2(_op["=>"],"height","78px")]));
@@ -11092,7 +11091,7 @@ Elm.UIComponents.make = function (_elm) {
               _U.list([A2($Html.a,
               _U.list([$Html$Attributes.href("#")]),
               _U.list([A2($Html.img,
-              _U.list([$Html$Attributes.$class("responsive-img z-depth-3"),imgStyle,$Html$Attributes.src(model.ui.imgUrl)]),
+              _U.list([$Html$Attributes.$class("responsive-img z-depth-1"),imgStyle,$Html$Attributes.src(model.ui.imgUrl)]),
               _U.list([]))]))]))
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("col small-text right-text right z-depth-3")]),
@@ -11249,6 +11248,35 @@ Elm.UIComponents.make = function (_elm) {
       _U.list([$Html$Attributes.$class("progress"),displayStyle(model.ui.preloaderDisp)]),
       _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("indeterminate")]),_U.list([]))]));
    };
+   var htmlError = function (model) {
+      return A2($Html.div,
+      _U.list([$Html$Attributes.$class("container"),$Html$Attributes.id("empty-state-bear.png"),displayStyle(model.ui.errorDisp)]),
+      _U.list([A2($Html.div,
+      _U.list([$Html$Attributes.$class("row")]),
+      _U.list([A2($Html.div,
+      _U.list([$Html$Attributes.$class("col s12")]),
+      _U.list([A2($Html.div,
+      _U.list([$Html$Attributes.$class("card-panel grey lighten-5 z-depth-1")]),
+      _U.list([A2($Html.div,
+              _U.list([$Html$Attributes.$class("row")]),
+              _U.list([A2($Html.div,
+              _U.list([$Html$Attributes.$class("col offset-s2 s8 center")]),
+              _U.list([A2(icon,"material-icons large red-text","error")]))]))
+              ,A2($Html.div,
+              _U.list([$Html$Attributes.$class("row")]),
+              _U.list([A2($Html.div,
+              _U.list([$Html$Attributes.$class("col offset-s2 s8 center  red-text flow-text")]),
+              _U.list([$Html.text(A2($Basics._op["++"],
+              "Something went wrong. The server left us on an island. ",
+              "It\'s not the end of the world. Smile like I do! :)"))]))]))
+              ,A2($Html.div,
+              _U.list([$Html$Attributes.$class("row")]),
+              _U.list([A2($Html.div,
+              _U.list([$Html$Attributes.$class("col offset-s2 s8 center")]),
+              _U.list([A2($Html.img,
+              _U.list([$Html$Attributes.$class("responsive-img"),$Html$Attributes.src("_assets/empty-state-bear.png")]),
+              _U.list([]))]))]))]))]))]))]));
+   };
    var viewForm = F2(function (address,model) {
       var onInput = function (tag) {
          return A3($Html$Events.on,"input",$Html$Events.targetValue,function (_p3) {    return A2($Signal.message,address,tag(_p3));});
@@ -11317,8 +11345,11 @@ Elm.UIComponents.make = function (_elm) {
               _U.list([A3(account,"Account #2","acc-2",$Model.SetAccountB),A3(amount,"Amount (Rs)","amount-2",$Model.SetAmountB)]))
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("row right")]),
-              _U.list([A2($Html.a,
-              _U.list([$Html$Attributes.$class("btn btn-small teal"),A2($Html$Events.onClick,address,$Model.AddNew),noTouchToSearchStyle]),
+              _U.list([A2($Html.button,
+              _U.list([$Html$Attributes.$class("btn waves-effect waves-light teal")
+                      ,$Html$Attributes.type$("submit")
+                      ,A2($Html$Events.onClick,address,$Model.AddNew)
+                      ,noTouchToSearchStyle]),
               _U.list([A2(icon,"material-icons right","send"),$Html.text("Submit")]))]))]))]))]));
    });
    return _elm.UIComponents.values = {_op: _op
@@ -11327,7 +11358,8 @@ Elm.UIComponents.make = function (_elm) {
                                      ,viewButtons: viewButtons
                                      ,htmlNav: htmlNav
                                      ,htmlFooter: htmlFooter
-                                     ,htmlPreloader: htmlPreloader};
+                                     ,htmlPreloader: htmlPreloader
+                                     ,htmlError: htmlError};
 };
 Elm.HEffects = Elm.HEffects || {};
 Elm.HEffects.make = function (_elm) {
@@ -11427,65 +11459,78 @@ Elm.HLedger.make = function (_elm) {
       _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("divider")]),_U.list([]))
               ,$UIComponents.htmlNav(model)
               ,$UIComponents.htmlPreloader(model)
+              ,$UIComponents.htmlError(model)
               ,A2($UIComponents.viewForm,address,model)
               ,A2($UIComponents.viewJEntryList,address,model)
               ,$UIComponents.viewButtons(address)
               ,$UIComponents.htmlFooter(model)]));
    });
    var update = F2(function (action,model) {
-      var setEntries = F2(function (serverEntries,model) {    return _U.update(model,{restEntries: A2($Maybe.withDefault,model.restEntries,serverEntries)});});
+      var setUiAfterError = function (model) {
+         var uiStatus = model.ui;
+         var ui = _U.update(uiStatus,{preloaderDisp: "none",formDisp: "none",entryListDisp: "none",errorDisp: "block"});
+         return _U.update(model,{ui: ui});
+      };
       var setUiAfterShowForm = function (model) {
          var uiStatus = model.ui;
-         var ui = _U.update(uiStatus,{formDisp: "block",entryListDisp: "none",preloaderDisp: "none"});
-         return _U.update(model,{ui: ui,currentFields: $Model.initialJEntry});
+         var ui = _U.update(uiStatus,{formDisp: "block",entryListDisp: "none",preloaderDisp: "none",errorDisp: "none"});
+         return _U.update(model,{ui: ui});
       };
       var setUiAfterResp = function (model) {
          var uiStatus = model.ui;
-         var ui = _U.update(uiStatus,{preloaderDisp: "none",formDisp: "none",entryListDisp: "block"});
-         return _U.update(model,{ui: ui});
+         var ui = _U.update(uiStatus,{preloaderDisp: "none",formDisp: "none",entryListDisp: "block",errorDisp: "none"});
+         return _U.update(model,{ui: ui,currentFields: $Model.initialJEntry});
       };
+      var setModelAfterResp = F2(function (serverEntries,model) {
+         var uiStatus = model.ui;
+         var _p0 = serverEntries;
+         if (_p0.ctor === "Just") {
+               return setUiAfterResp(_U.update(model,{restEntries: _p0._0}));
+            } else {
+               return setUiAfterError(model);
+            }
+      });
       var setUiAfterReq = function (model) {
          var uiStatus = model.ui;
-         var ui = _U.update(uiStatus,{preloaderDisp: "block",formDisp: "none",entryListDisp: "none"});
+         var ui = _U.update(uiStatus,{preloaderDisp: "block",formDisp: "none",entryListDisp: "none",errorDisp: "none"});
          return _U.update(model,{ui: ui});
       };
       var noEf = function (model) {    return {ctor: "_Tuple2",_0: model,_1: $Effects.none};};
-      var setModelAfterResp = F2(function (serverEntries,model) {    return noEf(setUiAfterResp(A2(setEntries,serverEntries,model)));});
       var fields = model.currentFields;
-      var _p0 = $Model.getPostings2(fields);
-      var p1 = _p0._0;
-      var p2 = _p0._1;
-      var rest = _p0._2;
-      var _p1 = action;
-      switch (_p1.ctor)
+      var _p1 = $Model.getPostings2(fields);
+      var p1 = _p1._0;
+      var p2 = _p1._1;
+      var rest = _p1._2;
+      var _p2 = action;
+      switch (_p2.ctor)
       {case "ShowForm": return noEf(setUiAfterShowForm(model));
          case "AddNew": var newEntry = model.currentFields;
            return {ctor: "_Tuple2",_0: setUiAfterReq(model),_1: $Effects.batch(_U.list([$HEffects.addNew(newEntry),$HEffects.getAPenguin]))};
          case "DeleteLast": return {ctor: "_Tuple2",_0: setUiAfterReq(model),_1: $HEffects.deleteLast};
          case "ClearAll": return {ctor: "_Tuple2",_0: setUiAfterReq(model),_1: $HEffects.clearAll};
          case "FetchAll": return {ctor: "_Tuple2",_0: setUiAfterReq(model),_1: $HEffects.fetchAll};
-         case "AddedNew": return A2(setModelAfterResp,_p1._0,model);
-         case "DeletedLast": return A2(setModelAfterResp,_p1._0,model);
-         case "FetchedAll": return A2(setModelAfterResp,_p1._0,model);
-         case "ClearedAll": return A2(setModelAfterResp,_p1._0,model);
-         case "SetDesc": var newFields = _U.update(fields,{description: _p1._0});
+         case "AddedNew": return noEf(A2(setModelAfterResp,_p2._0,model));
+         case "DeletedLast": return noEf(A2(setModelAfterResp,_p2._0,model));
+         case "FetchedAll": return noEf(A2(setModelAfterResp,_p2._0,model));
+         case "ClearedAll": return noEf(A2(setModelAfterResp,_p2._0,model));
+         case "SetDesc": var newFields = _U.update(fields,{description: _p2._0});
            return noEf(_U.update(model,{currentFields: newFields}));
-         case "SetComment": var newFields = _U.update(fields,{comment: _p1._0});
+         case "SetComment": var newFields = _U.update(fields,{comment: _p2._0});
            return noEf(_U.update(model,{currentFields: newFields}));
-         case "SetAccountA": var newPostings = A2($List._op["::"],_U.update(p1,{account: _p1._0}),A2($List._op["::"],p2,rest));
+         case "SetAccountA": var newPostings = A2($List._op["::"],_U.update(p1,{account: _p2._0}),A2($List._op["::"],p2,rest));
            var newFields = _U.update(fields,{postings: newPostings});
            return noEf(_U.update(model,{currentFields: newFields}));
-         case "SetAccountB": var newPostings = A2($List._op["::"],p1,A2($List._op["::"],_U.update(p2,{account: _p1._0}),rest));
+         case "SetAccountB": var newPostings = A2($List._op["::"],p1,A2($List._op["::"],_U.update(p2,{account: _p2._0}),rest));
            var newFields = _U.update(fields,{postings: newPostings});
            return noEf(_U.update(model,{currentFields: newFields}));
-         case "SetAmountA": var newPostings = A2($List._op["::"],_U.update(p1,{amount: _p1._0}),A2($List._op["::"],p2,rest));
+         case "SetAmountA": var newPostings = A2($List._op["::"],_U.update(p1,{amount: _p2._0}),A2($List._op["::"],p2,rest));
            var newFields = _U.update(fields,{postings: newPostings});
            return noEf(_U.update(model,{currentFields: newFields}));
-         case "SetAmountB": var newPostings = A2($List._op["::"],p1,A2($List._op["::"],_U.update(p2,{amount: _p1._0}),rest));
+         case "SetAmountB": var newPostings = A2($List._op["::"],p1,A2($List._op["::"],_U.update(p2,{amount: _p2._0}),rest));
            var newFields = _U.update(fields,{postings: newPostings});
            return noEf(_U.update(model,{currentFields: newFields}));
          default: var uiStatus = model.ui;
-           var newUiStatus = _U.update(uiStatus,{imgUrl: A2($Maybe.withDefault,uiStatus.imgUrl,_p1._0)});
+           var newUiStatus = _U.update(uiStatus,{imgUrl: A2($Maybe.withDefault,uiStatus.imgUrl,_p2._0)});
            return noEf(_U.update(model,{ui: newUiStatus}));}
    });
    var init = {ctor: "_Tuple2",_0: $Model.initialModel,_1: $HEffects.fetchAll};

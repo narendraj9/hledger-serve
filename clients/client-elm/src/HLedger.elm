@@ -21,40 +21,52 @@ update : Action -> Model -> (Model, Effects Action)
 update action model =
   let fields = model.currentFields
       (p1, p2, rest) = getPostings2 fields
-      -- funtions to avoid typing in the Action case branches         
+      -- Funtions to avoid typing in the Action case branches         
       noEf model = (model, Effects.none)
       setUiAfterReq model = let uiStatus = model.ui
                                 ui = { uiStatus
                                        | preloaderDisp = "block"
                                        , formDisp = "none"
                                        , entryListDisp = "none"
+                                       , errorDisp = "none"
                                      }
                             in { model | ui = ui }
+      -- Call only after a successful response [resets fields]
       setUiAfterResp model = let uiStatus = model.ui
                                  ui = { uiStatus
                                         | preloaderDisp = "none"
                                         , formDisp = "none"
                                         , entryListDisp = "block"
+                                        , errorDisp = "none"
                                       }
-                             in { model | ui = ui }
+                             in { model
+                                  | ui = ui
+                                  , currentFields = initialJEntry
+                                }
       setUiAfterShowForm model = let uiStatus = model.ui
                                      ui = { uiStatus
                                             | formDisp = "block"
                                             , entryListDisp = "none"
                                             , preloaderDisp = "none"
+                                            , errorDisp = "none"
                                           }
                                  in { model
                                       | ui = ui
-                                      , currentFields = initialJEntry
                                     }
-      setEntries serverEntries model =
-        { model
-          | restEntries = Maybe.withDefault model.restEntries serverEntries
-        }
-      setModelAfterResp serverEntries model = model
-                                            |> setEntries serverEntries
-                                            |> setUiAfterResp
-                                            |> noEf
+      setUiAfterError model = let uiStatus = model.ui
+                                  ui = { uiStatus
+                                         | preloaderDisp = "none"
+                                         , formDisp = "none"
+                                         , entryListDisp = "none"
+                                         , errorDisp = "block"
+                                       }
+                              -- ^ Don't reset form fields
+                              in { model | ui = ui } 
+      setModelAfterResp serverEntries model =
+        let uiStatus = model.ui
+        in case serverEntries of
+             (Just entries) -> setUiAfterResp { model | restEntries = entries }
+             Nothing ->  setUiAfterError model
   in
     case action of
       -- User --> Application
@@ -77,10 +89,10 @@ update action model =
                   )
 
       -- Server --> Application
-      AddedNew serverEntries -> setModelAfterResp serverEntries model
-      DeletedLast serverEntries -> setModelAfterResp serverEntries model
-      FetchedAll serverEntries -> setModelAfterResp serverEntries model
-      ClearedAll serverEntries -> setModelAfterResp serverEntries model
+      AddedNew serverEntries -> noEf <| setModelAfterResp serverEntries model
+      DeletedLast serverEntries -> noEf <| setModelAfterResp serverEntries model
+      FetchedAll serverEntries -> noEf <| setModelAfterResp serverEntries model
+      ClearedAll serverEntries -> noEf <| setModelAfterResp serverEntries model
 
       -- Form fields --> Model
       (SetDesc desc) -> let newFields = { fields | description = desc }
@@ -117,9 +129,9 @@ view address model =
   div [class "container"]
   [ div [ class "divider" ]
       []
-  --- Navbar
   , htmlNav model
   , htmlPreloader model
+  , htmlError model
   , viewForm address model
   , viewJEntryList address model
   , viewButtons address

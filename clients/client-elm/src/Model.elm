@@ -13,6 +13,7 @@ type alias UiStatus = { imgUrl : String
                       , preloaderDisp : String
                       , formDisp : String
                       , entryListDisp : String
+                      , errorDisp : String
                       }
 type alias Model = { currentFields : JEntry
                    , restEntries: List JEntry
@@ -37,6 +38,7 @@ initialUiStatus = { imgUrl = "_assets/penguin.png"
                   , preloaderDisp = "none"
                   , formDisp = "none"
                   , entryListDisp = "block"
+                  , errorDisp = "none"
                   }
   
 initialModel : Model

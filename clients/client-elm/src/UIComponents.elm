@@ -5,6 +5,7 @@ module UIComponents ( viewForm
                     , htmlNav
                     , htmlFooter
                     , htmlPreloader
+                    , htmlError
                     ) where
 
 import String
@@ -173,7 +174,7 @@ htmlNav model =
   div [ class "row indigo lighten-4" ]
         [ div [ class "col s6" ]
             [ a [ href "#" ] 
-                [ img [ class "responsive-img z-depth-3"
+                [ img [ class "responsive-img z-depth-1"
                       , imgStyle
                       , src model.ui.imgUrl
                       ] 
@@ -192,7 +193,39 @@ htmlPreloader model = div [ class "progress"
                         [ div [ class "indeterminate" ]
                             []
                         ]
-              
+
+htmlError : Model -> Html
+htmlError model = div [ class "container"
+                      , id "empty-state-bear.png"
+                      , displayStyle model.ui.errorDisp
+                      ]
+                  [ div [ class "row" ]
+                      [ div [ class "col s12"]
+                          [ div [ class "card-panel grey lighten-5 z-depth-1" ]
+                              [ div [ class "row" ]
+                                  [ div [ class "col offset-s2 s8 center" ]
+                                      [ icon "material-icons large red-text" "error" ]
+                                  ]
+                              , div [ class "row" ]
+                                  [ div [ class "col offset-s2 s8 center  red-text flow-text" ] 
+                                      [ text ("Something went wrong. The server left us on an island. "
+                                                  ++ "It's not the end of the world. Smile like I do! :)") ]
+                                  ]
+                              , div [ class "row" ]
+                                  [ div [ class "col offset-s2 s8 center" ]
+                                      [ img [ class "responsive-img"
+                                            , src "_assets/empty-state-bear.png"
+                                            ]
+                                          []
+                                      ]
+                                  ]
+                              ]
+                          ]
+                      ]
+                  ]
+
+
+
 viewForm : Signal.Address Action -> Model -> Html
 viewForm address model =  
   let  fields = model.currentFields 
@@ -226,8 +259,9 @@ viewForm address model =
                   ]
        account l i tag = div [ class "input-field col s6" ]
                          [ input [ id i
+                                 -- Hack to turn autocapitalize off on mobile
                                  , type' "email"
-                                 , style [("autocapitalize", "off")]
+                                 , style [("autocapitalize", "off")] -- Not working!
                                  , onInput tag
                                     ]
                                 []
@@ -262,13 +296,14 @@ viewForm address model =
                       , amount "Amount (Rs)" "amount-2" SetAmountB
                       ]
                   , div [ class "row right" ]
-                      [ a [ class "btn btn-small teal"
-                          , onClick address AddNew 
-                          , noTouchToSearchStyle
-                          ] 
-                          [ icon "material-icons right" "send"
-                          , text "Submit"
-                          ]
+                      [  button [ class "btn waves-effect waves-light teal"
+                                , type' "submit"
+                                , onClick address AddNew 
+                                , noTouchToSearchStyle
+                                ]
+                           [ icon "material-icons right" "send"
+                           , text "Submit"
+                           ]
                       ]
                   ]
               ]
@@ -314,7 +349,6 @@ noTouchToSearchStyle : Attribute
 noTouchToSearchStyle = 
   style 
     [ ("role", "button")
-    , ("tabindex", "1")
     , ("-webkit-user-select", "none")
     ]
 
