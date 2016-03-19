@@ -6,6 +6,7 @@ module UIComponents ( viewForm
                     , htmlFooter
                     , htmlPreloader
                     , htmlError
+                    , viewPage
                     ) where
 
 import String
@@ -333,6 +334,25 @@ htmlFooter _ = footer [ class "footer" ]
                        ]
                    ]
                ]
+
+viewPage : Signal.Address Action -> Model -> Html
+viewPage address model = 
+  div [class "container"
+      , pageFlexStyle ]
+  [ div [ class "divider" ]
+      []
+  , main' [ mainFlexStyle ]
+      [ htmlNav model
+      , htmlPreloader model
+      , htmlError model
+      , viewForm address model
+      , viewJEntryList address model
+      , viewButtons address
+      ]
+  , htmlFooter model
+  ]
+
+
 -- Styling
 (=>) = (,)
 
@@ -374,5 +394,20 @@ whitespacePreWrap : Attribute
 whitespacePreWrap =
   style
     [ ("white-space", "pre")
+    ]
+
+-- For a sticky footer 
+pageFlexStyle : Attribute
+pageFlexStyle =
+  style 
+    [ ("display", "flex")
+    , ("min-height", "100vh")
+    , ("flex-direction", "column")
+    ]
+-- To grow main as much needed
+mainFlexStyle : Attribute
+mainFlexStyle =
+  style 
+    [ ("flex", "1 0 auto")
     ]
 

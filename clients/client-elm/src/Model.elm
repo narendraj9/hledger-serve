@@ -35,9 +35,9 @@ initialJEntry = { date = ""
 
 initialUiStatus : UiStatus
 initialUiStatus = { imgUrl = "_assets/penguin.png"
-                  , preloaderDisp = "none"
+                  , preloaderDisp = "block"
                   , formDisp = "none"
-                  , entryListDisp = "block"
+                  , entryListDisp = "none"
                   , errorDisp = "none"
                   }
   

@@ -6,7 +6,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, on, targetValue)
 import Effects exposing (Effects, Never)
 
-import UIComponents exposing (..)
+import UIComponents exposing (viewPage)
 import Model exposing (..)
 import HEffects exposing (..)
 
@@ -125,16 +125,4 @@ update action model =
                        
 -- VIEW
 view : Signal.Address Action -> Model -> Html
-view address model =
-  div [class "container"]
-  [ div [ class "divider" ]
-      []
-  , htmlNav model
-  , htmlPreloader model
-  , htmlError model
-  , viewForm address model
-  , viewJEntryList address model
-  , viewButtons address
-  , htmlFooter model
-  ]
-
+view = viewPage

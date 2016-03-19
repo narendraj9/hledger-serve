@@ -11020,7 +11020,7 @@ Elm.Model.make = function (_elm) {
       var rest = A2($Maybe.withDefault,_U.list([]),$List.tail(ptail));
       return {ctor: "_Tuple3",_0: p1,_1: p2,_2: rest};
    };
-   var initialUiStatus = {imgUrl: "_assets/penguin.png",preloaderDisp: "none",formDisp: "none",entryListDisp: "block",errorDisp: "none"};
+   var initialUiStatus = {imgUrl: "_assets/penguin.png",preloaderDisp: "block",formDisp: "none",entryListDisp: "none",errorDisp: "none"};
    var initialPostings = _U.list([{account: "",amount: ""},{account: "",amount: ""}]);
    var initialJEntry = {date: "",description: "",comment: "",postings: initialPostings};
    var initialModel = {currentFields: initialJEntry,restEntries: _U.list([]),ui: initialUiStatus};
@@ -11073,6 +11073,10 @@ Elm.UIComponents.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm),
    $String = Elm.String.make(_elm);
    var _op = {};
+   var mainFlexStyle = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "flex",_1: "1 0 auto"}]));
+   var pageFlexStyle = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "display",_1: "flex"}
+                                                      ,{ctor: "_Tuple2",_0: "min-height",_1: "100vh"}
+                                                      ,{ctor: "_Tuple2",_0: "flex-direction",_1: "column"}]));
    var whitespacePreWrap = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "white-space",_1: "pre"}]));
    var blockquoteStyle = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "border-left",_1: "2px solid #ee6e73"}]));
    var entryStyle = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "transition",_1: "box-shadow .25s"}
@@ -11352,6 +11356,15 @@ Elm.UIComponents.make = function (_elm) {
                       ,noTouchToSearchStyle]),
               _U.list([A2(icon,"material-icons right","send"),$Html.text("Submit")]))]))]))]))]));
    });
+   var viewPage = F2(function (address,model) {
+      return A2($Html.div,
+      _U.list([$Html$Attributes.$class("container"),pageFlexStyle]),
+      _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("divider")]),_U.list([]))
+              ,A2($Html.main$,
+              _U.list([mainFlexStyle]),
+              _U.list([htmlNav(model),htmlPreloader(model),htmlError(model),A2(viewForm,address,model),A2(viewJEntryList,address,model),viewButtons(address)]))
+              ,htmlFooter(model)]));
+   });
    return _elm.UIComponents.values = {_op: _op
                                      ,viewForm: viewForm
                                      ,viewJEntryList: viewJEntryList
@@ -11359,7 +11372,8 @@ Elm.UIComponents.make = function (_elm) {
                                      ,htmlNav: htmlNav
                                      ,htmlFooter: htmlFooter
                                      ,htmlPreloader: htmlPreloader
-                                     ,htmlError: htmlError};
+                                     ,htmlError: htmlError
+                                     ,viewPage: viewPage};
 };
 Elm.HEffects = Elm.HEffects || {};
 Elm.HEffects.make = function (_elm) {
@@ -11445,7 +11459,6 @@ Elm.HLedger.make = function (_elm) {
    $Effects = Elm.Effects.make(_elm),
    $HEffects = Elm.HEffects.make(_elm),
    $Html = Elm.Html.make(_elm),
-   $Html$Attributes = Elm.Html.Attributes.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Model = Elm.Model.make(_elm),
@@ -11453,18 +11466,7 @@ Elm.HLedger.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm),
    $UIComponents = Elm.UIComponents.make(_elm);
    var _op = {};
-   var view = F2(function (address,model) {
-      return A2($Html.div,
-      _U.list([$Html$Attributes.$class("container")]),
-      _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("divider")]),_U.list([]))
-              ,$UIComponents.htmlNav(model)
-              ,$UIComponents.htmlPreloader(model)
-              ,$UIComponents.htmlError(model)
-              ,A2($UIComponents.viewForm,address,model)
-              ,A2($UIComponents.viewJEntryList,address,model)
-              ,$UIComponents.viewButtons(address)
-              ,$UIComponents.htmlFooter(model)]));
-   });
+   var view = $UIComponents.viewPage;
    var update = F2(function (action,model) {
       var setUiAfterError = function (model) {
          var uiStatus = model.ui;
