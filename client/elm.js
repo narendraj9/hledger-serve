@@ -11343,10 +11343,10 @@ Elm.UIComponents.make = function (_elm) {
               ,comments
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("row")]),
-              _U.list([A3(account,"Account #1","acc-1",$Model.SetAccountA),A3(amount,"Amount (Rs)","amount-1",$Model.SetAmountA)]))
+              _U.list([A3(account,"Account #1","acc-1",$Model.SetAccountA),A3(amount,"Amount (₹)","amount-1",$Model.SetAmountA)]))
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("row")]),
-              _U.list([A3(account,"Account #2","acc-2",$Model.SetAccountB),A3(amount,"Amount (Rs)","amount-2",$Model.SetAmountB)]))
+              _U.list([A3(account,"Account #2","acc-2",$Model.SetAccountB),A3(amount,"Amount (₹)","amount-2",$Model.SetAmountB)]))
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("row right")]),
               _U.list([A2($Html.button,

@@ -290,11 +290,11 @@ viewForm address model =
                   , comments
                   , div [ class "row" ]
                       [ account "Account #1" "acc-1" SetAccountA
-                      , amount  "Amount (Rs)" "amount-1" SetAmountA
+                      , amount  "Amount (₹)" "amount-1" SetAmountA
                       ]
                   , div [ class "row" ]
                       [ account "Account #2" "acc-2" SetAccountB
-                      , amount "Amount (Rs)" "amount-2" SetAmountB
+                      , amount "Amount (₹)" "amount-2" SetAmountB
                       ]
                   , div [ class "row right" ]
                       [  button [ class "btn waves-effect waves-light teal"
