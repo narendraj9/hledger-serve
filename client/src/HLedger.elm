@@ -5,6 +5,7 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, on, targetValue)
 import Effects exposing (Effects, Never)
+import Task exposing (succeed)
 
 import UIComponents exposing (viewPage)
 import Model exposing (..)
@@ -38,6 +39,8 @@ update action model =
                                         , formDisp = "none"
                                         , entryListDisp = "block"
                                         , errorDisp = "none"
+                                        , formType = AddNewForm
+                                        , formLabelClass = ""
                                       }
                              in { model
                                   | ui = ui
@@ -71,6 +74,14 @@ update action model =
     case action of
       -- User --> Application
       ShowForm -> noEf (setUiAfterShowForm model)
+      EditEntry entry -> let uiStatus = model.ui
+                             uiStatus' = { uiStatus | formLabelClass = "active"
+                                         , formType = UpdateForm }
+                             newModel = { model | currentFields = entry
+                                        , ui = uiStatus'
+                                        }
+                         in
+                           (newModel, Effects.task (succeed ShowForm))
       -- Application --> Server
       AddNew -> let newEntry = model.currentFields
                 in  ( setUiAfterReq model
@@ -78,6 +89,9 @@ update action model =
                                     , getAPenguin
                                     ]
                     )
+      UpdateEntry -> ( setUiAfterReq model
+                     , updateEntry model.currentFields
+                     )
       DeleteLast -> ( setUiAfterReq model
                     , deleteLast
                     )
@@ -87,12 +101,18 @@ update action model =
       FetchAll -> ( setUiAfterReq model
                   , fetchAll
                   )
+      DeleteEntry entry -> ( setUiAfterReq model
+                           , deleteEntry entry
+                           )
 
       -- Server --> Application
       AddedNew serverEntries -> noEf <| setModelAfterResp serverEntries model
       DeletedLast serverEntries -> noEf <| setModelAfterResp serverEntries model
       FetchedAll serverEntries -> noEf <| setModelAfterResp serverEntries model
       ClearedAll serverEntries -> noEf <| setModelAfterResp serverEntries model
+      UpdatedEntry serverEntries -> noEf <| setModelAfterResp serverEntries model
+      DeletedEntry serverEntries -> noEf <| setModelAfterResp serverEntries model
+      -- ^ This should sections sucks! I know.
 
       -- Form fields --> Model
       (SetDesc desc) -> let newFields = { fields | description = desc }

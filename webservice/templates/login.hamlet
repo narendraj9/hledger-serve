@@ -1,0 +1,8 @@
+<div class="container">
+     <div class="row center">
+       <div class="col s12">
+          <div class="valign-wrapper">
+            <h5 class="valign">
+                <a class="header waves-effect waves-light btn" href=@{AuthR forwardUrl}>
+                    <i class="material-icons left"> face </i>
+                       Sign in with Google          

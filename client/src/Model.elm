@@ -4,16 +4,20 @@ module Model where
 type alias Posting = { account : String
                      , amount : String
                      }
-type alias JEntry = { date : String
+type alias JEntry = { number : Int
+                    , date : String
                     , description : String
                     , comment : String
                     , postings : List Posting
                     }
+type FormType = UpdateForm | AddNewForm 
 type alias UiStatus = { imgUrl : String
                       , preloaderDisp : String
                       , formDisp : String
                       , entryListDisp : String
                       , errorDisp : String
+                      , formType : FormType
+                      , formLabelClass : String
                       }
 type alias Model = { currentFields : JEntry
                    , restEntries: List JEntry
@@ -28,17 +32,20 @@ initialPostings = [ { account =  "", amount = ""}
 
 initialJEntry : JEntry
 initialJEntry = { date = ""
+                , number = 0
                 , description = ""
                 , comment = ""
                 , postings = initialPostings
                 }
 
 initialUiStatus : UiStatus
-initialUiStatus = { imgUrl = "_assets/penguin.png"
+initialUiStatus = { imgUrl = "static/images/penguin.png"
                   , preloaderDisp = "block"
                   , formDisp = "none"
+                  , formType = AddNewForm
                   , entryListDisp = "none"
                   , errorDisp = "none"
+                  , formLabelClass = ""
                   }
   
 initialModel : Model
@@ -77,4 +84,9 @@ type Action = ShowForm
             | DeletedLast (Maybe (List JEntry))
             | FetchedAll (Maybe (List JEntry))
             | ClearedAll (Maybe (List JEntry))
+            | DeleteEntry JEntry
+            | DeletedEntry (Maybe (List JEntry))
+            | EditEntry JEntry
+            | UpdateEntry 
+            | UpdatedEntry (Maybe (List JEntry))
 

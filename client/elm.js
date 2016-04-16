@@ -10995,6 +10995,11 @@ Elm.Model.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
+   var UpdatedEntry = function (a) {    return {ctor: "UpdatedEntry",_0: a};};
+   var UpdateEntry = {ctor: "UpdateEntry"};
+   var EditEntry = function (a) {    return {ctor: "EditEntry",_0: a};};
+   var DeletedEntry = function (a) {    return {ctor: "DeletedEntry",_0: a};};
+   var DeleteEntry = function (a) {    return {ctor: "DeleteEntry",_0: a};};
    var ClearedAll = function (a) {    return {ctor: "ClearedAll",_0: a};};
    var FetchedAll = function (a) {    return {ctor: "FetchedAll",_0: a};};
    var DeletedLast = function (a) {    return {ctor: "DeletedLast",_0: a};};
@@ -11020,17 +11025,29 @@ Elm.Model.make = function (_elm) {
       var rest = A2($Maybe.withDefault,_U.list([]),$List.tail(ptail));
       return {ctor: "_Tuple3",_0: p1,_1: p2,_2: rest};
    };
-   var initialUiStatus = {imgUrl: "_assets/penguin.png",preloaderDisp: "block",formDisp: "none",entryListDisp: "none",errorDisp: "none"};
    var initialPostings = _U.list([{account: "",amount: ""},{account: "",amount: ""}]);
-   var initialJEntry = {date: "",description: "",comment: "",postings: initialPostings};
-   var initialModel = {currentFields: initialJEntry,restEntries: _U.list([]),ui: initialUiStatus};
+   var initialJEntry = {date: "",number: 0,description: "",comment: "",postings: initialPostings};
    var Model = F3(function (a,b,c) {    return {currentFields: a,restEntries: b,ui: c};});
-   var UiStatus = F5(function (a,b,c,d,e) {    return {imgUrl: a,preloaderDisp: b,formDisp: c,entryListDisp: d,errorDisp: e};});
-   var JEntry = F4(function (a,b,c,d) {    return {date: a,description: b,comment: c,postings: d};});
+   var UiStatus = F7(function (a,b,c,d,e,f,g) {
+      return {imgUrl: a,preloaderDisp: b,formDisp: c,entryListDisp: d,errorDisp: e,formType: f,formLabelClass: g};
+   });
+   var AddNewForm = {ctor: "AddNewForm"};
+   var initialUiStatus = {imgUrl: "static/images/penguin.png"
+                         ,preloaderDisp: "block"
+                         ,formDisp: "none"
+                         ,formType: AddNewForm
+                         ,entryListDisp: "none"
+                         ,errorDisp: "none"
+                         ,formLabelClass: ""};
+   var initialModel = {currentFields: initialJEntry,restEntries: _U.list([]),ui: initialUiStatus};
+   var UpdateForm = {ctor: "UpdateForm"};
+   var JEntry = F5(function (a,b,c,d,e) {    return {number: a,date: b,description: c,comment: d,postings: e};});
    var Posting = F2(function (a,b) {    return {account: a,amount: b};});
    return _elm.Model.values = {_op: _op
                               ,Posting: Posting
                               ,JEntry: JEntry
+                              ,UpdateForm: UpdateForm
+                              ,AddNewForm: AddNewForm
                               ,UiStatus: UiStatus
                               ,Model: Model
                               ,initialPostings: initialPostings
@@ -11053,7 +11070,12 @@ Elm.Model.make = function (_elm) {
                               ,AddedNew: AddedNew
                               ,DeletedLast: DeletedLast
                               ,FetchedAll: FetchedAll
-                              ,ClearedAll: ClearedAll};
+                              ,ClearedAll: ClearedAll
+                              ,DeleteEntry: DeleteEntry
+                              ,DeletedEntry: DeletedEntry
+                              ,EditEntry: EditEntry
+                              ,UpdateEntry: UpdateEntry
+                              ,UpdatedEntry: UpdatedEntry};
 };
 Elm.UIComponents = Elm.UIComponents || {};
 Elm.UIComponents.make = function (_elm) {
@@ -11093,16 +11115,48 @@ Elm.UIComponents.make = function (_elm) {
       _U.list([A2($Html.div,
               _U.list([$Html$Attributes.$class("col s6")]),
               _U.list([A2($Html.a,
-              _U.list([$Html$Attributes.href("#")]),
+              _U.list([$Html$Attributes.href("/")]),
               _U.list([A2($Html.img,
               _U.list([$Html$Attributes.$class("responsive-img z-depth-1"),imgStyle,$Html$Attributes.src(model.ui.imgUrl)]),
               _U.list([]))]))]))
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("col small-text right-text right z-depth-3")]),
+              _U.list([A2($Html.a,
+              _U.list([$Html$Attributes.href("/")]),
               _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("flow-text black-text")]),_U.list([$Html.text("Penguin\'s")]))
-                      ,A2($Html.div,_U.list([$Html$Attributes.$class("flow-text")]),_U.list([$Html.text("Hledger Client")]))]))]));
+                      ,A2($Html.div,_U.list([$Html$Attributes.$class("flow-text")]),_U.list([$Html.text("Hledger Client")]))]))]))]));
    };
-   var htmlJEntry = function (entry) {
+   var viewButtons = function (address) {
+      var fabStyle = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "bottom",_1: "45px"},{ctor: "_Tuple2",_0: "right",_1: "24px"}]));
+      return A2($Html.div,
+      _U.list([$Html$Attributes.$class("fixed-action-btn horizontal"),fabStyle,noTouchToSearchStyle]),
+      _U.list([A2($Html.a,
+      _U.list([$Html$Attributes.$class("btn-floating btn-large  waves-effect waves-light red")]),
+      _U.list([A2($Html.i,
+      _U.list([$Html$Attributes.$class("large material-icons"),noTouchToSearchStyle,A2($Html$Events.onClick,address,$Model.ShowForm)]),
+      _U.list([$Html.text("add")]))]))]));
+   };
+   var icon = F2(function (classNames,iconName) {    return A2($Html.i,_U.list([$Html$Attributes.$class(classNames)]),_U.list([$Html.text(iconName)]));});
+   var materialIcon = icon("tiny material-icons waves-effect waves-light");
+   var viewEditEntryButtons = F2(function (address,entry) {
+      return A2($Html.div,
+      _U.list([$Html$Attributes.$class("col s12")]),
+      _U.list([A2($Html.div,
+              _U.list([$Html$Attributes.$class("right-align col s11")]),
+              _U.list([A2($Html.a,
+              _U.list([$Html$Attributes.$class("tiny btn-floating btn-small waves-effect waves-light orange")
+                      ,noTouchToSearchStyle
+                      ,A2($Html$Events.onClick,address,$Model.DeleteEntry(entry))]),
+              _U.list([materialIcon("remove")]))]))
+              ,A2($Html.div,
+              _U.list([$Html$Attributes.$class("right-align col s1")]),
+              _U.list([A2($Html.a,
+              _U.list([$Html$Attributes.$class("tiny btn-floating btn-small waves-effect waves-light teal")
+                      ,noTouchToSearchStyle
+                      ,A2($Html$Events.onClick,address,$Model.EditEntry(entry))]),
+              _U.list([materialIcon("edit")]))]))]));
+   });
+   var viewJEntry = F2(function (address,entry) {
       var htmlPosting = function (p) {
          return A2($Html.div,
          _U.list([$Html$Attributes.$class("col offset-s1 s12")]),
@@ -11135,49 +11189,10 @@ Elm.UIComponents.make = function (_elm) {
               _U.list([$Html$Attributes.$class("col s8 offset-s2 indigo-text lighten-5"),commentDisplay]),
               _U.list([A2($Html.blockquote,_U.list([blockquoteStyle]),_U.list([A2($Html.p,_U.list([]),_U.list([$Html.text(comment)]))]))]))
               ,htmlPosting(p1)
-              ,htmlPosting(p2)]))]));
-   };
-   var icon = F2(function (classNames,iconName) {    return A2($Html.i,_U.list([$Html$Attributes.$class(classNames)]),_U.list([$Html.text(iconName)]));});
-   var materialIcon = icon("material-icons waves-effect waves-light");
-   var viewButtons = function (address) {
-      var fabStyle = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "bottom",_1: "45px"},{ctor: "_Tuple2",_0: "right",_1: "24px"}]));
-      return A2($Html.div,
-      _U.list([$Html$Attributes.$class("fixed-action-btn horizontal"),fabStyle,noTouchToSearchStyle]),
-      _U.list([A2($Html.a,
-              _U.list([$Html$Attributes.$class("btn-floating btn-large  waves-effect waves-light red")]),
-              _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("large material-icons"),noTouchToSearchStyle]),_U.list([$Html.text("mode_edit")]))]))
-              ,A2($Html.ul,
-              _U.list([]),
-              _U.list([A2($Html.li,
-                      _U.list([]),
-                      _U.list([A2($Html.a,
-                      _U.list([$Html$Attributes.$class("disabled btn-floating btn-small waves-effect waves-light red darken-2")
-                              ,noTouchToSearchStyle
-                              ,A2($Html$Events.onClick,address,$Model.ClearAll)]),
-                      _U.list([materialIcon("delete_sweep")]))]))
-                      ,A2($Html.li,
-                      _U.list([]),
-                      _U.list([A2($Html.a,
-                      _U.list([$Html$Attributes.$class("btn-floating btn-small waves-effect waves-light red")
-                              ,noTouchToSearchStyle
-                              ,A2($Html$Events.onClick,address,$Model.DeleteLast)]),
-                      _U.list([materialIcon("remove")]))]))
-                      ,A2($Html.li,
-                      _U.list([]),
-                      _U.list([A2($Html.a,
-                      _U.list([$Html$Attributes.$class("btn-floating btn-small waves-effect waves-light blue")
-                              ,noTouchToSearchStyle
-                              ,A2($Html$Events.onClick,address,$Model.FetchAll)]),
-                      _U.list([materialIcon("restore")]))]))
-                      ,A2($Html.li,
-                      _U.list([]),
-                      _U.list([A2($Html.a,
-                      _U.list([$Html$Attributes.$class("btn-floating btn-small waves-effect waves-light teal")
-                              ,noTouchToSearchStyle
-                              ,A2($Html$Events.onClick,address,$Model.ShowForm)]),
-                      _U.list([materialIcon("add")]))]))]))]));
-   };
-   var prefixIcon = icon("material-icons waves-effect waves-light prefix");
+              ,htmlPosting(p2)
+              ,A2(viewEditEntryButtons,address,entry)]))]));
+   });
+   var prefixIcon = icon("tiny material-icons waves-effect waves-light prefix");
    var htmlFooter = function (_p1) {
       return A2($Html.footer,
       _U.list([$Html$Attributes.$class("footer")]),
@@ -11236,7 +11251,7 @@ Elm.UIComponents.make = function (_elm) {
               _U.list([A2($Html.div,
               _U.list([$Html$Attributes.$class("col offset-s2 s8 center")]),
               _U.list([A2($Html.img,
-              _U.list([$Html$Attributes.$class("responsive-img"),$Html$Attributes.src("_assets/empty-state-bear.png")]),
+              _U.list([$Html$Attributes.$class("responsive-img"),$Html$Attributes.src("static/images/empty-state-bear.png")]),
               _U.list([]))]))]))]))]))]))]));
    });
    var viewJEntryList = F2(function (address,model) {
@@ -11244,7 +11259,9 @@ Elm.UIComponents.make = function (_elm) {
       if (_p2.ctor === "[]") {
             return A2(viewEmptyState,address,model);
          } else {
-            return A2($Html.div,_U.list([$Html$Attributes.$class("container"),displayStyle(model.ui.entryListDisp)]),A2($List.map,htmlJEntry,_p2));
+            return A2($Html.div,
+            _U.list([$Html$Attributes.$class("container"),displayStyle(model.ui.entryListDisp)]),
+            A3($List.foldl,F2(function (entry,viewList) {    return A2($List._op["::"],A2(viewJEntry,address,entry),viewList);}),_U.list([]),_p2));
          }
    });
    var htmlPreloader = function (model) {
@@ -11278,13 +11295,14 @@ Elm.UIComponents.make = function (_elm) {
               _U.list([A2($Html.div,
               _U.list([$Html$Attributes.$class("col offset-s2 s8 center")]),
               _U.list([A2($Html.img,
-              _U.list([$Html$Attributes.$class("responsive-img"),$Html$Attributes.src("_assets/empty-state-bear.png")]),
+              _U.list([$Html$Attributes.$class("responsive-img"),$Html$Attributes.src("static/images/empty-state-bear.png")]),
               _U.list([]))]))]))]))]))]))]));
    };
    var viewForm = F2(function (address,model) {
       var onInput = function (tag) {
          return A3($Html$Events.on,"input",$Html$Events.targetValue,function (_p3) {    return A2($Signal.message,address,tag(_p3));});
       };
+      var labelClass = model.ui.formLabelClass;
       var description = A2($Html.div,
       _U.list([$Html$Attributes.$class("row")]),
       _U.list([A2($Html.div,
@@ -11295,7 +11313,7 @@ Elm.UIComponents.make = function (_elm) {
                       ,$Html$Attributes.value(model.currentFields.description)
                       ,onInput($Model.SetDesc)]),
               _U.list([]))
-              ,A2($Html.label,_U.list([$Html$Attributes.$for("description-field")]),_U.list([$Html.text("Title")]))
+              ,A2($Html.label,_U.list([$Html$Attributes.$for("description-field"),$Html$Attributes.$class(labelClass)]),_U.list([$Html.text("Title")]))
               ,prefixIcon("description")]))]));
       var comments = A2($Html.div,
       _U.list([$Html$Attributes.$class("row")]),
@@ -11307,26 +11325,33 @@ Elm.UIComponents.make = function (_elm) {
                       ,$Html$Attributes.value(model.currentFields.comment)
                       ,onInput($Model.SetComment)]),
               _U.list([]))
-              ,A2($Html.label,_U.list([$Html$Attributes.$for("comment-field")]),_U.list([$Html.text("Comments (Optional)")]))
+              ,A2($Html.label,
+              _U.list([$Html$Attributes.$for("comment-field"),$Html$Attributes.$class(labelClass)]),
+              _U.list([$Html.text("Comments (Optional)")]))
               ,prefixIcon("comment")]))]));
-      var account = F3(function (l,i,tag) {
+      var account = F4(function (l,i,p,tag) {
          return A2($Html.div,
          _U.list([$Html$Attributes.$class("input-field col s6")]),
          _U.list([A2($Html.input,
                  _U.list([$Html$Attributes.id(i)
                          ,$Html$Attributes.type$("email")
                          ,$Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "autocapitalize",_1: "off"}]))
+                         ,$Html$Attributes.value(p.account)
                          ,onInput(tag)]),
                  _U.list([]))
-                 ,A2($Html.label,_U.list([$Html$Attributes.$for(i)]),_U.list([$Html.text(l)]))]));
+                 ,A2($Html.label,_U.list([$Html$Attributes.$for(i),$Html$Attributes.$class(labelClass)]),_U.list([$Html.text(l)]))]));
       });
-      var amount = F3(function (l,i,tag) {
+      var amount = F4(function (l,i,p,tag) {
          return A2($Html.div,
          _U.list([$Html$Attributes.$class("input-field col s6")]),
          _U.list([A2($Html.input,
-                 _U.list([$Html$Attributes.id(i),$Html$Attributes.$class("validate"),$Html$Attributes.type$("number"),onInput(tag)]),
+                 _U.list([$Html$Attributes.id(i)
+                         ,$Html$Attributes.$class("validate")
+                         ,$Html$Attributes.type$("number")
+                         ,$Html$Attributes.value(p.amount)
+                         ,onInput(tag)]),
                  _U.list([]))
-                 ,A2($Html.label,_U.list([$Html$Attributes.$for(i)]),_U.list([$Html.text(l)]))]));
+                 ,A2($Html.label,_U.list([$Html$Attributes.$for(i),$Html$Attributes.$class(labelClass)]),_U.list([$Html.text(l)]))]));
       });
       var fields = model.currentFields;
       var _p4 = $Model.getPostings2(fields);
@@ -11343,16 +11368,16 @@ Elm.UIComponents.make = function (_elm) {
               ,comments
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("row")]),
-              _U.list([A3(account,"Account #1","acc-1",$Model.SetAccountA),A3(amount,"Amount (₹)","amount-1",$Model.SetAmountA)]))
+              _U.list([A4(account,"Account #1","acc-1",p1,$Model.SetAccountA),A4(amount,"Amount (₹)","amount-1",p1,$Model.SetAmountA)]))
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("row")]),
-              _U.list([A3(account,"Account #2","acc-2",$Model.SetAccountB),A3(amount,"Amount (₹)","amount-2",$Model.SetAmountB)]))
+              _U.list([A4(account,"Account #2","acc-2",p2,$Model.SetAccountB),A4(amount,"Amount (₹)","amount-2",p2,$Model.SetAmountB)]))
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("row right")]),
               _U.list([A2($Html.button,
               _U.list([$Html$Attributes.$class("btn waves-effect waves-light teal")
                       ,$Html$Attributes.type$("submit")
-                      ,A2($Html$Events.onClick,address,$Model.AddNew)
+                      ,A2($Html$Events.onClick,address,_U.eq(model.ui.formType,$Model.AddNewForm) ? $Model.AddNew : $Model.UpdateEntry)
                       ,noTouchToSearchStyle]),
               _U.list([A2(icon,"material-icons right","send"),$Html.text("Submit")]))]))]))]))]));
    });
@@ -11400,7 +11425,8 @@ Elm.HEffects.make = function (_elm) {
                                          ,{ctor: "_Tuple2",_0: "amount",_1: $Json$Encode.string(posting.amount)}]));
    };
    var encodeJEntry = function (jentry) {
-      return $Json$Encode.object(_U.list([{ctor: "_Tuple2",_0: "date",_1: $Json$Encode.string(jentry.date)}
+      return $Json$Encode.object(_U.list([{ctor: "_Tuple2",_0: "number",_1: $Json$Encode.$int(jentry.number)}
+                                         ,{ctor: "_Tuple2",_0: "date",_1: $Json$Encode.string(jentry.date)}
                                          ,{ctor: "_Tuple2",_0: "description",_1: $Json$Encode.string(jentry.description)}
                                          ,{ctor: "_Tuple2",_0: "comment",_1: $Json$Encode.string(jentry.comment)}
                                          ,{ctor: "_Tuple2",_0: "postings",_1: $Json$Encode.list(A2($List.map,encodePosting,jentry.postings))}]));
@@ -11409,8 +11435,9 @@ Elm.HEffects.make = function (_elm) {
    $Model.Posting,
    A2($Json$Decode._op[":="],"account",$Json$Decode.string),
    A2($Json$Decode._op[":="],"amount",$Json$Decode.string));
-   var decodeJEntry = A5($Json$Decode.object4,
+   var decodeJEntry = A6($Json$Decode.object5,
    $Model.JEntry,
+   A2($Json$Decode._op[":="],"number",$Json$Decode.$int),
    A2($Json$Decode._op[":="],"date",$Json$Decode.string),
    A2($Json$Decode._op[":="],"description",$Json$Decode.string),
    A2($Json$Decode._op[":="],"comment",$Json$Decode.string),
@@ -11424,8 +11451,8 @@ Elm.HEffects.make = function (_elm) {
    var decodeUrl = A2($Json$Decode.at,_U.list(["data","fixed_height_small_url"]),$Json$Decode.string);
    var getRandomGif = function (topic) {    return $Effects.task(A2($Task.map,$Model.NewGif,$Task.toMaybe(A2($Http.get,decodeUrl,randomUrl(topic)))));};
    var getAPenguin = getRandomGif("cute penguin");
-   var serviceUri = "http://services.vicarie.in/";
-   var fetchAll = $Effects.task(A2($Task.map,$Model.FetchedAll,$Task.toMaybe(A2($Http.get,decodeJEntryList,A2($Basics._op["++"],serviceUri,"/entries")))));
+   var serviceUri = "http://localhost:3000";
+   var fetchAll = $Effects.task(A2($Task.map,$Model.FetchedAll,$Task.toMaybe(A2($Http.get,decodeJEntryList,A2($Basics._op["++"],serviceUri,"/entry")))));
    var addNew = function (jentry) {
       return $Effects.task(A2($Task.map,
       $Model.AddedNew,
@@ -11438,6 +11465,30 @@ Elm.HEffects.make = function (_elm) {
       ,headers: _U.list([{ctor: "_Tuple2",_0: "content-type",_1: "application/json"}])
       ,body: $Http.string(A2($Json$Encode.encode,0,encodeJEntry(jentry)))})))));
    };
+   var updateEntry = function (jentry) {
+      return $Effects.task(A2($Task.map,
+      $Model.UpdatedEntry,
+      $Task.toMaybe(A2($Http.fromJson,
+      decodeJEntryList,
+      A2($Http.send,
+      $Http.defaultSettings,
+      {verb: "PUT"
+      ,url: A2($Basics._op["++"],serviceUri,"/entry")
+      ,headers: _U.list([{ctor: "_Tuple2",_0: "content-type",_1: "application/json"}])
+      ,body: $Http.string(A2($Json$Encode.encode,0,encodeJEntry(jentry)))})))));
+   };
+   var deleteEntry = function (jentry) {
+      return $Effects.task(A2($Task.map,
+      $Model.DeletedEntry,
+      $Task.toMaybe(A2($Http.fromJson,
+      decodeJEntryList,
+      A2($Http.send,
+      $Http.defaultSettings,
+      {verb: "DELETE"
+      ,url: A2($Basics._op["++"],serviceUri,"/entry")
+      ,headers: _U.list([{ctor: "_Tuple2",_0: "content-type",_1: "application/json"}])
+      ,body: $Http.string(A2($Json$Encode.encode,0,encodeJEntry(jentry)))})))));
+   };
    var clearAll = $Effects.task(A2($Task.map,
    $Model.ClearedAll,
    $Task.toMaybe(A2($Http.fromJson,
@@ -11446,7 +11497,14 @@ Elm.HEffects.make = function (_elm) {
    var deleteLast = $Effects.task(A2($Task.map,
    $Model.DeletedLast,
    $Task.toMaybe(A3($Http.post,decodeJEntryList,A2($Basics._op["++"],serviceUri,"/delete"),$Http.empty))));
-   return _elm.HEffects.values = {_op: _op,fetchAll: fetchAll,addNew: addNew,deleteLast: deleteLast,clearAll: clearAll,getAPenguin: getAPenguin};
+   return _elm.HEffects.values = {_op: _op
+                                 ,fetchAll: fetchAll
+                                 ,addNew: addNew
+                                 ,updateEntry: updateEntry
+                                 ,deleteEntry: deleteEntry
+                                 ,deleteLast: deleteLast
+                                 ,clearAll: clearAll
+                                 ,getAPenguin: getAPenguin};
 };
 Elm.HLedger = Elm.HLedger || {};
 Elm.HLedger.make = function (_elm) {
@@ -11464,6 +11522,7 @@ Elm.HLedger.make = function (_elm) {
    $Model = Elm.Model.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm),
+   $Task = Elm.Task.make(_elm),
    $UIComponents = Elm.UIComponents.make(_elm);
    var _op = {};
    var view = $UIComponents.viewPage;
@@ -11480,7 +11539,8 @@ Elm.HLedger.make = function (_elm) {
       };
       var setUiAfterResp = function (model) {
          var uiStatus = model.ui;
-         var ui = _U.update(uiStatus,{preloaderDisp: "none",formDisp: "none",entryListDisp: "block",errorDisp: "none"});
+         var ui = _U.update(uiStatus,
+         {preloaderDisp: "none",formDisp: "none",entryListDisp: "block",errorDisp: "none",formType: $Model.AddNewForm,formLabelClass: ""});
          return _U.update(model,{ui: ui,currentFields: $Model.initialJEntry});
       };
       var setModelAfterResp = F2(function (serverEntries,model) {
@@ -11506,15 +11566,23 @@ Elm.HLedger.make = function (_elm) {
       var _p2 = action;
       switch (_p2.ctor)
       {case "ShowForm": return noEf(setUiAfterShowForm(model));
+         case "EditEntry": var uiStatus = model.ui;
+           var uiStatus$ = _U.update(uiStatus,{formLabelClass: "active",formType: $Model.UpdateForm});
+           var newModel = _U.update(model,{currentFields: _p2._0,ui: uiStatus$});
+           return {ctor: "_Tuple2",_0: newModel,_1: $Effects.task($Task.succeed($Model.ShowForm))};
          case "AddNew": var newEntry = model.currentFields;
            return {ctor: "_Tuple2",_0: setUiAfterReq(model),_1: $Effects.batch(_U.list([$HEffects.addNew(newEntry),$HEffects.getAPenguin]))};
+         case "UpdateEntry": return {ctor: "_Tuple2",_0: setUiAfterReq(model),_1: $HEffects.updateEntry(model.currentFields)};
          case "DeleteLast": return {ctor: "_Tuple2",_0: setUiAfterReq(model),_1: $HEffects.deleteLast};
          case "ClearAll": return {ctor: "_Tuple2",_0: setUiAfterReq(model),_1: $HEffects.clearAll};
          case "FetchAll": return {ctor: "_Tuple2",_0: setUiAfterReq(model),_1: $HEffects.fetchAll};
+         case "DeleteEntry": return {ctor: "_Tuple2",_0: setUiAfterReq(model),_1: $HEffects.deleteEntry(_p2._0)};
          case "AddedNew": return noEf(A2(setModelAfterResp,_p2._0,model));
          case "DeletedLast": return noEf(A2(setModelAfterResp,_p2._0,model));
          case "FetchedAll": return noEf(A2(setModelAfterResp,_p2._0,model));
          case "ClearedAll": return noEf(A2(setModelAfterResp,_p2._0,model));
+         case "UpdatedEntry": return noEf(A2(setModelAfterResp,_p2._0,model));
+         case "DeletedEntry": return noEf(A2(setModelAfterResp,_p2._0,model));
          case "SetDesc": var newFields = _U.update(fields,{description: _p2._0});
            return noEf(_U.update(model,{currentFields: newFields}));
          case "SetComment": var newFields = _U.update(fields,{comment: _p2._0});

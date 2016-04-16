@@ -1,0 +1,31 @@
+User
+    ident Text
+    count Int
+    UniqueUser ident
+    deriving Typeable
+
+Posting json
+    account Text
+    amount Text
+    deriving Show
+    deriving Eq
+
+Entry json
+    number Int
+    date Text
+    description Text
+    comment Text
+    postings [Posting]
+    userId UserId 
+    UniqueEntry userId number
+    deriving Eq
+    deriving Show
+
+RequestEntry json
+    number Int
+    date Text
+    description Text
+    comment Text
+    postings [Posting]
+    deriving Eq
+    deriving Show

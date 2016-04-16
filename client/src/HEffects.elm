@@ -1,5 +1,7 @@
 module HEffects ( fetchAll
                 , addNew
+                , updateEntry
+                , deleteEntry
                 , deleteLast
                 , clearAll
                 , getAPenguin
@@ -16,7 +18,7 @@ import UIComponents exposing ((=>))
 
 -- Service info
 serviceUri : String
-serviceUri = "http://services.vicarie.in/"
+serviceUri = "http://localhost:3000"
 
 -- Auxiliary functions [For fetching gifs]
 getRandomGif : String -> Effects Action
@@ -40,7 +42,8 @@ decodePosting = Json.object2 Posting ("account" := Json.string)
                                      ("amount" := Json.string)
 
 decodeJEntry : Json.Decoder JEntry
-decodeJEntry =  Json.object4 JEntry ("date" := Json.string)
+decodeJEntry =  Json.object5 JEntry ("number" := Json.int)
+                                    ("date" := Json.string)
                                     ("description" := Json.string)
                                     ("comment" := Json.string)
                                     ("postings" := Json.list decodePosting)
@@ -54,7 +57,8 @@ encodePosting posting = JsonEn.object [ ("account", string posting.account)
                                       ]
 
 encodeJEntry : JEntry -> Value
-encodeJEntry jentry = JsonEn.object [ ("date", string jentry.date)
+encodeJEntry jentry = JsonEn.object [ ("number", JsonEn.int jentry.number)
+                                    , ("date", string jentry.date)
                                     , ("description", string jentry.description)
                                     , ("comment", string jentry.comment)
                                     , ("postings", JsonEn.list
@@ -62,7 +66,7 @@ encodeJEntry jentry = JsonEn.object [ ("date", string jentry.date)
                                     ]
 
 fetchAll : Effects Action
-fetchAll = Http.get decodeJEntryList (serviceUri ++ "/entries")
+fetchAll = Http.get decodeJEntryList (serviceUri ++ "/entry")
          |> Task.toMaybe
          |> Task.map FetchedAll
          |> Effects.task
@@ -79,6 +83,32 @@ addNew jentry = Http.send Http.defaultSettings
               |> Task.map AddedNew
               |> Effects.task
             
+updateEntry : JEntry -> Effects Action
+updateEntry jentry = Http.send Http.defaultSettings
+                     { verb = "PUT"
+                     , url = serviceUri ++ "/entry"
+                     , headers = [ ("content-type", "application/json") ]         
+                     , body = Http.string (JsonEn.encode 0 <| encodeJEntry jentry)
+                     }
+                   |> Http.fromJson decodeJEntryList
+                   |> Task.toMaybe
+                   |> Task.map UpdatedEntry
+                   |> Effects.task
+
+deleteEntry : JEntry -> Effects Action
+deleteEntry jentry = Http.send Http.defaultSettings
+                     { verb = "DELETE"
+                     , url = serviceUri ++ "/entry"
+                     , headers = [ ("content-type", "application/json") ]         
+                     , body = Http.string (JsonEn.encode 0 <| encodeJEntry jentry)
+                     }
+                   |> Http.fromJson decodeJEntryList
+                   |> Task.toMaybe
+                   |> Task.map DeletedEntry
+                   |> Effects.task
+
+
+
 clearAll : Effects Action
 clearAll = Http.send Http.defaultSettings
            { verb = "DELETE"

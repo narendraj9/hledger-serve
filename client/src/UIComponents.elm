@@ -34,8 +34,8 @@ displayStyle value = let opacity = if value == "none"
 icon classNames iconName = i [ class classNames ] 
                            [ text iconName ]
 -- Instead of typing all the html manually, call these functions
-materialIcon = icon "material-icons waves-effect waves-light"  
-prefixIcon = icon "material-icons waves-effect waves-light prefix" 
+materialIcon = icon "tiny material-icons waves-effect waves-light"  
+prefixIcon = icon "tiny material-icons waves-effect waves-light prefix" 
 
 
 viewEmptyState : Signal.Address Action -> Model -> Html
@@ -62,7 +62,7 @@ viewEmptyState address model =  div [ class "container"
                                             , div [ class "row" ]
                                                 [ div [ class "col offset-s2 s8 center" ]
                                                     [ img [ class "responsive-img"
-                                                          , src "_assets/empty-state-bear.png"
+                                                          , src "static/images/empty-state-bear.png"
                                                           ]
                                                         []
                                                     ]
@@ -81,17 +81,38 @@ viewJEntryList address model =
     [] -> viewEmptyState address model
     entries -> div [ class "container"
                    , displayStyle model.ui.entryListDisp ] 
-               (List.map htmlJEntry entries)
+               (List.foldl (\entry viewList -> 
+                              (viewJEntry address entry) :: viewList) 
+                  [] entries)
+
+viewEditEntryButtons : Signal.Address Action -> JEntry -> Html
+viewEditEntryButtons address entry = 
+  div [ class "col s12" ] 
+        [ div [ class "right-align col s11" ]
+            [ a [ class "tiny btn-floating btn-small waves-effect waves-light orange"
+                , noTouchToSearchStyle
+                , onClick address (DeleteEntry entry)
+                ] 
+                [ materialIcon "remove" ]
+            ]
+        , div [ class "right-align col s1" ] 
+            [ a [ class "tiny btn-floating btn-small waves-effect waves-light teal"
+                , noTouchToSearchStyle
+                , onClick address (EditEntry entry)
+                ] 
+                [ materialIcon "edit" ]
+            ]
+        ]
                         
-htmlJEntry : JEntry -> Html
-htmlJEntry entry =   let (p1, p2, rest) = getPostings2 entry
-                         date = entry.date
-                         description = entry.description
-                         comment = String.trim entry.comment
-                         commentDisplay = if not (String.isEmpty comment)
-                                          then style [ ("display", "block") ]
-                                          else style [ ("display", "none") ]
-                         htmlPosting p = div [ class "col offset-s1 s12" ]
+viewJEntry : Signal.Address Action -> JEntry -> Html
+viewJEntry address entry =   let (p1, p2, rest) = getPostings2 entry
+                                 date = entry.date
+                                 description = entry.description
+                                 comment = String.trim entry.comment
+                                 commentDisplay = if not (String.isEmpty comment)
+                                                  then style [ ("display", "block") ]
+                                                  else style [ ("display", "none") ]
+                                 htmlPosting p = div [ class "col offset-s1 s12" ]
                                          [ span [ class "black-text" ]
                                                   [ text p.account ]
                                          , span [ class "teal-text"
@@ -102,29 +123,29 @@ htmlJEntry entry =   let (p1, p2, rest) = getPostings2 entry
                                                      else "   ₹ " ++ p.amount)
                                              ]
                                          ]
-                     in
-                       div [ class "row" ]
-                             [ div [ class "col s12 m10 offset-m2 z-depth-1"
-                                   , entryStyle ]
-                                     [ div [ class "col s12"
-                                           , whitespacePreWrap
-                                           ]
-                                               [ span [ class "blue-text" ]
-                                                   [ text (date ++ "   ") ]
-                                               , span [ class "deep-purple-text accent-1"]
-                                                   [ text description ]
+                             in
+                               div [ class "row" ]
+                                     [ div [ class "col s12 m10 offset-m2 z-depth-1"
+                                           , entryStyle ]
+                                         [ div [ class "col s12"
+                                               , whitespacePreWrap
                                                ]
-                                     , div [ class "col s8 offset-s2 indigo-text lighten-5"
-                                           , commentDisplay ]
-                                               [ blockquote [ blockquoteStyle
-                                                            ]
-                                                   [ p [] [text comment ] ]
-                                               ]
-
-                                     , htmlPosting p1
-                                     , htmlPosting p2
+                                             [ span [ class "blue-text" ]
+                                                 [ text (date ++ "   ") ]
+                                             , span [ class "deep-purple-text accent-1"]
+                                                 [ text description ]
+                                             ]
+                                         , div [ class "col s8 offset-s2 indigo-text lighten-5"
+                                               , commentDisplay ]
+                                             [ blockquote [ blockquoteStyle
+                                                          ]
+                                                 [ p [] [text comment ] ]
+                                             ]
+                                         , htmlPosting p1
+                                         , htmlPosting p2
+                                         , viewEditEntryButtons address entry
+                                         ]
                                      ]
-                             ]
 
 viewButtons : Signal.Address Action -> Html
 viewButtons address = let fabStyle = style [ ("bottom" , "45px")
@@ -135,38 +156,10 @@ viewButtons address = let fabStyle = style [ ("bottom" , "45px")
                      , noTouchToSearchStyle ]
                    [ a [ class "btn-floating btn-large  waves-effect waves-light red" ]
                        [ i [ class "large material-icons"
-                           , noTouchToSearchStyle ] 
-                           [ text "mode_edit" ]
-                       ]
-                   , ul []
-                       [ li []
-                           [ a [ class "disabled btn-floating btn-small waves-effect waves-light red darken-2"
-                               , noTouchToSearchStyle
-                               , onClick address ClearAll 
-                               ] 
-                               [ materialIcon "delete_sweep" ]
-                           ]
-                       , li []
-                           [ a [ class "btn-floating btn-small waves-effect waves-light red"
-                               , noTouchToSearchStyle
-                               , onClick address DeleteLast 
-                               ] 
-                               [ materialIcon "remove" ]
-                           ]
-                       , li []  
-                           [ a [ class "btn-floating btn-small waves-effect waves-light blue"
-                               , noTouchToSearchStyle
-                               , onClick address FetchAll 
-                               ]
-                               [ materialIcon "restore" ]
-                           ]
-                       , li [] 
-                           [ a [ class "btn-floating btn-small waves-effect waves-light teal"
-                               , noTouchToSearchStyle
-                               , onClick address ShowForm 
-                               ] 
-                               [ materialIcon "add" ]
-                           ]
+                           , noTouchToSearchStyle
+                           , onClick address ShowForm 
+                           ] 
+                           [ text "add" ]
                        ]
                    ]
 
@@ -174,7 +167,7 @@ htmlNav : Model -> Html
 htmlNav model = 
   div [ class "row indigo lighten-4" ]
         [ div [ class "col s6" ]
-            [ a [ href "#" ] 
+            [ a [ href "/" ] 
                 [ img [ class "responsive-img z-depth-1"
                       , imgStyle
                       , src model.ui.imgUrl
@@ -183,8 +176,10 @@ htmlNav model =
                 ]
             ]
         , div [ class "col small-text right-text right z-depth-3" ]
-            [ div [class "flow-text black-text"] [ text "Penguin's" ]
-            , div [class "flow-text"] [ text "Hledger Client" ]
+            [ a [ href "/" ]
+                [ div [class "flow-text black-text"] [ text "Penguin's" ]
+                , div [class "flow-text"] [ text "Hledger Client" ]
+                ]
             ]
         ]
 
@@ -215,7 +210,7 @@ htmlError model = div [ class "container"
                               , div [ class "row" ]
                                   [ div [ class "col offset-s2 s8 center" ]
                                       [ img [ class "responsive-img"
-                                            , src "_assets/empty-state-bear.png"
+                                            , src "static/images/empty-state-bear.png"
                                             ]
                                           []
                                       ]
@@ -226,11 +221,11 @@ htmlError model = div [ class "container"
                   ]
 
 
-
 viewForm : Signal.Address Action -> Model -> Html
 viewForm address model =  
   let  fields = model.currentFields 
        (p1, p2, rest) = getPostings2 fields
+       labelClass = model.ui.formLabelClass
        onInput tag = on "input" targetValue (Signal.message address << tag)
        description = div [ class "row" ]
                      [ div [ class "input-field col s12 text-left" ]
@@ -240,7 +235,9 @@ viewForm address model =
                                  , onInput SetDesc
                                  ]
                              []
-                         , label [ for "description-field" ]
+                         , label [ for "description-field"
+                                 , class labelClass
+                                 ]
                              [ text "Title" ]
                          , prefixIcon "description"
                          ]
@@ -253,30 +250,38 @@ viewForm address model =
                                  , onInput SetComment
                                  ]
                           []
-                      , label [ for "comment-field" ]
+                      , label [ for "comment-field"
+                              , class labelClass
+                              ]
                           [ text "Comments (Optional)" ]
                       , prefixIcon "comment"
                       ]
                   ]
-       account l i tag = div [ class "input-field col s6" ]
+       account l i p tag = div [ class "input-field col s6" ]
                          [ input [ id i
                                  -- Hack to turn autocapitalize off on mobile
                                  , type' "email"
                                  , style [("autocapitalize", "off")] -- Not working!
+                                 , value p.account
                                  , onInput tag
                                     ]
                                 []
-                            , label [ for i ]
+                            , label [ for i
+                                    , class labelClass
+                                    ]
                                 [ text l ]
                             ] 
-       amount l i tag = div [ class "input-field col s6" ]
+       amount l i p tag = div [ class "input-field col s6" ]
                             [ input [ id i
                                     , class "validate"
                                     , type' "number"
+                                    , value p.amount
                                     , onInput tag
                                     ]
                                 []
-                            , label [ for i ]
+                            , label [ for i
+                                    , class labelClass
+                                    ]
                                 [ text l ]
                             ] 
 
@@ -289,17 +294,20 @@ viewForm address model =
                   [ description
                   , comments
                   , div [ class "row" ]
-                      [ account "Account #1" "acc-1" SetAccountA
-                      , amount  "Amount (₹)" "amount-1" SetAmountA
+                      [ account "Account #1" "acc-1" p1 SetAccountA
+                      , amount  "Amount (₹)" "amount-1" p1 SetAmountA
                       ]
                   , div [ class "row" ]
-                      [ account "Account #2" "acc-2" SetAccountB
-                      , amount "Amount (₹)" "amount-2" SetAmountB
+                      [ account "Account #2" "acc-2" p2 SetAccountB
+                      , amount "Amount (₹)" "amount-2" p2 SetAmountB
                       ]
                   , div [ class "row right" ]
                       [  button [ class "btn waves-effect waves-light teal"
                                 , type' "submit"
-                                , onClick address AddNew 
+                                , onClick address <| 
+                                          if model.ui.formType == AddNewForm
+                                          then AddNew
+                                          else UpdateEntry
                                 , noTouchToSearchStyle
                                 ]
                            [ icon "material-icons right" "send"
