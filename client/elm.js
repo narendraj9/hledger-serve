@@ -11469,7 +11469,7 @@ Elm.HEffects.make = function (_elm) {
    var decodeUrl = A2($Json$Decode.at,_U.list(["data","fixed_height_small_url"]),$Json$Decode.string);
    var getRandomGif = function (topic) {    return $Effects.task(A2($Task.map,$Model.NewGif,$Task.toMaybe(A2($Http.get,decodeUrl,randomUrl(topic)))));};
    var getAPenguin = getRandomGif("cute penguin");
-   var serviceUri = "http://localhost:3000";
+   var serviceUri = "http://services.vicarie.in";
    var fetchAll = $Effects.task(A2($Task.map,$Model.FetchedAll,$Task.toMaybe(A2($Http.get,decodeJEntryList,A2($Basics._op["++"],serviceUri,"/entry")))));
    var addNew = function (jentry) {
       return $Effects.task(A2($Task.map,
