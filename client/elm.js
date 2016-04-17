@@ -11011,6 +11011,7 @@ Elm.Model.make = function (_elm) {
    var SetAccountA = function (a) {    return {ctor: "SetAccountA",_0: a};};
    var SetComment = function (a) {    return {ctor: "SetComment",_0: a};};
    var SetDesc = function (a) {    return {ctor: "SetDesc",_0: a};};
+   var SetEntryToRemove = function (a) {    return {ctor: "SetEntryToRemove",_0: a};};
    var ClearAll = {ctor: "ClearAll"};
    var FetchAll = {ctor: "FetchAll"};
    var DeleteLast = {ctor: "DeleteLast"};
@@ -11027,7 +11028,7 @@ Elm.Model.make = function (_elm) {
    };
    var initialPostings = _U.list([{account: "",amount: ""},{account: "",amount: ""}]);
    var initialJEntry = {date: "",number: 0,description: "",comment: "",postings: initialPostings};
-   var Model = F3(function (a,b,c) {    return {currentFields: a,restEntries: b,ui: c};});
+   var Model = F4(function (a,b,c,d) {    return {currentFields: a,restEntries: b,entryToRemove: c,ui: d};});
    var UiStatus = F7(function (a,b,c,d,e,f,g) {
       return {imgUrl: a,preloaderDisp: b,formDisp: c,entryListDisp: d,errorDisp: e,formType: f,formLabelClass: g};
    });
@@ -11039,7 +11040,7 @@ Elm.Model.make = function (_elm) {
                          ,entryListDisp: "none"
                          ,errorDisp: "none"
                          ,formLabelClass: ""};
-   var initialModel = {currentFields: initialJEntry,restEntries: _U.list([]),ui: initialUiStatus};
+   var initialModel = {currentFields: initialJEntry,restEntries: _U.list([]),entryToRemove: initialJEntry,ui: initialUiStatus};
    var UpdateForm = {ctor: "UpdateForm"};
    var JEntry = F5(function (a,b,c,d,e) {    return {number: a,date: b,description: c,comment: d,postings: e};});
    var Posting = F2(function (a,b) {    return {account: a,amount: b};});
@@ -11060,6 +11061,7 @@ Elm.Model.make = function (_elm) {
                               ,DeleteLast: DeleteLast
                               ,FetchAll: FetchAll
                               ,ClearAll: ClearAll
+                              ,SetEntryToRemove: SetEntryToRemove
                               ,SetDesc: SetDesc
                               ,SetComment: SetComment
                               ,SetAccountA: SetAccountA
@@ -11109,6 +11111,23 @@ Elm.UIComponents.make = function (_elm) {
                                                              ,{ctor: "_Tuple2",_0: "-webkit-user-select",_1: "none"}]));
    _op["=>"] = F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};});
    var imgStyle = $Html$Attributes.style(_U.list([A2(_op["=>"],"width","auto"),A2(_op["=>"],"padding-top","4px"),A2(_op["=>"],"height","78px")]));
+   var viewConfirmModal = F2(function (address,model) {
+      return A2($Html.div,
+      _U.list([$Html$Attributes.id("confirm-modal"),$Html$Attributes.$class("modal")]),
+      _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("modal-content")]),_U.list([$Html.text("Do you really want to delete the entry? ")]))
+              ,A2($Html.div,
+              _U.list([$Html$Attributes.$class("modal-footer")]),
+              _U.list([A2($Html.button,
+                      _U.list([$Html$Attributes.$class("modal-action modal-close btn waves-effect waves-light")
+                              ,A2($Html$Events.onClick,address,$Model.DeleteEntry(model.entryToRemove))
+                              ,noTouchToSearchStyle]),
+                      _U.list([$Html.text("Delete")]))
+                      ,A2($Html.button,
+                      _U.list([$Html$Attributes.$class("modal-action modal-close btn waves-effect waves-light")
+                              ,A2($Html$Events.onClick,address,$Model.UpdatedEntry($Maybe.Just(model.restEntries)))
+                              ,noTouchToSearchStyle]),
+                      _U.list([$Html.text("Cancel")]))]))]));
+   });
    var htmlNav = function (model) {
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("row indigo lighten-4")]),
@@ -11126,40 +11145,22 @@ Elm.UIComponents.make = function (_elm) {
               _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("flow-text black-text")]),_U.list([$Html.text("Penguin\'s")]))
                       ,A2($Html.div,_U.list([$Html$Attributes.$class("flow-text")]),_U.list([$Html.text("Hledger Client")]))]))]))]));
    };
-   var viewButtons = function (address) {
+   var viewFloatingButtons = function (address) {
       var fabStyle = $Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "bottom",_1: "45px"},{ctor: "_Tuple2",_0: "right",_1: "24px"}]));
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("fixed-action-btn horizontal"),fabStyle,noTouchToSearchStyle]),
       _U.list([A2($Html.a,
-      _U.list([$Html$Attributes.$class("btn-floating btn-large  waves-effect waves-light red")]),
+      _U.list([$Html$Attributes.$class("btn-floating btn-medium  waves-effect waves-light teal")]),
       _U.list([A2($Html.i,
-      _U.list([$Html$Attributes.$class("large material-icons"),noTouchToSearchStyle,A2($Html$Events.onClick,address,$Model.ShowForm)]),
+      _U.list([$Html$Attributes.$class("material-icons"),noTouchToSearchStyle,A2($Html$Events.onClick,address,$Model.ShowForm)]),
       _U.list([$Html.text("add")]))]))]));
    };
    var icon = F2(function (classNames,iconName) {    return A2($Html.i,_U.list([$Html$Attributes.$class(classNames)]),_U.list([$Html.text(iconName)]));});
    var materialIcon = icon("tiny material-icons waves-effect waves-light");
-   var viewEditEntryButtons = F2(function (address,entry) {
-      return A2($Html.div,
-      _U.list([$Html$Attributes.$class("col s12")]),
-      _U.list([A2($Html.div,
-              _U.list([$Html$Attributes.$class("right-align col s11")]),
-              _U.list([A2($Html.a,
-              _U.list([$Html$Attributes.$class("tiny btn-floating btn-small waves-effect waves-light orange")
-                      ,noTouchToSearchStyle
-                      ,A2($Html$Events.onClick,address,$Model.DeleteEntry(entry))]),
-              _U.list([materialIcon("remove")]))]))
-              ,A2($Html.div,
-              _U.list([$Html$Attributes.$class("right-align col s1")]),
-              _U.list([A2($Html.a,
-              _U.list([$Html$Attributes.$class("tiny btn-floating btn-small waves-effect waves-light teal")
-                      ,noTouchToSearchStyle
-                      ,A2($Html$Events.onClick,address,$Model.EditEntry(entry))]),
-              _U.list([materialIcon("edit")]))]))]));
-   });
    var viewJEntry = F2(function (address,entry) {
       var htmlPosting = function (p) {
          return A2($Html.div,
-         _U.list([$Html$Attributes.$class("col offset-s1 s12")]),
+         _U.list([$Html$Attributes.$class("col offset-s1 s11")]),
          _U.list([A2($Html.span,_U.list([$Html$Attributes.$class("black-text")]),_U.list([$Html.text(p.account)]))
                  ,A2($Html.span,
                  _U.list([$Html$Attributes.$class("teal-text"),whitespacePreWrap]),
@@ -11178,19 +11179,30 @@ Elm.UIComponents.make = function (_elm) {
       var p2 = _p0._1;
       var rest = _p0._2;
       return A2($Html.div,
-      _U.list([$Html$Attributes.$class("row")]),
-      _U.list([A2($Html.div,
-      _U.list([$Html$Attributes.$class("col s12 m10 offset-m2 z-depth-1"),entryStyle]),
-      _U.list([A2($Html.div,
-              _U.list([$Html$Attributes.$class("col s12"),whitespacePreWrap]),
-              _U.list([A2($Html.span,_U.list([$Html$Attributes.$class("blue-text")]),_U.list([$Html.text(A2($Basics._op["++"],date,"   "))]))
-                      ,A2($Html.span,_U.list([$Html$Attributes.$class("deep-purple-text accent-1")]),_U.list([$Html.text(description)]))]))
+      _U.list([$Html$Attributes.$class("row entryItem offset-m2 z-depth-1 hoverable"),entryStyle]),
+      _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("col s3 blue-text")]),_U.list([$Html.text(A2($Basics._op["++"],date,"  "))]))
+              ,A2($Html.div,_U.list([$Html$Attributes.$class("col s9 deep-purple-text accent-1")]),_U.list([$Html.text(description)]))
               ,A2($Html.div,
-              _U.list([$Html$Attributes.$class("col s8 offset-s2 indigo-text lighten-5"),commentDisplay]),
+              _U.list([$Html$Attributes.$class("col s10 offset-s2 indigo-text lighten-5"),commentDisplay]),
               _U.list([A2($Html.blockquote,_U.list([blockquoteStyle]),_U.list([A2($Html.p,_U.list([]),_U.list([$Html.text(comment)]))]))]))
               ,htmlPosting(p1)
               ,htmlPosting(p2)
-              ,A2(viewEditEntryButtons,address,entry)]))]));
+              ,A2($Html.div,_U.list([$Html$Attributes.$class("divider")]),_U.list([]))
+              ,A2($Html.div,
+              _U.list([$Html$Attributes.$class("col s6")]),
+              _U.list([A2($Html.button,
+              _U.list([$Html$Attributes.$class("btn-flat teal-text waves-effect waves-light modal-trigger left")
+                      ,noTouchToSearchStyle
+                      ,A2($Html$Attributes.attribute,"data-target","confirm-modal")
+                      ,A2($Html$Events.onClick,address,$Model.SetEntryToRemove(entry))]),
+              _U.list([materialIcon("delete")]))]))
+              ,A2($Html.div,
+              _U.list([$Html$Attributes.$class("col s6")]),
+              _U.list([A2($Html.button,
+              _U.list([$Html$Attributes.$class("btn-flat teal-text waves-effect waves-light right")
+                      ,noTouchToSearchStyle
+                      ,A2($Html$Events.onClick,address,$Model.EditEntry(entry))]),
+              _U.list([materialIcon("edit")]))]))]));
    });
    var prefixIcon = icon("tiny material-icons waves-effect waves-light prefix");
    var htmlFooter = function (_p1) {
@@ -11260,7 +11272,7 @@ Elm.UIComponents.make = function (_elm) {
             return A2(viewEmptyState,address,model);
          } else {
             return A2($Html.div,
-            _U.list([$Html$Attributes.$class("container"),displayStyle(model.ui.entryListDisp)]),
+            _U.list([$Html$Attributes.$class("container"),$Html$Attributes.id("entryList"),displayStyle(model.ui.entryListDisp)]),
             A3($List.foldl,F2(function (entry,viewList) {    return A2($List._op["::"],A2(viewJEntry,address,entry),viewList);}),_U.list([]),_p2));
          }
    });
@@ -11334,8 +11346,8 @@ Elm.UIComponents.make = function (_elm) {
          _U.list([$Html$Attributes.$class("input-field col s6")]),
          _U.list([A2($Html.input,
                  _U.list([$Html$Attributes.id(i)
-                         ,$Html$Attributes.type$("email")
-                         ,$Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "autocapitalize",_1: "off"}]))
+                         ,$Html$Attributes.type$("text")
+                         ,$Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "autocapitalize",_1: "off"},{ctor: "_Tuple2",_0: "autocorrect",_1: "off"}]))
                          ,$Html$Attributes.value(p.account)
                          ,onInput(tag)]),
                  _U.list([]))
@@ -11387,13 +11399,19 @@ Elm.UIComponents.make = function (_elm) {
       _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("divider")]),_U.list([]))
               ,A2($Html.main$,
               _U.list([mainFlexStyle]),
-              _U.list([htmlNav(model),htmlPreloader(model),htmlError(model),A2(viewForm,address,model),A2(viewJEntryList,address,model),viewButtons(address)]))
+              _U.list([htmlNav(model)
+                      ,htmlPreloader(model)
+                      ,htmlError(model)
+                      ,A2(viewConfirmModal,address,model)
+                      ,A2(viewForm,address,model)
+                      ,A2(viewJEntryList,address,model)
+                      ,viewFloatingButtons(address)]))
               ,htmlFooter(model)]));
    });
    return _elm.UIComponents.values = {_op: _op
                                      ,viewForm: viewForm
                                      ,viewJEntryList: viewJEntryList
-                                     ,viewButtons: viewButtons
+                                     ,viewFloatingButtons: viewFloatingButtons
                                      ,htmlNav: htmlNav
                                      ,htmlFooter: htmlFooter
                                      ,htmlPreloader: htmlPreloader
@@ -11451,7 +11469,7 @@ Elm.HEffects.make = function (_elm) {
    var decodeUrl = A2($Json$Decode.at,_U.list(["data","fixed_height_small_url"]),$Json$Decode.string);
    var getRandomGif = function (topic) {    return $Effects.task(A2($Task.map,$Model.NewGif,$Task.toMaybe(A2($Http.get,decodeUrl,randomUrl(topic)))));};
    var getAPenguin = getRandomGif("cute penguin");
-   var serviceUri = "http://services.vicarie.in";
+   var serviceUri = "http://localhost:3000";
    var fetchAll = $Effects.task(A2($Task.map,$Model.FetchedAll,$Task.toMaybe(A2($Http.get,decodeJEntryList,A2($Basics._op["++"],serviceUri,"/entry")))));
    var addNew = function (jentry) {
       return $Effects.task(A2($Task.map,
@@ -11570,6 +11588,7 @@ Elm.HLedger.make = function (_elm) {
            var uiStatus$ = _U.update(uiStatus,{formLabelClass: "active",formType: $Model.UpdateForm});
            var newModel = _U.update(model,{currentFields: _p2._0,ui: uiStatus$});
            return {ctor: "_Tuple2",_0: newModel,_1: $Effects.task($Task.succeed($Model.ShowForm))};
+         case "SetEntryToRemove": return noEf(_U.update(model,{entryToRemove: _p2._0}));
          case "AddNew": var newEntry = model.currentFields;
            return {ctor: "_Tuple2",_0: setUiAfterReq(model),_1: $Effects.batch(_U.list([$HEffects.addNew(newEntry),$HEffects.getAPenguin]))};
          case "UpdateEntry": return {ctor: "_Tuple2",_0: setUiAfterReq(model),_1: $HEffects.updateEntry(model.currentFields)};

@@ -73,37 +73,55 @@ update action model =
   in
     case action of
       -- User --> Application
-      ShowForm -> noEf (setUiAfterShowForm model)
-      EditEntry entry -> let uiStatus = model.ui
-                             uiStatus' = { uiStatus | formLabelClass = "active"
-                                         , formType = UpdateForm }
-                             newModel = { model | currentFields = entry
-                                        , ui = uiStatus'
-                                        }
-                         in
-                           (newModel, Effects.task (succeed ShowForm))
+      ShowForm -> 
+        noEf (setUiAfterShowForm model)
+
+      EditEntry entry -> 
+        let uiStatus = model.ui
+            uiStatus' = { uiStatus | formLabelClass = "active"
+                        , formType = UpdateForm }
+            newModel = { model | currentFields = entry
+                       , ui = uiStatus'
+                       }
+        in
+          (newModel, Effects.task (succeed ShowForm))
+
+      SetEntryToRemove entry -> 
+        noEf { model | entryToRemove = entry } 
+
       -- Application --> Server
-      AddNew -> let newEntry = model.currentFields
-                in  ( setUiAfterReq model
-                    , Effects.batch [ addNew newEntry
-                                    , getAPenguin
-                                    ]
-                    )
-      UpdateEntry -> ( setUiAfterReq model
-                     , updateEntry model.currentFields
-                     )
-      DeleteLast -> ( setUiAfterReq model
-                    , deleteLast
-                    )
-      ClearAll -> ( setUiAfterReq model
-                  , clearAll
-                  )
-      FetchAll -> ( setUiAfterReq model
-                  , fetchAll
-                  )
-      DeleteEntry entry -> ( setUiAfterReq model
-                           , deleteEntry entry
-                           )
+      AddNew -> 
+        let newEntry = model.currentFields
+        in  ( setUiAfterReq model
+            , Effects.batch [ addNew newEntry
+                            , getAPenguin
+                            ]
+            )
+
+      UpdateEntry -> 
+        ( setUiAfterReq model
+        , updateEntry model.currentFields
+        )
+
+      DeleteLast -> 
+        ( setUiAfterReq model
+        , deleteLast
+        )
+
+      ClearAll -> 
+        ( setUiAfterReq model
+        , clearAll
+        )
+
+      FetchAll -> 
+        ( setUiAfterReq model
+        , fetchAll
+        )
+
+      DeleteEntry entry -> 
+        ( setUiAfterReq model
+        , deleteEntry entry
+        )
 
       -- Server --> Application
       AddedNew serverEntries -> noEf <| setModelAfterResp serverEntries model

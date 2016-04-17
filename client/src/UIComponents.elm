@@ -1,6 +1,6 @@
 module UIComponents ( viewForm
                     , viewJEntryList
-                    , viewButtons
+                    , viewFloatingButtons
                     , (=>)
                     , htmlNav
                     , htmlFooter
@@ -80,88 +80,83 @@ viewJEntryList address model =
   case .restEntries model of
     [] -> viewEmptyState address model
     entries -> div [ class "container"
-                   , displayStyle model.ui.entryListDisp ] 
+                   , id "entryList"
+                   , displayStyle model.ui.entryListDisp 
+                   ] 
                (List.foldl (\entry viewList -> 
                               (viewJEntry address entry) :: viewList) 
                   [] entries)
 
-viewEditEntryButtons : Signal.Address Action -> JEntry -> Html
-viewEditEntryButtons address entry = 
-  div [ class "col s12" ] 
-        [ div [ class "right-align col s11" ]
-            [ a [ class "tiny btn-floating btn-small waves-effect waves-light orange"
-                , noTouchToSearchStyle
-                , onClick address (DeleteEntry entry)
-                ] 
-                [ materialIcon "remove" ]
-            ]
-        , div [ class "right-align col s1" ] 
-            [ a [ class "tiny btn-floating btn-small waves-effect waves-light teal"
-                , noTouchToSearchStyle
-                , onClick address (EditEntry entry)
-                ] 
-                [ materialIcon "edit" ]
-            ]
-        ]
                         
 viewJEntry : Signal.Address Action -> JEntry -> Html
-viewJEntry address entry =   let (p1, p2, rest) = getPostings2 entry
-                                 date = entry.date
-                                 description = entry.description
-                                 comment = String.trim entry.comment
-                                 commentDisplay = if not (String.isEmpty comment)
-                                                  then style [ ("display", "block") ]
-                                                  else style [ ("display", "none") ]
-                                 htmlPosting p = div [ class "col offset-s1 s12" ]
-                                         [ span [ class "black-text" ]
-                                                  [ text p.account ]
-                                         , span [ class "teal-text"
-                                                , whitespacePreWrap
-                                                ]
-                                             [ text (if (String.isEmpty (String.trim p.amount))
-                                                     then ""
-                                                     else "   ₹ " ++ p.amount)
-                                             ]
-                                         ]
-                             in
-                               div [ class "row" ]
-                                     [ div [ class "col s12 m10 offset-m2 z-depth-1"
-                                           , entryStyle ]
-                                         [ div [ class "col s12"
-                                               , whitespacePreWrap
-                                               ]
-                                             [ span [ class "blue-text" ]
-                                                 [ text (date ++ "   ") ]
-                                             , span [ class "deep-purple-text accent-1"]
-                                                 [ text description ]
-                                             ]
-                                         , div [ class "col s8 offset-s2 indigo-text lighten-5"
-                                               , commentDisplay ]
-                                             [ blockquote [ blockquoteStyle
-                                                          ]
-                                                 [ p [] [text comment ] ]
-                                             ]
-                                         , htmlPosting p1
-                                         , htmlPosting p2
-                                         , viewEditEntryButtons address entry
-                                         ]
-                                     ]
-
-viewButtons : Signal.Address Action -> Html
-viewButtons address = let fabStyle = style [ ("bottom" , "45px")
-                                           , ("right" , "24px")
-                                           ]
-              in div [ class "fixed-action-btn horizontal"
-                     , fabStyle
-                     , noTouchToSearchStyle ]
-                   [ a [ class "btn-floating btn-large  waves-effect waves-light red" ]
-                       [ i [ class "large material-icons"
-                           , noTouchToSearchStyle
-                           , onClick address ShowForm 
-                           ] 
-                           [ text "add" ]
+viewJEntry address entry =   
+  let (p1, p2, rest) = getPostings2 entry
+      date = entry.date
+      description = entry.description
+      comment = String.trim entry.comment
+      commentDisplay = if not (String.isEmpty comment)
+                       then style [ ("display", "block") ]
+                       else style [ ("display", "none") ]
+      htmlPosting p = div [ class "col offset-s1 s11" ]
+                        [ span [ class "black-text" ]
+                            [ text p.account ]
+                        , span [ class "teal-text"
+                               , whitespacePreWrap
+                               ]
+                            [ text (if (String.isEmpty (String.trim p.amount))
+                                    then ""
+                                    else "   ₹ " ++ p.amount)
+                            ]
+                        ]
+  in
+    div [ class "row entryItem offset-m2 z-depth-1 hoverable" 
+        , entryStyle
+        ]
+      [ div [ class "col s3 blue-text" ] 
+          [ text (date ++ "  ") ]
+      , div [ class "col s9 deep-purple-text accent-1" ]
+          [ text description ]
+      , div [ class "col s10 offset-s2 indigo-text lighten-5"
+            , commentDisplay ]
+          [ blockquote [ blockquoteStyle ]
+              [ p [] [text comment ] ]
+          ]
+      , htmlPosting p1
+      , htmlPosting p2
+      , div [ class "divider" ] []
+      , div [ class "col s6"]
+          [ button [ class "btn-flat teal-text waves-effect waves-light modal-trigger left"
+                   , noTouchToSearchStyle
+                   , attribute "data-target" "confirm-modal" 
+                   , onClick address (SetEntryToRemove entry)
+                   ] 
+              [ materialIcon "delete" ]
+          ]
+      , div [ class "col s6"]
+          [ button [ class "btn-flat teal-text waves-effect waves-light right"
+              , noTouchToSearchStyle
+              , onClick address (EditEntry entry)
+              ] 
+              [ materialIcon "edit" ]
+          ]
+      ]
+        
+viewFloatingButtons : Signal.Address Action -> Html
+viewFloatingButtons address = 
+  let fabStyle = style [ ("bottom" , "45px")
+                       , ("right" , "24px")
                        ]
-                   ]
+  in div [ class "fixed-action-btn horizontal"
+         , fabStyle
+         , noTouchToSearchStyle ]
+       [ a [ class "btn-floating btn-medium  waves-effect waves-light teal" ]
+           [ i [ class "material-icons"
+               , noTouchToSearchStyle
+               , onClick address ShowForm 
+               ] 
+               [ text "add" ]
+           ]
+       ]
 
 htmlNav : Model -> Html
 htmlNav model = 
@@ -184,43 +179,67 @@ htmlNav model =
         ]
 
 htmlPreloader : Model -> Html
-htmlPreloader model = div [ class "progress"
-                          , displayStyle model.ui.preloaderDisp ]
-                        [ div [ class "indeterminate" ]
-                            []
-                        ]
+htmlPreloader model = 
+  div [ class "progress"
+      , displayStyle model.ui.preloaderDisp ]
+    [ div [ class "indeterminate" ]
+        []
+    ]
 
 htmlError : Model -> Html
-htmlError model = div [ class "container"
-                      , id "empty-state-bear.png"
-                      , displayStyle model.ui.errorDisp
-                      ]
-                  [ div [ class "row" ]
-                      [ div [ class "col s12"]
-                          [ div [ class "card-panel grey lighten-5 z-depth-1" ]
-                              [ div [ class "row" ]
-                                  [ div [ class "col offset-s2 s8 center" ]
-                                      [ icon "material-icons large red-text" "error" ]
-                                  ]
-                              , div [ class "row" ]
-                                  [ div [ class "col offset-s2 s8 center  red-text flow-text" ] 
-                                      [ text ("Something went wrong. The server left us on an island. "
-                                                  ++ "It's not the end of the world. Smile like I do! :)") ]
-                                  ]
-                              , div [ class "row" ]
-                                  [ div [ class "col offset-s2 s8 center" ]
-                                      [ img [ class "responsive-img"
-                                            , src "static/images/empty-state-bear.png"
-                                            ]
-                                          []
-                                      ]
-                                  ]
+htmlError model = 
+  div [ class "container"
+      , id "empty-state-bear.png"
+      , displayStyle model.ui.errorDisp
+      ]
+    [ div [ class "row" ]
+        [ div [ class "col s12"]
+            [ div [ class "card-panel grey lighten-5 z-depth-1" ]
+                [ div [ class "row" ]
+                    [ div [ class "col offset-s2 s8 center" ]
+                        [ icon "material-icons large red-text" "error" ]
+                    ]
+                , div [ class "row" ]
+                    [ div [ class "col offset-s2 s8 center  red-text flow-text" ] 
+                        [ text ("Something went wrong. The server left us on an island. "
+                                  ++ "It's not the end of the world. Smile like I do! :)") ]
+                    ]
+                , div [ class "row" ]
+                    [ div [ class "col offset-s2 s8 center" ]
+                        [ img [ class "responsive-img"
+                              , src "static/images/empty-state-bear.png"
                               ]
-                          ]
-                      ]
-                  ]
+                            []
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ]
 
+viewConfirmModal : Signal.Address Action -> Model -> Html
+viewConfirmModal address model =
+  div [ id "confirm-modal" 
+      , class "modal"
+      ]
+    [ div [ class "modal-content" ]
+        [ text "Do you really want to delete the entry? " ]
+    , div [ class "modal-footer" ]
+        [ button [ class "modal-action modal-close btn waves-effect waves-light"
+                 , onClick address (DeleteEntry model.entryToRemove)
+                 , noTouchToSearchStyle
+                 ]
+            [ text "Delete" ]
+        , button [ class "modal-action modal-close btn waves-effect waves-light"
+                 , onClick address (UpdatedEntry (Just model.restEntries))
+                 -- ^ Makes sense to say that we updated the entry. Didn't delete.
+                 , noTouchToSearchStyle
+                 ]
+            [ text "Cancel" ]
+        ]
+    ] 
 
+     
 viewForm : Signal.Address Action -> Model -> Html
 viewForm address model =  
   let  fields = model.currentFields 
@@ -259,9 +278,10 @@ viewForm address model =
                   ]
        account l i p tag = div [ class "input-field col s6" ]
                          [ input [ id i
-                                 -- Hack to turn autocapitalize off on mobile
-                                 , type' "email"
-                                 , style [("autocapitalize", "off")] -- Not working!
+                                 , type' "text"
+                                 , style [ ("autocapitalize", "off")
+                                         , ("autocorrect", "off")
+                                         ] 
                                  , value p.account
                                  , onInput tag
                                     ]
@@ -353,9 +373,10 @@ viewPage address model =
       [ htmlNav model
       , htmlPreloader model
       , htmlError model
+      , viewConfirmModal address model
       , viewForm address model
       , viewJEntryList address model
-      , viewButtons address
+      , viewFloatingButtons address
       ]
   , htmlFooter model
   ]

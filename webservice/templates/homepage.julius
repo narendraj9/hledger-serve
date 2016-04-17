@@ -1,1 +1,11 @@
-Elm.fullscreen(Elm.Main);
+var app = Elm.fullscreen(Elm.Main);
+
+/**
+ * I need to call this method after the journal entry list
+ * has been loaded for the modals to work correctly
+ */
+function setModalTriggers() {
+    $('.modal-trigger').leanModal();
+    console.log("Script ran");
+}    
+

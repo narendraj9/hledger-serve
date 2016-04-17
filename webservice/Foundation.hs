@@ -73,7 +73,6 @@ instance Yesod App where
         -- you to use normal widget features in default-layout.
 
         pc <- widgetToPageContent $ do
-            addStylesheet $ StaticR css_bootstrap_css
             addStylesheetRemote "http://fonts.googleapis.com/icon?family=Material+Icons"
             addStylesheetRemote "https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.5/css/materialize.min.css"
             addScriptRemote "https://code.jquery.com/jquery-2.1.1.min.js"

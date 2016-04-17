@@ -21,6 +21,7 @@ type alias UiStatus = { imgUrl : String
                       }
 type alias Model = { currentFields : JEntry
                    , restEntries: List JEntry
+                   , entryToRemove : JEntry
                    , ui : UiStatus
                    }
 
@@ -51,6 +52,7 @@ initialUiStatus = { imgUrl = "static/images/penguin.png"
 initialModel : Model
 initialModel = { currentFields = initialJEntry
                , restEntries = []
+               , entryToRemove = initialJEntry
                , ui = initialUiStatus
                }
                
@@ -73,6 +75,7 @@ type Action = ShowForm
             | DeleteLast
             | FetchAll
             | ClearAll
+            | SetEntryToRemove JEntry
             | SetDesc String
             | SetComment String
             | SetAccountA String

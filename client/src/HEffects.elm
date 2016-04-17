@@ -18,7 +18,7 @@ import UIComponents exposing ((=>))
 
 -- Service info
 serviceUri : String
-serviceUri = "http://services.vicarie.in"
+serviceUri = "http://services.vicarie.in" 
 
 -- Auxiliary functions [For fetching gifs]
 getRandomGif : String -> Effects Action

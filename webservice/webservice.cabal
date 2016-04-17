@@ -86,8 +86,8 @@ library
                  , wai
 
 executable         webservice
-    -- if flag(library-only)
-    --     Buildable: False
+    if flag(library-only)
+        Buildable: False
 
     main-is:           main.hs
     hs-source-dirs:    app
