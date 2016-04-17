@@ -1,11 +1,13 @@
-var app = Elm.fullscreen(Elm.Main);
+function elmBootstrap () {
+    var app = Elm.fullscreen(Elm.Main);
+    app.ports.modalRequests.subscribe(function (modalId) {
+        $(modalId).openModal({
+            dismissible: true,
+            opacity: 0.5, 
+            in_duration: 300, 
+            out_duration: 200,
+        });
+    });
+}
 
-/**
- * I need to call this method after the journal entry list
- * has been loaded for the modals to work correctly
- */
-function setModalTriggers() {
-    $('.modal-trigger').leanModal();
-    console.log("Script ran");
-}    
-
+elmBootstrap();

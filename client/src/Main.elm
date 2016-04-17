@@ -1,9 +1,12 @@
+module Main ( main ) where
+
+import HLedger exposing (init, update, view)
+import HEffects exposing (modalMailbox)
+
 import Http
 import Task exposing (Task)
 import StartApp exposing (start)
 import Effects exposing (Effects, Never)
-
-import HLedger exposing (init, update, view)
 
 app =
   start
@@ -16,3 +19,6 @@ main = app.html
     
 port tasks : Signal (Task Never ())
 port tasks = app.tasks
+
+port modalRequests : Signal String
+port modalRequests = modalMailbox.signal                     

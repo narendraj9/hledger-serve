@@ -2,7 +2,7 @@
   "name": "Penguin's Hledger Client",
   "icons": [
     {
-      "src": "static/images/ic_launcher.png",
+      "src": "/static/images/ic_launcher.png",
       "sizes": "192x192",
       "type": "image/png",
       "density": 4.0
@@ -12,5 +12,5 @@
   "background_color": "#9E9E9E",
   "start_url": "/",
   "display": "standalone",
-  "orientation": "landscape"
+  "orientation": "portrait"
 }

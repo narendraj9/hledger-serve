@@ -9,12 +9,13 @@ module UIComponents ( viewForm
                     , viewPage
                     ) where
 
+
+import Model exposing (..)
+
 import String
 import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (onClick, on, targetValue)
-
-import Model exposing (..)
 
 -- Function for setting display attribute | Transition doesn't work. Why?
 displayStyle : String -> Attribute
@@ -87,7 +88,17 @@ viewJEntryList address model =
                               (viewJEntry address entry) :: viewList) 
                   [] entries)
 
-                        
+
+-- | A `width` sized horizontal spacer
+spacer : String -> Html
+spacer width = span [ style [ ("display", "inline-block")
+                            , ("width", width)
+                            ]
+                    ]
+               [ text " " ]
+
+
+-- | Html for a single journal entry
 viewJEntry : Signal.Address Action -> JEntry -> Html
 viewJEntry address entry =   
   let (p1, p2, rest) = getPostings2 entry
@@ -112,10 +123,16 @@ viewJEntry address entry =
     div [ class "row entryItem offset-m2 z-depth-1 hoverable" 
         , entryStyle
         ]
-      [ div [ class "col s3 blue-text" ] 
-          [ text (date ++ "  ") ]
-      , div [ class "col s9 deep-purple-text accent-1" ]
-          [ text description ]
+      [ div [ class "col s12 blue-text"
+            , style [ ("padding-left", "7em")
+                    , ("text-indent", "-6em")
+                    ]
+            ] 
+          [ text date 
+          , spacer "1em"
+          , span [ class "deep-purple-text accent-1" ]
+              [ text description ]
+          ]
       , div [ class "col s10 offset-s2 indigo-text lighten-5"
             , commentDisplay ]
           [ blockquote [ blockquoteStyle ]
@@ -223,7 +240,7 @@ viewConfirmModal address model =
       , class "modal"
       ]
     [ div [ class "modal-content" ]
-        [ text "Do you really want to delete the entry? " ]
+        [ text "Do you really want to delete this entry? " ]
     , div [ class "modal-footer" ]
         [ button [ class "modal-action modal-close btn waves-effect waves-light"
                  , onClick address (DeleteEntry model.entryToRemove)

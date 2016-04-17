@@ -71,6 +71,7 @@ getPostings2 jentry = let postings = jentry.postings
 
 -- The Action data type can be thought of as part of the overall model
 type Action = ShowForm
+            | NoOp ()
             | AddNew
             | DeleteLast
             | FetchAll

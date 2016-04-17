@@ -11016,6 +11016,7 @@ Elm.Model.make = function (_elm) {
    var FetchAll = {ctor: "FetchAll"};
    var DeleteLast = {ctor: "DeleteLast"};
    var AddNew = {ctor: "AddNew"};
+   var NoOp = function (a) {    return {ctor: "NoOp",_0: a};};
    var ShowForm = {ctor: "ShowForm"};
    var getPostings2 = function (jentry) {
       var defaultPosting = {account: "",amount: ""};
@@ -11057,6 +11058,7 @@ Elm.Model.make = function (_elm) {
                               ,initialModel: initialModel
                               ,getPostings2: getPostings2
                               ,ShowForm: ShowForm
+                              ,NoOp: NoOp
                               ,AddNew: AddNew
                               ,DeleteLast: DeleteLast
                               ,FetchAll: FetchAll
@@ -11114,7 +11116,7 @@ Elm.UIComponents.make = function (_elm) {
    var viewConfirmModal = F2(function (address,model) {
       return A2($Html.div,
       _U.list([$Html$Attributes.id("confirm-modal"),$Html$Attributes.$class("modal")]),
-      _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("modal-content")]),_U.list([$Html.text("Do you really want to delete the entry? ")]))
+      _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("modal-content")]),_U.list([$Html.text("Do you really want to delete this entry? ")]))
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("modal-footer")]),
               _U.list([A2($Html.button,
@@ -11155,6 +11157,11 @@ Elm.UIComponents.make = function (_elm) {
       _U.list([$Html$Attributes.$class("material-icons"),noTouchToSearchStyle,A2($Html$Events.onClick,address,$Model.ShowForm)]),
       _U.list([$Html.text("add")]))]))]));
    };
+   var spacer = function (width) {
+      return A2($Html.span,
+      _U.list([$Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "display",_1: "inline-block"},{ctor: "_Tuple2",_0: "width",_1: width}]))]),
+      _U.list([$Html.text(" ")]));
+   };
    var icon = F2(function (classNames,iconName) {    return A2($Html.i,_U.list([$Html$Attributes.$class(classNames)]),_U.list([$Html.text(iconName)]));});
    var materialIcon = icon("tiny material-icons waves-effect waves-light");
    var viewJEntry = F2(function (address,entry) {
@@ -11180,8 +11187,12 @@ Elm.UIComponents.make = function (_elm) {
       var rest = _p0._2;
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("row entryItem offset-m2 z-depth-1 hoverable"),entryStyle]),
-      _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("col s3 blue-text")]),_U.list([$Html.text(A2($Basics._op["++"],date,"  "))]))
-              ,A2($Html.div,_U.list([$Html$Attributes.$class("col s9 deep-purple-text accent-1")]),_U.list([$Html.text(description)]))
+      _U.list([A2($Html.div,
+              _U.list([$Html$Attributes.$class("col s12 blue-text")
+                      ,$Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "padding-left",_1: "7em"},{ctor: "_Tuple2",_0: "text-indent",_1: "-6em"}]))]),
+              _U.list([$Html.text(date)
+                      ,spacer("1em")
+                      ,A2($Html.span,_U.list([$Html$Attributes.$class("deep-purple-text accent-1")]),_U.list([$Html.text(description)]))]))
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("col s10 offset-s2 indigo-text lighten-5"),commentDisplay]),
               _U.list([A2($Html.blockquote,_U.list([blockquoteStyle]),_U.list([A2($Html.p,_U.list([]),_U.list([$Html.text(comment)]))]))]))
@@ -11515,6 +11526,8 @@ Elm.HEffects.make = function (_elm) {
    var deleteLast = $Effects.task(A2($Task.map,
    $Model.DeletedLast,
    $Task.toMaybe(A3($Http.post,decodeJEntryList,A2($Basics._op["++"],serviceUri,"/delete"),$Http.empty))));
+   var modalMailbox = $Signal.mailbox("#confirm-modal");
+   var openModal = function (modalId) {    return $Effects.task(A2($Task.map,$Model.NoOp,A2($Signal.send,modalMailbox.address,modalId)));};
    return _elm.HEffects.values = {_op: _op
                                  ,fetchAll: fetchAll
                                  ,addNew: addNew
@@ -11522,7 +11535,9 @@ Elm.HEffects.make = function (_elm) {
                                  ,deleteEntry: deleteEntry
                                  ,deleteLast: deleteLast
                                  ,clearAll: clearAll
-                                 ,getAPenguin: getAPenguin};
+                                 ,getAPenguin: getAPenguin
+                                 ,openModal: openModal
+                                 ,modalMailbox: modalMailbox};
 };
 Elm.HLedger = Elm.HLedger || {};
 Elm.HLedger.make = function (_elm) {
@@ -11583,12 +11598,13 @@ Elm.HLedger.make = function (_elm) {
       var rest = _p1._2;
       var _p2 = action;
       switch (_p2.ctor)
-      {case "ShowForm": return noEf(setUiAfterShowForm(model));
+      {case "NoOp": return noEf(model);
+         case "ShowForm": return noEf(setUiAfterShowForm(model));
          case "EditEntry": var uiStatus = model.ui;
            var uiStatus$ = _U.update(uiStatus,{formLabelClass: "active",formType: $Model.UpdateForm});
            var newModel = _U.update(model,{currentFields: _p2._0,ui: uiStatus$});
            return {ctor: "_Tuple2",_0: newModel,_1: $Effects.task($Task.succeed($Model.ShowForm))};
-         case "SetEntryToRemove": return noEf(_U.update(model,{entryToRemove: _p2._0}));
+         case "SetEntryToRemove": return {ctor: "_Tuple2",_0: _U.update(model,{entryToRemove: _p2._0}),_1: $HEffects.openModal("#confirm-modal")};
          case "AddNew": var newEntry = model.currentFields;
            return {ctor: "_Tuple2",_0: setUiAfterReq(model),_1: $Effects.batch(_U.list([$HEffects.addNew(newEntry),$HEffects.getAPenguin]))};
          case "UpdateEntry": return {ctor: "_Tuple2",_0: setUiAfterReq(model),_1: $HEffects.updateEntry(model.currentFields)};
@@ -11634,6 +11650,7 @@ Elm.Main.make = function (_elm) {
    $Basics = Elm.Basics.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $Effects = Elm.Effects.make(_elm),
+   $HEffects = Elm.HEffects.make(_elm),
    $HLedger = Elm.HLedger.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
@@ -11642,8 +11659,9 @@ Elm.Main.make = function (_elm) {
    $StartApp = Elm.StartApp.make(_elm),
    $Task = Elm.Task.make(_elm);
    var _op = {};
+   var modalRequests = Elm.Native.Port.make(_elm).outboundSignal("modalRequests",function (v) {    return v;},$HEffects.modalMailbox.signal);
    var app = $StartApp.start({init: $HLedger.init,update: $HLedger.update,view: $HLedger.view,inputs: _U.list([])});
    var main = app.html;
    var tasks = Elm.Native.Task.make(_elm).performSignal("tasks",app.tasks);
-   return _elm.Main.values = {_op: _op,app: app,main: main};
+   return _elm.Main.values = {_op: _op,main: main};
 };

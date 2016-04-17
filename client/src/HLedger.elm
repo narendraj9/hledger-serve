@@ -72,6 +72,7 @@ update action model =
              Nothing ->  setUiAfterError model
   in
     case action of
+      NoOp _ -> noEf model
       -- User --> Application
       ShowForm -> 
         noEf (setUiAfterShowForm model)
@@ -79,7 +80,8 @@ update action model =
       EditEntry entry -> 
         let uiStatus = model.ui
             uiStatus' = { uiStatus | formLabelClass = "active"
-                        , formType = UpdateForm }
+                        , formType = UpdateForm
+                        }
             newModel = { model | currentFields = entry
                        , ui = uiStatus'
                        }
@@ -87,7 +89,9 @@ update action model =
           (newModel, Effects.task (succeed ShowForm))
 
       SetEntryToRemove entry -> 
-        noEf { model | entryToRemove = entry } 
+        ( { model | entryToRemove = entry }
+        , openModal "#confirm-modal"
+        )
 
       -- Application --> Server
       AddNew -> 

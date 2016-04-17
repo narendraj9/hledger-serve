@@ -5,6 +5,8 @@ module HEffects ( fetchAll
                 , deleteLast
                 , clearAll
                 , getAPenguin
+                , openModal
+                , modalMailbox
                 ) where
                 
 import Http 
@@ -16,7 +18,20 @@ import Task exposing (Task, andThen)
 import Model exposing (..)
 import UIComponents exposing ((=>))
 
--- Service info
+
+-- | A mailbox for opening up a modal view with id #confirm-modal | TOFIX
+modalMailbox : Signal.Mailbox String
+modalMailbox = Signal.mailbox "#confirm-modal"
+
+
+-- | Open open a modal with a given id
+openModal : String -> Effects Action
+openModal modalId = Signal.send modalMailbox.address modalId
+                  |> Task.map NoOp
+                  |> Effects.task
+
+
+-- | Service info
 serviceUri : String
 serviceUri = "http://services.vicarie.in" 
 
