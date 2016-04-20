@@ -1,5 +1,7 @@
 module Model where
 
+import Http as Http exposing (Error)
+
 -- Model definitions
 type alias Posting = { account : String
                      , amount : String
@@ -22,6 +24,7 @@ type alias UiStatus = { imgUrl : String
 type alias Model = { currentFields : JEntry
                    , restEntries: List JEntry
                    , entryToRemove : JEntry
+                   , errorMsg : String
                    , ui : UiStatus
                    }
 
@@ -53,6 +56,7 @@ initialModel : Model
 initialModel = { currentFields = initialJEntry
                , restEntries = []
                , entryToRemove = initialJEntry
+               , errorMsg = ""
                , ui = initialUiStatus
                }
                
@@ -72,25 +76,22 @@ getPostings2 jentry = let postings = jentry.postings
 -- The Action data type can be thought of as part of the overall model
 type Action = ShowForm
             | NoOp ()
-            | AddNew
-            | DeleteLast
+            | NewGif (Maybe String)
+            | AddEntry
             | FetchAll
-            | ClearAll
             | SetEntryToRemove JEntry
+            | DeleteEntry JEntry
             | SetDesc String
             | SetComment String
             | SetAccountA String
             | SetAccountB String
             | SetAmountA String
             | SetAmountB String
-            | NewGif (Maybe String)
-            | AddedNew (Maybe (List JEntry))
-            | DeletedLast (Maybe (List JEntry))
-            | FetchedAll (Maybe (List JEntry))
-            | ClearedAll (Maybe (List JEntry))
-            | DeleteEntry JEntry
-            | DeletedEntry (Maybe (List JEntry))
             | EditEntry JEntry
+            | AddedEntry (Result Http.Error (List JEntry))
+            | FetchedAll (Result Http.Error (List JEntry))
+            | DeletedEntry (Result Http.Error (List JEntry))
+            | UpdatedEntry (Result Http.Error (List JEntry))
             | UpdateEntry 
-            | UpdatedEntry (Maybe (List JEntry))
+
 

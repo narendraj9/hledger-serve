@@ -1,7 +1,7 @@
 module Main ( main ) where
 
 import HLedger exposing (init, update, view)
-import HEffects exposing (modalMailbox)
+import HEffects exposing (modalMailbox, toastMailbox)
 
 import Http
 import Task exposing (Task)
@@ -22,3 +22,6 @@ port tasks = app.tasks
 
 port modalRequests : Signal String
 port modalRequests = modalMailbox.signal                     
+
+port toastRequests : Signal String
+port toastRequests = toastMailbox.signal

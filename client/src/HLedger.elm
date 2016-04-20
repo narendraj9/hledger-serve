@@ -24,6 +24,8 @@ update action model =
       (p1, p2, rest) = getPostings2 fields
       -- Funtions to avoid typing in the Action case branches         
       noEf model = (model, Effects.none)
+
+      -- | State of ui after a request is made to the server
       setUiAfterReq model = let uiStatus = model.ui
                                 ui = { uiStatus
                                        | preloaderDisp = "block"
@@ -32,6 +34,7 @@ update action model =
                                        , errorDisp = "none"
                                      }
                             in { model | ui = ui }
+                               
       -- Call only after a successful response [resets fields]
       setUiAfterResp model = let uiStatus = model.ui
                                  ui = { uiStatus
@@ -65,11 +68,18 @@ update action model =
                                        }
                               -- ^ Don't reset form fields
                               in { model | ui = ui } 
-      setModelAfterResp serverEntries model =
-        let uiStatus = model.ui
-        in case serverEntries of
-             (Just entries) -> setUiAfterResp { model | restEntries = entries }
-             Nothing ->  setUiAfterError model
+      afterResponse result =
+        case result of
+          (Ok serverEntries) ->
+            let model' = setUiAfterResp model
+                newModel = { model' | restEntries = serverEntries }
+            in ( newModel
+               , Effects.none
+               )
+          (Err error) ->
+            ( setUiAfterError { model | errorMsg = toString error }
+            , Effects.none
+            )
   in
     case action of
       NoOp _ -> noEf model
@@ -94,10 +104,10 @@ update action model =
         )
 
       -- Application --> Server
-      AddNew -> 
+      AddEntry -> 
         let newEntry = model.currentFields
         in  ( setUiAfterReq model
-            , Effects.batch [ addNew newEntry
+            , Effects.batch [ addEntry newEntry
                             , getAPenguin
                             ]
             )
@@ -105,16 +115,6 @@ update action model =
       UpdateEntry -> 
         ( setUiAfterReq model
         , updateEntry model.currentFields
-        )
-
-      DeleteLast -> 
-        ( setUiAfterReq model
-        , deleteLast
-        )
-
-      ClearAll -> 
-        ( setUiAfterReq model
-        , clearAll
         )
 
       FetchAll -> 
@@ -128,13 +128,11 @@ update action model =
         )
 
       -- Server --> Application
-      AddedNew serverEntries -> noEf <| setModelAfterResp serverEntries model
-      DeletedLast serverEntries -> noEf <| setModelAfterResp serverEntries model
-      FetchedAll serverEntries -> noEf <| setModelAfterResp serverEntries model
-      ClearedAll serverEntries -> noEf <| setModelAfterResp serverEntries model
-      UpdatedEntry serverEntries -> noEf <| setModelAfterResp serverEntries model
-      DeletedEntry serverEntries -> noEf <| setModelAfterResp serverEntries model
-      -- ^ This should sections sucks! I know.
+      AddedEntry result -> afterResponse result
+      FetchedAll result -> afterResponse result
+      UpdatedEntry result -> afterResponse result
+      DeletedEntry result -> afterResponse result
+      -- ^ This sections sucks! I know.
 
       -- Form fields --> Model
       (SetDesc desc) -> let newFields = { fields | description = desc }

@@ -1,5 +1,7 @@
 function elmBootstrap () {
     var app = Elm.fullscreen(Elm.Main);
+
+    // Subscribe to request for showing modals
     app.ports.modalRequests.subscribe(function (modalId) {
         $(modalId).openModal({
             dismissible: true,
@@ -7,6 +9,11 @@ function elmBootstrap () {
             in_duration: 300, 
             out_duration: 200,
         });
+    });
+
+    // Susbscribe to requests for showing toasts
+    app.ports.toastRequests.subscribe(function (text) {
+        Materialize.toast(text, 10000 ,"rounded");
     });
 }
 

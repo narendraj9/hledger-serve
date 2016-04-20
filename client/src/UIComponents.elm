@@ -219,7 +219,10 @@ htmlError model =
                 , div [ class "row" ]
                     [ div [ class "col offset-s2 s8 center  red-text flow-text" ] 
                         [ text ("Something went wrong. The server left us on an island. "
-                                  ++ "It's not the end of the world. Smile like I do! :)") ]
+                                  ++  "All I was told is that it's a "
+                                  ++ model.errorMsg ++ "! "
+                                  ++ "It's not the end of the world. Smile like I do! :)")
+                        ]
                     ]
                 , div [ class "row" ]
                     [ div [ class "col offset-s2 s8 center" ]
@@ -248,7 +251,7 @@ viewConfirmModal address model =
                  ]
             [ text "Delete" ]
         , button [ class "modal-action modal-close btn waves-effect waves-light"
-                 , onClick address (UpdatedEntry (Just model.restEntries))
+                 , onClick address (UpdatedEntry (Ok model.restEntries))
                  -- ^ Makes sense to say that we updated the entry. Didn't delete.
                  , noTouchToSearchStyle
                  ]
@@ -296,12 +299,11 @@ viewForm address model =
        account l i p tag = div [ class "input-field col s6" ]
                          [ input [ id i
                                  , type' "text"
-                                 , style [ ("autocapitalize", "off")
-                                         , ("autocorrect", "off")
-                                         ] 
+                                 , style [ ("text-transform", "lowercase") ]
+                                 -- ^ This is a hack because autocapitalize: "off/none" doesn't work!
                                  , value p.account
                                  , onInput tag
-                                    ]
+                                 ]
                                 []
                             , label [ for i
                                     , class labelClass
@@ -343,7 +345,7 @@ viewForm address model =
                                 , type' "submit"
                                 , onClick address <| 
                                           if model.ui.formType == AddNewForm
-                                          then AddNew
+                                          then AddEntry
                                           else UpdateEntry
                                 , noTouchToSearchStyle
                                 ]
