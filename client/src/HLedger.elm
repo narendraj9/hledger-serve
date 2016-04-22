@@ -128,8 +128,9 @@ update action model =
         )
 
       -- Server --> Application
-      AddedEntry result -> afterResponse result
       FetchedAll result -> afterResponse result
+      
+      AddedEntry result -> afterResponse result
       UpdatedEntry result -> afterResponse result
       DeletedEntry result -> afterResponse result
       -- ^ This sections sucks! I know.

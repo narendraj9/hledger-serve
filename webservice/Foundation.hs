@@ -153,10 +153,11 @@ instance YesodAuth App where
                 }
 
     -- You can add other plugins like Google Email, email or OAuth here
-    authPlugins app = [ authOpenId Claimed []
-                    , authGoogleEmail (appOAuthGoogleClientId $ appSettings app)
-                                      (appOAuthGoogleClientSecret $ appSettings app)
-                    ]
+    authPlugins app =
+      [ authGoogleEmail (appOAuthGoogleClientId $ appSettings app)
+                        (appOAuthGoogleClientSecret $ appSettings app)
+      ]
+      
     loginHandler = lift $ do
       defaultLayout $ do
         setTitle "Login"

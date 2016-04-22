@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+EXE_FILE=".stack-work/install/x86_64-linux/lts-5.12/7.10.3/bin/webservice"
+
+echo '--> Removing keter file if any'
+rm webservice.keter
+
+echo "--> Copying latest elm.js"
+cp ../client/elm.js static/js/
+
+echo "--> Running stack clean"
+stack clean
+
+echo "--> Running stack build"
+stack build
+
+echo "-> Copying executable file"
+mkdir -p dist/build/webservice/
+cp ${EXE_FILE} dist/build/webservice/
+
+echo "--> Building keter file."
+tar czfv - dist/build/webservice/webservice config static > webservice.keter
+
+echo "--> Copying keter file to server"
+scp webservice.keter vicarie:~/keter/incoming/
+
+echo "--> Done!"
+
+

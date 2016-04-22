@@ -18,6 +18,7 @@ getRequestByUser = do
     currentUserId <- requireAuthId
     -- ^ Get the persistent Id of the current user
     maybeCurrentUser <- runDB $ get currentUserId
+    -- ^ This would never be nothing
     requestEntry <- (requireJsonBody :: Handler RequestEntry)
     let entry = Entry { entryNumber = requestEntryNumber requestEntry
                       , entryDate = requestEntryDate requestEntry
@@ -64,10 +65,7 @@ putEntryR = do
 deleteEntryR :: Handler Value
 deleteEntryR = do
   (currentUserId, _, entry) <- getRequestByUser
-  maybeEntryEntity <- runDB $ getBy $ UniqueEntry currentUserId (entryNumber entry)
-  case maybeEntryEntity of
-    Nothing -> sendResponseStatus status404 ("ENTRY NOT FOUND" :: Text)
-    Just (Entity eid _) -> runDB $ delete eid
+  _ <- runDB $ deleteBy $ UniqueEntry currentUserId (entryNumber entry)
   entries <- runDB $ selectList [ EntryUserId ==. currentUserId ] []
   returnJson entries
   
