@@ -65,7 +65,7 @@ instance FromJSON AppSettings where
 #if DEVELOPMENT
                 True
 #else
-                True
+                False
 #endif
         appStaticDir              <- o .: "static-dir"
         appDatabaseConf           <- o .: "database"
