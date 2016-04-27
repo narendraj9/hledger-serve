@@ -88,10 +88,11 @@ type Action = ShowForm
             | SetAmountA String
             | SetAmountB String
             | EditEntry JEntry
-            | AddedEntry (Result Http.Error (List JEntry))
             | FetchedAll (Result Http.Error (List JEntry))
-            | DeletedEntry (Result Http.Error (List JEntry))
-            | UpdatedEntry (Result Http.Error (List JEntry))
+            -- ^ Http.Error is an inconsistency! [Because of Http.fromJson]
+            | AddedEntry (Result Http.RawError String)
+            | DeletedEntry (Result Http.RawError String)
+            | UpdatedEntry (Result Http.RawError String)
             | UpdateEntry 
 
 

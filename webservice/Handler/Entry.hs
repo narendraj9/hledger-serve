@@ -40,32 +40,41 @@ postEntryR = do
   (currentUserId, maybeCurrentUser, entry') <- getRequestByUser
   today <- liftIO dateNow
   let entry = entry' { entryDate = today }
-  entries <- case maybeCurrentUser of
-                 Just currentUser -> do 
-                   _ <- runDB $ insertEntity $ entry { entryNumber = (userCount currentUser) }
-                   -- ^ Insert entry received in request body with next entry number
-                   runDB $ update currentUserId [ UserCount +=. 1 ]
-                   -- ^ Increment the max entry number for the current user
-                   runDB $ selectList [ EntryUserId ==. currentUserId ] []
-                 Nothing -> return []
-  returnJson entries
+  case maybeCurrentUser of
+    Just currentUser -> do 
+      _ <- runDB $ insertEntity $ entry { entryNumber = (userCount currentUser) }
+      -- ^ Insert entry received in request body with next entry number
+      runDB $ update currentUserId [ UserCount +=. 1 ]
+      -- ^ Increment the max entry number for the current user
+      sendResponseStatus status200 ("Entry Added" :: Text)
+    Nothing -> sendResponseStatus status400 ("Email narendraj9@gmail.com" :: Text)
+      -- ^ This will never happen. 
 
 -- | Update an already existing entry 
-putEntryR :: Handler Value
+putEntryR :: Handler ()
 putEntryR = do
   (currentUserId, _, entry) <- getRequestByUser
   maybeEntryEntity <- runDB $ getBy $ UniqueEntry currentUserId (entryNumber entry)
   case maybeEntryEntity of
-    Nothing -> sendResponseStatus status404 ("ENTRY NOT FOUND" :: Text)
-    Just (Entity eid _) -> runDB $ replace eid entry
-  entries <- runDB $ selectList [ EntryUserId ==. currentUserId ] []
-  returnJson entries
+    Nothing ->
+      sendResponseStatus status404 ("Entry Not Found" :: Text)
+    Just (Entity eid _) -> do
+      runDB $ replace eid entry 
+      sendResponseStatus status200 ("Entry Updated" :: Text)
 
 -- | Delete an entry form the database 
-deleteEntryR :: Handler Value
+deleteEntryR :: Handler ()
 deleteEntryR = do
-  (currentUserId, _, entry) <- getRequestByUser
-  _ <- runDB $ deleteBy $ UniqueEntry currentUserId (entryNumber entry)
-  entries <- runDB $ selectList [ EntryUserId ==. currentUserId ] []
-  returnJson entries
+  currentUserId <- requireAuthId
+  entryNumberMaybe <- lookupGetParam "entry_number"
+  case entryNumberMaybe of
+    Just entryNumberS -> case (readMay entryNumberS) :: Maybe Int of
+      (Just entryNumber) -> do 
+        runDB $ deleteBy $ UniqueEntry currentUserId entryNumber
+        sendResponseStatus status200 ("Entry Deleted" :: Text)
+      Nothing ->
+        sendResponseStatus status400 ("Required `entry_number` should be a number" :: Text)
+    Nothing ->
+      sendResponseStatus status400 ("Required query param `entry_number`" :: Text)
+  
   

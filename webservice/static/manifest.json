@@ -2,7 +2,7 @@
   "name": "Penguin's Hledger Client",
   "icons": [
     {
-      "src": "/static/images/ic_launcher.png",
+      "src": "images/ic_launcher.png",
       "sizes": "192x192",
       "type": "image/png",
       "density": 4.0

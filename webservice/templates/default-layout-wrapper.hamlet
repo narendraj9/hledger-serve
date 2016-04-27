@@ -4,7 +4,7 @@ $newline never
 \<!--[if IE 7]>    <html class="no-js ie7 oldie" lang="en"> <![endif]-->
 \<!--[if IE 8]>    <html class="no-js ie8 oldie" lang="en"> <![endif]-->
 \<!--[if gt IE 8]><!-->
-<html class="no-js" lang="en"> <!--<![endif]-->
+<html lang="en"> <!--<![endif]-->
   <head>
     <meta charset="UTF-8">
 
@@ -17,6 +17,7 @@ $newline never
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0"/>
 
     <link rel="manifest" href=@{StaticR manifest_json} />
+    <script src=@{StaticR js_elm_v6_js}>
 
     ^{pageHead pc}
 

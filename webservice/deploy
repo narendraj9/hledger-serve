@@ -1,12 +1,25 @@
 #!/usr/bin/env bash
 
+function auto_version_elm_js () {
+   echo "--> Incrementing elm.js version number by 1."
+    [[ $(ls static/js/elm*) =~ ([0-9]+) ]]
+    rm static/js/elm*.js
+    version=$(((${BASH_REMATCH[1]} + 1))) 
+    cp -v ../client/elm.js static/js/elm-v${version}.js
+   
+    echo "--> Changing elm.js filename in handlers"
+    sed -i -e "s/elm_v.*_js/elm_v${version}_js/" templates/default-layout-wrapper.hamlet
+}
+
+# Call this function when `yesod keter` won't work
+function fallback_function () { 
+
 EXE_FILE=".stack-work/install/x86_64-linux/lts-5.12/7.10.3/bin/webservice"
 
 echo '--> Removing keter file if any'
 rm webservice.keter
 
-echo "--> Copying latest elm.js"
-cp ../client/elm.js static/js/
+auto_version_elm_js;
 
 echo "--> Running stack clean"
 stack clean
@@ -26,4 +39,15 @@ scp webservice.keter vicarie:~/keter/incoming/
 
 echo "--> Done!"
 
+}
 
+function deploy () {
+
+    echo '--> Removing keter file if any'
+    rm webservice.keter
+    
+    echo "--> Running 'stack exec -- yesod keter'"
+    stack exec -- yesod keter
+}
+
+fallback_function;

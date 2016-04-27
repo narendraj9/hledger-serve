@@ -10999,8 +10999,8 @@ Elm.Model.make = function (_elm) {
    var UpdateEntry = {ctor: "UpdateEntry"};
    var UpdatedEntry = function (a) {    return {ctor: "UpdatedEntry",_0: a};};
    var DeletedEntry = function (a) {    return {ctor: "DeletedEntry",_0: a};};
-   var FetchedAll = function (a) {    return {ctor: "FetchedAll",_0: a};};
    var AddedEntry = function (a) {    return {ctor: "AddedEntry",_0: a};};
+   var FetchedAll = function (a) {    return {ctor: "FetchedAll",_0: a};};
    var EditEntry = function (a) {    return {ctor: "EditEntry",_0: a};};
    var SetAmountB = function (a) {    return {ctor: "SetAmountB",_0: a};};
    var SetAmountA = function (a) {    return {ctor: "SetAmountA",_0: a};};
@@ -11068,8 +11068,8 @@ Elm.Model.make = function (_elm) {
                               ,SetAmountA: SetAmountA
                               ,SetAmountB: SetAmountB
                               ,EditEntry: EditEntry
-                              ,AddedEntry: AddedEntry
                               ,FetchedAll: FetchedAll
+                              ,AddedEntry: AddedEntry
                               ,DeletedEntry: DeletedEntry
                               ,UpdatedEntry: UpdatedEntry
                               ,UpdateEntry: UpdateEntry};
@@ -11119,7 +11119,7 @@ Elm.UIComponents.make = function (_elm) {
                       _U.list([$Html.text("Delete")]))
                       ,A2($Html.button,
                       _U.list([$Html$Attributes.$class("modal-action modal-close btn waves-effect waves-light")
-                              ,A2($Html$Events.onClick,address,$Model.UpdatedEntry($Result.Ok(model.restEntries)))
+                              ,A2($Html$Events.onClick,address,$Model.UpdatedEntry($Result.Ok("Didn\'t delete entry")))
                               ,noTouchToSearchStyle]),
                       _U.list([$Html.text("Cancel")]))]))]));
    });
@@ -11476,12 +11476,23 @@ Elm.HEffects.make = function (_elm) {
    var getRandomGif = function (topic) {    return $Effects.task(A2($Task.map,$Model.NewGif,$Task.toMaybe(A2($Http.get,decodeUrl,randomUrl(topic)))));};
    var getAPenguin = getRandomGif("cute penguin");
    var serviceUri = "http://services.vicarie.in";
-   var fetchAll = $Effects.task(A2($Task.map,$Model.FetchedAll,$Task.toResult(A2($Http.get,decodeJEntryList,A2($Basics._op["++"],serviceUri,"/entry")))));
+   var fetchAll = $Effects.task(A2($Task.map,
+   $Model.FetchedAll,
+   $Task.toResult(A2($Http.fromJson,
+   decodeJEntryList,
+   A2($Http.send,
+   $Http.defaultSettings,
+   {verb: "GET"
+   ,url: A2($Basics._op["++"],serviceUri,"/entry")
+   ,headers: _U.list([{ctor: "_Tuple2",_0: "content-type",_1: "application/json"}])
+   ,body: $Http.empty})))));
    var addEntry = function (jentry) {
       return $Effects.task(A2($Task.map,
       $Model.AddedEntry,
-      $Task.toResult(A2($Http.fromJson,
-      decodeJEntryList,
+      $Task.toResult(A2($Task.map,
+      function (_p0) {
+         return "AddedEntry";
+      },
       A2($Http.send,
       $Http.defaultSettings,
       {verb: "POST"
@@ -11492,8 +11503,10 @@ Elm.HEffects.make = function (_elm) {
    var updateEntry = function (jentry) {
       return $Effects.task(A2($Task.map,
       $Model.UpdatedEntry,
-      $Task.toResult(A2($Http.fromJson,
-      decodeJEntryList,
+      $Task.toResult(A2($Task.map,
+      function (_p1) {
+         return "UpdatedEntry";
+      },
       A2($Http.send,
       $Http.defaultSettings,
       {verb: "PUT"
@@ -11504,12 +11517,14 @@ Elm.HEffects.make = function (_elm) {
    var deleteEntry = function (jentry) {
       return $Effects.task(A2($Task.map,
       $Model.DeletedEntry,
-      $Task.toResult(A2($Http.fromJson,
-      decodeJEntryList,
+      $Task.toResult(A2($Task.map,
+      function (_p2) {
+         return "DeletedEntry";
+      },
       A2($Http.send,
       $Http.defaultSettings,
       {verb: "DELETE"
-      ,url: A2($Basics._op["++"],serviceUri,"/entry")
+      ,url: A2($Http.url,A2($Basics._op["++"],serviceUri,"/entry"),_U.list([{ctor: "_Tuple2",_0: "entry_number",_1: $Basics.toString(jentry.number)}]))
       ,headers: _U.list([{ctor: "_Tuple2",_0: "content-type",_1: "application/json"}])
       ,body: $Http.string(A2($Json$Encode.encode,0,encodeJEntry(jentry)))})))));
    };
@@ -11565,14 +11580,22 @@ Elm.HLedger.make = function (_elm) {
          {preloaderDisp: "none",formDisp: "none",entryListDisp: "block",errorDisp: "none",formType: $Model.AddNewForm,formLabelClass: ""});
          return _U.update(model,{ui: ui,currentFields: $Model.initialJEntry});
       };
-      var afterResponse = function (result) {
+      var afterResponse = F2(function (result,newEntries) {
          var _p0 = result;
          if (_p0.ctor === "Ok") {
                var model$ = setUiAfterResp(model);
-               var newModel = _U.update(model$,{restEntries: _p0._0});
+               var newModel = _U.update(model$,{restEntries: newEntries});
                return {ctor: "_Tuple2",_0: newModel,_1: $Effects.none};
             } else {
                return {ctor: "_Tuple2",_0: setUiAfterError(_U.update(model,{errorMsg: $Basics.toString(_p0._0)})),_1: $Effects.none};
+            }
+      });
+      var afterFetchAll = function (result) {
+         var _p1 = result;
+         if (_p1.ctor === "Ok") {
+               return A2(afterResponse,result,_p1._0);
+            } else {
+               return A2(afterResponse,result,_U.list([]));
             }
       };
       var setUiAfterReq = function (model) {
@@ -11582,46 +11605,63 @@ Elm.HLedger.make = function (_elm) {
       };
       var noEf = function (model) {    return {ctor: "_Tuple2",_0: model,_1: $Effects.none};};
       var fields = model.currentFields;
-      var _p1 = $Model.getPostings2(fields);
-      var p1 = _p1._0;
-      var p2 = _p1._1;
-      var rest = _p1._2;
-      var _p2 = action;
-      switch (_p2.ctor)
+      var _p2 = $Model.getPostings2(fields);
+      var p1 = _p2._0;
+      var p2 = _p2._1;
+      var rest = _p2._2;
+      var _p3 = action;
+      switch (_p3.ctor)
       {case "NoOp": return noEf(model);
          case "ShowForm": return noEf(setUiAfterShowForm(model));
          case "EditEntry": var uiStatus = model.ui;
            var uiStatus$ = _U.update(uiStatus,{formLabelClass: "active",formType: $Model.UpdateForm});
-           var newModel = _U.update(model,{currentFields: _p2._0,ui: uiStatus$});
+           var newModel = _U.update(model,{currentFields: _p3._0,ui: uiStatus$});
            return {ctor: "_Tuple2",_0: newModel,_1: $Effects.task($Task.succeed($Model.ShowForm))};
-         case "SetEntryToRemove": return {ctor: "_Tuple2",_0: _U.update(model,{entryToRemove: _p2._0}),_1: $HEffects.openModal("#confirm-modal")};
+         case "SetEntryToRemove": return {ctor: "_Tuple2",_0: _U.update(model,{entryToRemove: _p3._0}),_1: $HEffects.openModal("#confirm-modal")};
          case "AddEntry": var newEntry = model.currentFields;
            return {ctor: "_Tuple2",_0: setUiAfterReq(model),_1: $Effects.batch(_U.list([$HEffects.addEntry(newEntry),$HEffects.getAPenguin]))};
          case "UpdateEntry": return {ctor: "_Tuple2",_0: setUiAfterReq(model),_1: $HEffects.updateEntry(model.currentFields)};
          case "FetchAll": return {ctor: "_Tuple2",_0: setUiAfterReq(model),_1: $HEffects.fetchAll};
-         case "DeleteEntry": return {ctor: "_Tuple2",_0: setUiAfterReq(model),_1: $HEffects.deleteEntry(_p2._0)};
-         case "AddedEntry": return afterResponse(_p2._0);
-         case "FetchedAll": return afterResponse(_p2._0);
-         case "UpdatedEntry": return afterResponse(_p2._0);
-         case "DeletedEntry": return afterResponse(_p2._0);
-         case "SetDesc": var newFields = _U.update(fields,{description: _p2._0});
+         case "DeleteEntry": return {ctor: "_Tuple2"
+                                    ,_0: setUiAfterReq(model)
+                                    ,_1: $Effects.batch(_U.list([$HEffects.deleteEntry(_p3._0),$HEffects.getAPenguin]))};
+         case "FetchedAll": return afterFetchAll(_p3._0);
+         case "AddedEntry": var newEntries = A2($List._op["::"],model.currentFields,model.restEntries);
+           return A2(afterResponse,_p3._0,newEntries);
+         case "UpdatedEntry": var updateEntries = F2(function (e,currentEntries) {
+              var _p4 = currentEntries;
+              if (_p4.ctor === "[]") {
+                    return _U.list([]);
+                 } else {
+                    var _p6 = _p4._1;
+                    var _p5 = _p4._0;
+                    return _U.eq(e.number,_p5.number) ? A2($List._op["::"],e,_p6) : A2($List._op["::"],_p5,A2(updateEntries,e,_p6));
+                 }
+           });
+           var newEntries = A2(updateEntries,model.currentFields,model.restEntries);
+           var entryNumber = model.currentFields.number;
+           return A2(afterResponse,_p3._0,newEntries);
+         case "DeletedEntry": return A2(afterResponse,
+           _p3._0,
+           A2($List.filter,function (x) {    return !_U.eq(x.number,model.entryToRemove.number);},model.restEntries));
+         case "SetDesc": var newFields = _U.update(fields,{description: _p3._0});
            return noEf(_U.update(model,{currentFields: newFields}));
-         case "SetComment": var newFields = _U.update(fields,{comment: _p2._0});
+         case "SetComment": var newFields = _U.update(fields,{comment: _p3._0});
            return noEf(_U.update(model,{currentFields: newFields}));
-         case "SetAccountA": var newPostings = A2($List._op["::"],_U.update(p1,{account: _p2._0}),A2($List._op["::"],p2,rest));
+         case "SetAccountA": var newPostings = A2($List._op["::"],_U.update(p1,{account: _p3._0}),A2($List._op["::"],p2,rest));
            var newFields = _U.update(fields,{postings: newPostings});
            return noEf(_U.update(model,{currentFields: newFields}));
-         case "SetAccountB": var newPostings = A2($List._op["::"],p1,A2($List._op["::"],_U.update(p2,{account: _p2._0}),rest));
+         case "SetAccountB": var newPostings = A2($List._op["::"],p1,A2($List._op["::"],_U.update(p2,{account: _p3._0}),rest));
            var newFields = _U.update(fields,{postings: newPostings});
            return noEf(_U.update(model,{currentFields: newFields}));
-         case "SetAmountA": var newPostings = A2($List._op["::"],_U.update(p1,{amount: _p2._0}),A2($List._op["::"],p2,rest));
+         case "SetAmountA": var newPostings = A2($List._op["::"],_U.update(p1,{amount: _p3._0}),A2($List._op["::"],p2,rest));
            var newFields = _U.update(fields,{postings: newPostings});
            return noEf(_U.update(model,{currentFields: newFields}));
-         case "SetAmountB": var newPostings = A2($List._op["::"],p1,A2($List._op["::"],_U.update(p2,{amount: _p2._0}),rest));
+         case "SetAmountB": var newPostings = A2($List._op["::"],p1,A2($List._op["::"],_U.update(p2,{amount: _p3._0}),rest));
            var newFields = _U.update(fields,{postings: newPostings});
            return noEf(_U.update(model,{currentFields: newFields}));
          default: var uiStatus = model.ui;
-           var newUiStatus = _U.update(uiStatus,{imgUrl: A2($Maybe.withDefault,uiStatus.imgUrl,_p2._0)});
+           var newUiStatus = _U.update(uiStatus,{imgUrl: A2($Maybe.withDefault,uiStatus.imgUrl,_p3._0)});
            return noEf(_U.update(model,{ui: newUiStatus}));}
    });
    var init = {ctor: "_Tuple2",_0: $Model.initialModel,_1: $HEffects.fetchAll};

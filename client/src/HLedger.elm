@@ -68,11 +68,11 @@ update action model =
                                        }
                               -- ^ Don't reset form fields
                               in { model | ui = ui } 
-      afterResponse result =
+      afterResponse result newEntries =
         case result of
-          (Ok serverEntries) ->
+          (Ok msg) ->
             let model' = setUiAfterResp model
-                newModel = { model' | restEntries = serverEntries }
+                newModel = { model' | restEntries = newEntries }
             in ( newModel
                , Effects.none
                )
@@ -80,6 +80,11 @@ update action model =
             ( setUiAfterError { model | errorMsg = toString error }
             , Effects.none
             )
+      afterFetchAll result = 
+       case result of 
+         (Ok entries) -> afterResponse result entries
+         _            -> afterResponse result []
+          
   in
     case action of
       NoOp _ -> noEf model
@@ -124,16 +129,36 @@ update action model =
 
       DeleteEntry entry -> 
         ( setUiAfterReq model
-        , deleteEntry entry
+        , Effects.batch [ deleteEntry entry
+                        , getAPenguin
+                        ]
         )
 
       -- Server --> Application
-      FetchedAll result -> afterResponse result
-      
-      AddedEntry result -> afterResponse result
-      UpdatedEntry result -> afterResponse result
-      DeletedEntry result -> afterResponse result
-      -- ^ This sections sucks! I know.
+      FetchedAll result -> 
+        afterFetchAll result 
+
+      AddedEntry result -> 
+        let
+          newEntries = model.currentFields :: model.restEntries 
+        in 
+          afterResponse result newEntries
+
+      UpdatedEntry result -> 
+        let entryNumber = model.currentFields.number
+            updateEntries e currentEntries  = 
+              case currentEntries of 
+                [] -> []
+                (hd :: tl) -> if e.number == hd.number
+                              then e :: tl
+                              else hd :: updateEntries e tl
+            newEntries = updateEntries model.currentFields model.restEntries
+        in afterResponse result newEntries
+
+      DeletedEntry result -> 
+        afterResponse result (List.filter 
+                                (\x -> x.number /= model.entryToRemove.number) 
+                                model.restEntries)
 
       -- Form fields --> Model
       (SetDesc desc) -> let newFields = { fields | description = desc }

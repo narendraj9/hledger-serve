@@ -251,7 +251,7 @@ viewConfirmModal address model =
                  ]
             [ text "Delete" ]
         , button [ class "modal-action modal-close btn waves-effect waves-light"
-                 , onClick address (UpdatedEntry (Ok model.restEntries))
+                 , onClick address (UpdatedEntry (Ok "Didn't delete entry"))
                  -- ^ Makes sense to say that we updated the entry. Didn't delete.
                  , noTouchToSearchStyle
                  ]

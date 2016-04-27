@@ -11,7 +11,7 @@ module HEffects ( fetchAll
                 
 import Http 
 import Effects exposing (Effects, Never)
-import Json.Decode as Json exposing ((:=))
+import Json.Decode as Json exposing ((:=), succeed)
 import Json.Encode as JsonEn exposing (string, list, Value)
 import Task exposing (Task, andThen)
 
@@ -101,7 +101,13 @@ encodeJEntry jentry = JsonEn.object [ ("number", JsonEn.int jentry.number)
 
                       
 fetchAll : Effects Action
-fetchAll = Http.get decodeJEntryList (serviceUri ++ "/entry")
+fetchAll = Http.send Http.defaultSettings
+                { verb = "GET"
+                , url = serviceUri ++ "/entry"
+                , headers = [ ("content-type", "application/json") ]         
+                , body = Http.empty
+                }
+         |> Http.fromJson decodeJEntryList
          |> Task.toResult
          |> Task.map FetchedAll
          |> Effects.task
@@ -115,7 +121,7 @@ addEntry jentry = Http.send Http.defaultSettings
                 , headers = [ ("content-type", "application/json") ]         
                 , body = Http.string (JsonEn.encode 0 <| encodeJEntry jentry)
                 }
-              |> Http.fromJson decodeJEntryList
+              |> Task.map (\_ -> "AddedEntry")
               |> Task.toResult
               |> Task.map AddedEntry
               |> Effects.task
@@ -129,7 +135,7 @@ updateEntry jentry = Http.send Http.defaultSettings
                      , headers = [ ("content-type", "application/json") ]         
                      , body = Http.string (JsonEn.encode 0 <| encodeJEntry jentry)
                      }
-                   |> Http.fromJson decodeJEntryList
+                   |> Task.map (\_ -> "UpdatedEntry")
                    |> Task.toResult
                    |> Task.map UpdatedEntry
                    |> Effects.task
@@ -139,11 +145,12 @@ updateEntry jentry = Http.send Http.defaultSettings
 deleteEntry : JEntry -> Effects Action
 deleteEntry jentry = Http.send Http.defaultSettings
                      { verb = "DELETE"
-                     , url = serviceUri ++ "/entry"
+                     , url = Http.url (serviceUri ++ "/entry")
+                             [("entry_number", toString jentry.number)]
                      , headers = [ ("content-type", "application/json") ]         
                      , body = Http.string (JsonEn.encode 0 <| encodeJEntry jentry)
                      }
-                   |> Http.fromJson decodeJEntryList
+                   |> Task.map (\_ -> "DeletedEntry")
                    |> Task.toResult
                    |> Task.map DeletedEntry
                    |> Effects.task

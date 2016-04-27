@@ -4,7 +4,6 @@ import Import.NoFoundation
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
 import Text.Hamlet          (hamletFile)
 import Text.Jasmine         (minifym)
-import Yesod.Auth.OpenId    (authOpenId, IdentifierType (Claimed))
 import Yesod.Auth.GoogleEmail2
 import Yesod.Default.Util   (addStaticContentExternal)
 import Yesod.Core.Types     (Logger)
@@ -77,7 +76,7 @@ instance Yesod App where
             addStylesheetRemote "https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/css/materialize.min.css"
             addScriptRemote "https://code.jquery.com/jquery-2.1.1.min.js"
             addScriptRemote "https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/js/materialize.min.js"
-
+             
             $(widgetFile "default-layout")
         withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
 
