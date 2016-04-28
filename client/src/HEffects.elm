@@ -45,7 +45,7 @@ showToast text = Signal.send toastMailbox.address text
 
 -- | Service info
 serviceUri : String
-serviceUri = "http://services.vicarie.in" 
+serviceUri = "https://services.vicarie.in" 
 
 
 -- Auxiliary functions [For fetching gifs]
