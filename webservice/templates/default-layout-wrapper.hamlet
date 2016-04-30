@@ -17,7 +17,7 @@ $newline never
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=0"/>
 
     <link rel="manifest" href=@{StaticR manifest_json} />
-    <script src=@{StaticR js_elm_v7_js}>
+    <script src=@{StaticR js_elm_v8_js}>
 
     ^{pageHead pc}
 

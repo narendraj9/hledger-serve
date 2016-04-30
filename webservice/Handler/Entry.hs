@@ -32,7 +32,7 @@ getRequestByUser = do
 getEntryR :: Handler Value
 getEntryR = do
     currentUserId <- requireAuthId
-    entries <- runDB $ selectList [ EntryUserId ==. currentUserId ] []
+    entries <- runDB $ selectList [ EntryUserId ==. currentUserId ] [Desc EntryNumber]
     returnJson entries
                  
 postEntryR :: Handler Value

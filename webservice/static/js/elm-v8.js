@@ -11277,7 +11277,7 @@ Elm.UIComponents.make = function (_elm) {
          } else {
             return A2($Html.div,
             _U.list([$Html$Attributes.$class("container"),$Html$Attributes.id("entryList"),displayStyle(model.ui.entryListDisp)]),
-            A3($List.foldl,F2(function (entry,viewList) {    return A2($List._op["::"],A2(viewJEntry,address,entry),viewList);}),_U.list([]),_p2));
+            A2($List.map,function (entry) {    return A2(viewJEntry,address,entry);},_p2));
          }
    });
    var htmlPreloader = function (model) {

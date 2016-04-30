@@ -84,9 +84,9 @@ viewJEntryList address model =
                    , id "entryList"
                    , displayStyle model.ui.entryListDisp 
                    ] 
-               (List.foldl (\entry viewList -> 
-                              (viewJEntry address entry) :: viewList) 
-                  [] entries)
+               (List.map (\entry -> 
+                            viewJEntry address entry)
+                  entries)
 
 
 -- | A `width` sized horizontal spacer

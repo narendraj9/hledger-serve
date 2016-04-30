@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 
 function auto_version_elm_js () {
+   if cmp ../client/elm.js static/js/elm*; then
+        echo "elm.js hasn't changed."
+        return;
+   fi
+
    echo "--> Incrementing elm.js version number by 1."
     [[ $(ls static/js/elm*) =~ ([0-9]+) ]]
     rm static/js/elm*.js
