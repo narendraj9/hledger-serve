@@ -37,7 +37,7 @@ mkdir -p dist/build/webservice/
 cp ${EXE_FILE} dist/build/webservice/
 
 echo "--> Building keter file."
-tar czfv - dist/build/webservice/webservice config static > webservice.keter
+tar czfv - dist/build/webservice/webservice config static .well-known > webservice.keter
 
 echo "--> Copying keter file to server"
 scp webservice.keter vicarie:~/keter/incoming/

@@ -6,3 +6,6 @@
 
 / HomeR GET 
 /entry EntryR GET POST PUT DELETE
+
+/api/entry ApiCopyR GET
+

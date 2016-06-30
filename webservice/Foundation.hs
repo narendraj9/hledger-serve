@@ -11,6 +11,7 @@ import qualified Yesod.Core.Unsafe as Unsafe
 import qualified Data.CaseInsensitive as CI
 import qualified Data.Text.Encoding as TE
 
+
 -- | The foundation datatype for your application. This can be a good place to
 -- keep settings and values requiring initialization before your application
 -- starts running, such as database connections. Every handler will have
@@ -76,7 +77,8 @@ instance Yesod App where
             addStylesheetRemote "https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/css/materialize.min.css"
             addScriptRemote "https://code.jquery.com/jquery-2.1.1.min.js"
             addScriptRemote "https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/js/materialize.min.js"
-             
+            addScriptRemote "https://cdn.jsdelivr.net/clipboard.js/1.5.12/clipboard.min.js"
+
             $(widgetFile "default-layout")
         withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
 
